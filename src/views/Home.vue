@@ -1,5 +1,8 @@
 <template>
-  <div class="container">
+  <div class="container-fluid">
+
+    <div class="container">
+
     <h1 class="display-1 text-center mt-5 mb-5">Tiermorde in Deutschland</h1>
     <p>
       Jeden Tag werden in Deutschland Tiere ermordet um dann bei Menschen auf
@@ -177,7 +180,7 @@
       target="_blank"
       rel="noopener"
     >
-      #GoVegan
+      <span class="d-none d-md-inline">🐷🐮🐔</span> #GoVegan <span class="d-none d-md-inline">🐔🐮🐷</span>
     </a>
 
     <h5 class="display-5 text-center mt-5 mb-3">Teile diese Seite</h5>
@@ -255,6 +258,25 @@
         >Fasil @ www.freeicons.io</a
       >, Danke!
     </p>
+
+    </div>
+
+<div class="row">
+  <footer class="footer bg-dark text-light mt-auto py-3">
+    <div class="text-center">
+      <span>&copy; 2020 &bull; vegan.to</span>
+    </div>
+    <div class="text-center">
+      <a class="githubLink" href="https://github.com/shroomlife/vegan.to" target="_blank" rel="noopener">
+        <img src="/img/GitHub-Mark-32px.png" width="32" height="32" alt="GitHub" />
+      </a>
+    </div>
+    <div class="text-center versionTag">
+      <p>v{{pkg.version}} </p>
+    </div>
+  </footer>
+</div>
+
   </div>
 </template>
 
@@ -267,6 +289,7 @@ import humanizeDuration from 'humanize-duration'
 import moment from 'moment'
 import { VNumber } from '@maxflex/v-number'
 import _ from 'lodash'
+import pkg from '../../package'
 
 export default {
   name: 'Home',
@@ -279,7 +302,8 @@ export default {
       now: moment(),
       animalData: AnimalData,
       totalDeaths: [],
-      ready: false
+      ready: false,
+      pkg: pkg
     }
   },
   computed: {
@@ -432,7 +456,7 @@ export default {
           '.'
         )
         Animal.deaths.currentYearRounded = Math.round(
-          Animal.deaths.currentYearRaw
+          Animal.deaths.currentYearRaw + freshKilled
         )
         Animal.deaths.currentDay = humanize.numberFormat(
           Math.round(Animal.deaths.currentDayRaw + freshKilled),
@@ -466,7 +490,7 @@ export default {
               '.'
             )
             Child.deaths.currentYearRounded = Math.round(
-              Child.deaths.currentYearRaw
+              Child.deaths.currentYearRaw + freshKilled
             )
             Child.deaths.currentDay = humanize.numberFormat(
               Math.round(Child.deaths.currentDayRaw + freshKilled),
@@ -504,16 +528,41 @@ a.cta {
   background-color: lightgreen;
   border: 3px solid transparent;
   color: white;
-  font-size: 32px;
   line-height: 172px;
   border-radius: 15px;
+  font-weight: 700;
+  font-size: 42px;
+  box-shadow: 0 3px 10px green;
+  transition: all 0.33s;
+  display: flex;
+  justify-content: space-around;
+}
+a.cta span {
+  opacity: 0;
+  transition: opacity 0.33s;
 }
 a.cta:hover {
   background-color: white;
   color: #333;
   border: 3px solid green;
 }
+a.cta:hover span {
+  opacity: 1;
+}
 .animalContainer {
-  transition: background-color 0.25s;
+  transition: background-color 0.33s;
+}
+a.githubLink {
+  display: inline-block;
+  opacity: .33;
+  margin-top: 1em;
+  margin-bottom: 1em;
+  transition: opacity 0.33s;
+}
+a.githubLink:hover {
+  opacity: .66;
+}
+.versionTag {
+  font-size: 75%;
 }
 </style>

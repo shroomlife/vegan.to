@@ -1,6 +1,6 @@
 {
   "name": "vegan.to",
-  "version": "2.1.2",
+  "version": "2.1.3",
   "private": false,
   "description": "The Official Website of Vegan.to",
   "keywords": [
@@ -24,14 +24,13 @@
     "serve": "vue-cli-service serve"
   },
   "dependencies": {
-    "@growthbunker/vuesocial": "^0.1.2",
     "@maxflex/v-number": "^1.0.9",
-    "bootstrap": "^4.5.2",
     "core-js": "^3.6.5",
     "humanize": "0.0.9",
     "humanize-duration": "^3.24.0",
     "lodash": "^4.17.20",
     "moment": "^2.29.1",
+    "node-emoji": "^1.10.0",
     "register-service-worker": "^1.7.1",
     "vue": "^2.6.12",
     "vue-router": "^3.2.0"
@@ -50,7 +49,6 @@
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.0",
     "eslint-plugin-vue": "^6.2.2",
-    "node-emoji": "^1.10.0",
     "vue-template-compiler": "^2.6.11"
   }
 }
