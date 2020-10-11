@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "/vegan.to/precache-manifest.e3f2bf14db4f0bc27d951efa644b99be.js"
+  "/precache-manifest.c6eb5da794c57681b25c419999ad7bb7.js"
 );
 
 workbox.core.setCacheNameDetails({prefix: "vegan.to"});
