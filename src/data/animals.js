@@ -1,6 +1,4 @@
-const fs = require('fs')
 const emoji = require('node-emoji')
-const path = require('path')
 
 const getAnimalsData = () => {
   let data = [
@@ -101,6 +99,12 @@ const getAnimalsData = () => {
           deaths: {
             year: 497.1 * 1000 * 2
           }
+        },
+        {
+          name: 'übrige Schafe',
+          deaths: {
+            year: 56.5 * 1000 * 2
+          }
         }
       ]
     },
@@ -140,6 +144,10 @@ const getAnimalsData = () => {
     Animal.deaths.perMin = parseFloat(Animal.deaths.perDay / 1440)
     Animal.deaths.perSec = parseFloat(Animal.deaths.perDay / 86400)
 
+    Animal.names.getNameByDeaths = () => {
+      return Animal.deaths.list.length > 1 ? Animal.names.plural : Animal.names.single
+    }
+
     if (typeof Animal.children !== 'undefined') {
       Animal.children.map(Child => {
         Child.deaths.perDay = parseFloat(Child.deaths.year / 365)
@@ -160,6 +168,8 @@ const getAnimalsData = () => {
   return data
 }
 
-fs.writeFile(path.resolve(__dirname, 'animals.json'), JSON.stringify(getAnimalsData()), () => {
-  console.log('Written Animals config to animals.json', new Date())
-})
+module.exports = getAnimalsData()
+
+// fs.writeFile(path.resolve(__dirname, 'animals.json'), JSON.stringify(getAnimalsData()), () => {
+//   console.log('Written Animals config to animals.json', new Date())
+// })
