@@ -1,16 +1,37 @@
 {
-  "name": "v2vue",
-  "version": "0.1.0",
-  "private": true,
+  "name": "vegan.to",
+  "version": "2.0.0",
+  "private": false,
+  "description": "The Official Website of Vegan.to",
+  "keywords": [
+    "vegan",
+    "animals",
+    "love"
+  ],
+  "homepage": "https://github.com/shroomlife/vegan.to#readme",
+  "bugs": {
+    "url": "https://github.com/shroomlife/vegan.to/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/shroomlife/vegan.to.git"
+  },
+  "license": "ISC",
+  "author": "shroomlife",
   "scripts": {
-    "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "serve": "vue-cli-service serve"
   },
   "dependencies": {
+    "bootstrap": "^4.5.2",
     "core-js": "^3.6.5",
+    "humanize": "0.0.9",
+    "lodash": "^4.17.20",
+    "moment": "^2.29.1",
     "register-service-worker": "^1.7.1",
-    "vue": "^2.6.11",
+    "vue": "^2.6.12",
+    "vue-numeric": "^2.3.0",
     "vue-router": "^3.2.0"
   },
   "devDependencies": {
@@ -27,6 +48,7 @@
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.0",
     "eslint-plugin-vue": "^6.2.2",
+    "node-emoji": "^1.10.0",
     "vue-template-compiler": "^2.6.11"
   }
 }

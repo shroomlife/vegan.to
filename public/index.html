@@ -1,17 +1,44 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <link rel="icon" href="<%= BASE_URL %>favicon.ico">
-    <title><%= htmlWebpackPlugin.options.title %></title>
-  </head>
-  <body>
-    <noscript>
-      <strong>We're sorry but <%= htmlWebpackPlugin.options.title %> doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
-    </noscript>
-    <div id="app"></div>
-    <!-- built files will be auto injected -->
-  </body>
+<!doctype html>
+
+<html lang="de">
+<head>
+  <base href="/" />
+  <meta charset="utf-8">
+
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+  <title>Vegan.to - Mit Tierliebe die Welt verbessern</title>
+  <meta name="description" content="So viele Tiere müssen für uns alle jeden Tag sterben. Keine Hoffnung. Keine Perspektive. Zeit für mehr Liebe. Für Alle.">
+  <meta name="author" content="shroomlife">
+
+  <link rel="shortcut icon" type="image/png" href="/favicon.ico"/>
+
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+
+</head>
+
+<body>
+
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+      <div class="col-12 d-flex justify-content-center">
+        <a class="navbar-brand" href="/">vegan.to</a>
+      </div>
+    </div>
+  </nav>
+
+  <div id="app"></div>
+
+  <noscript>
+    <strong>We're sorry but <%= htmlWebpackPlugin.options.title %> doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
+  </noscript>
+
+  <footer class="footer mt-auto py-3">
+    <div class="container-fluid text-center">
+      <span class="text-muted">&copy; 2020 - vegan.to</span>
+    </div>
+  </footer>
+
+</body>
 </html>
