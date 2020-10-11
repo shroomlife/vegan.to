@@ -77,7 +77,7 @@
             </div>
           </div>
           <div class="row">
-            <div :class="animal.children ? 'col-8' : 'col-12'">
+            <div class="col-12 col-md-8">
               <small v-if="animal.deaths.list.length"
                 >Seit du da bist
                 {{ animal.deaths.list.length > 1 ? "wurden" : "wurde" }} schon
@@ -145,9 +145,9 @@
     </ul>
 
     <div v-if="totalDeaths.length">
-      <h5 class="display-5 text-center mt-3">
+      <h4 class="display-4 text-center mt-3 mb-3">
         Tiermorde in Deutschland seit du da bist
-      </h5>
+      </h4>
       <div class="text-center mb-3">
         <span class="badge bg-light text-dark"
           >🕰 Du bist seit {{ computedTimeSinceStart }} hier.</span
@@ -170,7 +170,7 @@
       </div>
     </div>
 
-    <h5 class="display-5 text-center mt-5 mb-3">Was kann ich tun?</h5>
+    <h4 class="display-4 text-center mt-5 mb-3">Was kann ich tun?</h4>
     <a
       href="https://veganstart.de/"
       class="btn btn-block cta"
@@ -180,6 +180,7 @@
       #GoVegan
     </a>
 
+    <h5 class="display-5 text-center mt-5 mb-3">Teile diese Seite</h5>
     <div class="text-center shareLinks mt-3 mb-5">
 
       <!-- Sharingbutton Facebook -->
@@ -232,6 +233,7 @@
 
     </div>
 
+    <h6 class="display-6 text-center mt-5 mb-3">Anmerkungen</h6>
     <p>
       Die Zahlen sind eine Hochrechnung basierend auf den Schlachtungen in
       Deutschland vom Jahr 2019.
