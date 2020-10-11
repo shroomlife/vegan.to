@@ -164,12 +164,7 @@ const getAnimalsData = () => {
     return Animal
   })
 
-  console.log(data)
   return data
 }
 
 module.exports = getAnimalsData()
-
-// fs.writeFile(path.resolve(__dirname, 'animals.json'), JSON.stringify(getAnimalsData()), () => {
-//   console.log('Written Animals config to animals.json', new Date())
-// })
