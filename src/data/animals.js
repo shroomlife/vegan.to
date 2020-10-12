@@ -67,22 +67,8 @@ const getAnimalsData = () => {
         emoji: emoji.get('chicken')
       },
       deaths: {
-        year: 786.8 * 1000 * 2
-      },
-      children: [
-        {
-          name: 'Jungmasthühner ',
-          deaths: {
-            year: 512.5 * 1000 * 2
-          }
-        },
-        {
-          name: 'Truthühner',
-          deaths: {
-            year: 237.4 * 1000 * 2
-          }
-        }
-      ]
+        year: 620568 * 1000
+      }
     },
     {
       names: {
