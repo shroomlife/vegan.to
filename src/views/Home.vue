@@ -238,20 +238,28 @@
 
     <h6 class="display-6 text-center mt-5 mb-3">Anmerkungen</h6>
     <p>
-      Die Zahlen sind eine Hochrechnung basierend auf den Schlachtungen in
-      Deutschland vom Jahr 2019.
+      Die Zahlen sind eine Hochrechnung basierend auf Statistiken.
     </p>
     <p>
-      Quelle:
-      <a
+      Quellen:
+    </p>
+    <ul>
+      <li><a
         href="https://www.destatis.de/DE/Themen/Branchen-Unternehmen/Landwirtschaft-Forstwirtschaft-Fischerei/Tiere-Tierische-Erzeugung/Tabellen/gewerbliche-schlachtung-jahr-halbjahr.html"
         target="_blank"
         rel="noopener"
       >
         Gewerbliche Schlachtungen im 1. Halbjahr 2019
       </a>
-      vom Statistischen Bundesamt (Stand: 7. August 2019)
-    </p>
+      vom Statistischen Bundesamt (Stand: 7. August 2019)</li>
+      <li><a
+        href="https://de.statista.com/statistik/daten/studie/494476/umfrage/schlachtungen-von-huehnern-in-der-eu-nach-laendern/"
+        target="_blank"
+        rel="noopener"
+      >
+        Anzahl der Schlachtungen von Hühnern in der Europäischen Union nach Ländern
+      </a> von der Statista GmbH (Stand: Jahr 2019)</li>
+    </ul>
     <p>
       Aktuelles Logo von
       <a href="https://freeicons.io/profile/722" target="_blank" rel="noopener"
