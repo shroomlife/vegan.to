@@ -272,7 +272,7 @@
 <div class="row">
   <footer class="footer bg-dark text-light mt-auto py-3">
     <div class="text-center">
-      <span>&copy; 2020 &bull; vegan.to</span>
+      <span>&copy; 2020 - 2021 &bull; vegan.to</span>
     </div>
     <div class="text-center">
       <a class="githubLink" href="https://github.com/shroomlife/vegan.to" target="_blank" rel="noopener">
