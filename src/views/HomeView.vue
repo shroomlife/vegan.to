@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed, watch, onUnmounted } from 'vue'
 import { useTransition, TransitionPresets } from '@vueuse/core'
 import { Motion } from 'motion-v'
 import { useTimer } from '@/composables/useTimer'
@@ -8,6 +8,7 @@ import { useVictimTicker } from '@/composables/useVictimTicker'
 import { usePersonalTracker } from '@/composables/usePersonalTracker'
 import { formatNumber } from '@/utils/formatNumber'
 import AnimatedNumber from '@/components/AnimatedNumber.vue'
+import OdometerNumber from '@/components/OdometerNumber.vue'
 
 declare const __APP_VERSION__: string
 const appVersion = __APP_VERSION__
@@ -61,6 +62,20 @@ const DAILY_LAND_M2 = 3.1
 
 const activeImpact = ref(4) // Default: 1 Jahr
 const { veganSince, isSet: hasPersonalDate, daysSinceVegan, formattedDuration, clear: clearPersonalDate } = usePersonalTracker()
+const showTrackerModal = ref(false)
+const copyLabel = ref('Kopieren')
+
+const personalShareText = computed(() => {
+  const impact = impactFor(daysSinceVegan.value)
+  return `Seit ${formattedDuration.value} lebe ich vegan und habe damit schon ${impact.lives.value} Tierleben gerettet, ${impact.water.value} L Wasser gespart und ${impact.co2.value} kg CO₂ vermieden. 🌱\n\nWas ist dein Impact? 👉 https://vegan.to\n\n#GoVegan #VeganFürDieTiere`
+})
+
+function copyPersonalShare() {
+  navigator.clipboard.writeText(personalShareText.value).then(() => {
+    copyLabel.value = 'Kopiert! ✓'
+    setTimeout(() => { copyLabel.value = 'Kopieren' }, 2000)
+  })
+}
 
 function impactFor(days: number) {
   const lives = days * DAILY_LIVES
@@ -113,6 +128,60 @@ function landComparisons(m2: number): string[] {
   if (m2 >= 10) r.push(`${formatNumber(m2 / 10)} Parkplätze weniger versiegelt`)
   return r.slice(0, 2)
 }
+
+/**
+ * Veganer*innen in Deutschland — AWA/Allensbach Zeitreihe + BMEL
+ * Quellen: IfD Allensbach / AWA (via Statista), BMEL Ernährungsreport (Forsa)
+ */
+const POPULATION_DE = 84_400_000
+const veganTimeline = [
+  { year: 2008, count: 80_000 },
+  { year: 2012, count: 900_000 },
+  { year: 2016, count: 1_300_000 },
+  { year: 2018, count: 950_000 },
+  { year: 2020, count: 1_130_000 },
+  { year: 2022, count: 1_580_000 },
+  { year: 2024, count: 1_700_000 },
+  { year: 2025, count: 1_680_000 },
+]
+
+const latestVeganCount = veganTimeline[veganTimeline.length - 1]!
+
+// Visual growth: 1 new vegan every ~3 seconds
+const VISUAL_GROWTH_PER_SEC = 1 / 3
+const VEGAN_STORAGE_KEY = 'vegan-to-counter'
+
+function loadVeganCounter(): number {
+  try {
+    const stored = localStorage.getItem(VEGAN_STORAGE_KEY)
+    if (stored) {
+      const val = parseInt(stored, 10)
+      if (!isNaN(val) && val >= latestVeganCount.count) return val
+    }
+  } catch { /* LocalStorage unavailable */ }
+  return latestVeganCount.count
+}
+
+const veganCounterStart = loadVeganCounter()
+
+const animatedVeganCount = computed(() =>
+  Math.round(veganCounterStart + timer.secondsSinceStart.value * VISUAL_GROWTH_PER_SEC),
+)
+
+// Save counter every 10 seconds
+watch(animatedVeganCount, (val) => {
+  try { localStorage.setItem(VEGAN_STORAGE_KEY, val.toString()) } catch { /* */ }
+}, { flush: 'post' })
+
+// Save on page leave
+function saveVeganCounter() {
+  try { localStorage.setItem(VEGAN_STORAGE_KEY, animatedVeganCount.value.toString()) } catch { /* */ }
+}
+window.addEventListener('beforeunload', saveVeganCounter)
+onUnmounted(() => {
+  saveVeganCounter()
+  window.removeEventListener('beforeunload', saveVeganCounter)
+})
 
 const childViewState = ref<Record<string, boolean>>({})
 
@@ -334,6 +403,62 @@ const shareText = () =>
     </div>
   </Motion>
 
+  <!-- Vegan Growth — Full-Width Progress Bar -->
+  <section class="growth-section">
+    <div class="growth-inner">
+      <Motion
+        tag="h2"
+        class="growth-title"
+        :initial="{ opacity: 0, y: 20 }"
+        :whileInView="{ opacity: 1, y: 0 }"
+        :transition="{ duration: 0.5 }"
+        :inViewOptions="{ once: true }"
+      >
+        Die Bewegung wächst
+      </Motion>
+
+      <div class="growth-stats">
+        <div class="growth-stat">
+          <span class="growth-stat-number growth-stat-number--green">
+            <OdometerNumber :value="animatedVeganCount" :digits="7" />
+          </span>
+          <span class="growth-stat-label">Veganer*innen in Deutschland</span>
+        </div>
+        <div class="growth-stat">
+          <span class="growth-stat-number">{{ formatNumber(POPULATION_DE) }}</span>
+          <span class="growth-stat-label">Gesamtbevölkerung — das Ziel</span>
+        </div>
+      </div>
+
+      <!-- Full-width progress bar -->
+      <div class="growth-progress">
+        <div
+          class="growth-progress-fill"
+          :style="{ width: (animatedVeganCount / POPULATION_DE * 100).toFixed(4) + '%' }"
+        >
+          <span class="growth-progress-label">
+            {{ (animatedVeganCount / POPULATION_DE * 100).toFixed(2) }}%
+          </span>
+        </div>
+      </div>
+
+      <Motion
+        tag="p"
+        class="growth-message"
+        :initial="{ opacity: 0 }"
+        :whileInView="{ opacity: 1 }"
+        :transition="{ duration: 0.6, delay: 0.2 }"
+        :inViewOptions="{ once: true }"
+      >
+        Von 80.000 auf fast 2 Millionen in 17 Jahren — und es werden jede Sekunde mehr.
+      </Motion>
+
+      <p class="growth-source">
+        Quellen: IfD Allensbach / AWA, BMEL Ernährungsreport (Forsa)
+      </p>
+    </div>
+  </section>
+
   <!-- Impact Timeline -->
   <section class="impact-section">
     <div class="container">
@@ -439,20 +564,15 @@ const shareText = () =>
         :transition="{ duration: 0.6 }"
         :inViewOptions="{ once: true }"
       >
-        <h3 class="personal-tracker-title">🌟 Dein persönlicher Impact</h3>
+        <h3 class="personal-tracker-title">🌟 Mein persönlicher Impact</h3>
 
         <div v-if="!hasPersonalDate" class="personal-tracker-form">
           <p class="personal-tracker-prompt">
-            Seit wann lebst du vegan? Gib dein Datum ein und sieh, was du schon bewirkt hast.
+            Du lebst schon vegan? Finde heraus, was du bereits bewirkt hast.
           </p>
-          <div class="personal-input-row">
-            <input
-              v-model="veganSince"
-              type="date"
-              class="personal-date-input"
-              :max="new Date().toISOString().split('T')[0]"
-            />
-          </div>
+          <button class="personal-open-btn" @click="showTrackerModal = true">
+            Jetzt eintragen
+          </button>
         </div>
 
         <div v-else class="personal-tracker-result">
@@ -460,12 +580,11 @@ const shareText = () =>
             <p class="personal-duration">
               🎉 Du lebst seit <strong>{{ formattedDuration }}</strong> vegan!
             </p>
-            <button class="personal-reset" @click="clearPersonalDate">
+            <button class="personal-reset" @click="showTrackerModal = true">
               ändern
             </button>
           </div>
 
-          <!-- Personal impact cards -->
           <div class="personal-impact-cards">
             <div class="personal-impact-card">
               <span class="personal-impact-icon">🐾</span>
@@ -492,8 +611,75 @@ const shareText = () =>
           <p class="personal-share-hint">
             Danke, dass du Teil der Veränderung bist. 💚
           </p>
+
+          <div class="personal-share">
+            <p class="personal-share-label">Teile deinen Impact:</p>
+            <div class="personal-share-buttons">
+              <a
+                :href="`https://x.com/intent/tweet?text=${encodeURIComponent(personalShareText)}`"
+                target="_blank"
+                rel="noopener"
+                class="personal-share-btn personal-share-btn--x"
+                aria-label="Auf X teilen"
+              >𝕏</a>
+              <a
+                :href="`whatsapp://send?text=${encodeURIComponent(personalShareText)}`"
+                target="_blank"
+                rel="noopener"
+                class="personal-share-btn personal-share-btn--wa"
+                aria-label="Per WhatsApp teilen"
+              >WhatsApp</a>
+              <a
+                :href="`https://t.me/share/url?url=https%3A%2F%2Fvegan.to&text=${encodeURIComponent(personalShareText)}`"
+                target="_blank"
+                rel="noopener"
+                class="personal-share-btn personal-share-btn--tg"
+                aria-label="Per Telegram teilen"
+              >Telegram</a>
+              <button
+                class="personal-share-btn personal-share-btn--copy"
+                @click="copyPersonalShare"
+              >
+                {{ copyLabel }}
+              </button>
+            </div>
+          </div>
         </div>
       </Motion>
+
+      <!-- Tracker Modal — inline, no Teleport -->
+      <div v-if="showTrackerModal" class="vt-modal-overlay" @mousedown.self="showTrackerModal = false">
+        <div class="vt-modal" @mousedown.stop>
+          <button class="vt-modal-close" @click="showTrackerModal = false" aria-label="Schließen">&times;</button>
+          <div class="vt-modal-emoji">🌱</div>
+          <h3 class="vt-modal-title">Seit wann lebst du vegan?</h3>
+          <p class="vt-modal-desc">
+            Wähle das Datum — wir berechnen deinen Impact.
+          </p>
+          <input
+            v-model="veganSince"
+            type="date"
+            class="vt-modal-input"
+            :max="new Date().toISOString().split('T')[0]"
+          />
+          <div class="vt-modal-actions">
+            <button
+              v-if="hasPersonalDate"
+              class="vt-modal-btn vt-modal-btn--reset"
+              @click="clearPersonalDate(); showTrackerModal = false"
+            >
+              Zurücksetzen
+            </button>
+            <button
+              class="vt-modal-btn vt-modal-btn--save"
+              :disabled="!hasPersonalDate"
+              @click="showTrackerModal = false"
+            >
+              Speichern
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -1082,7 +1268,10 @@ const shareText = () =>
 }
 
 /* ── CTA ──────────────────────────────────────────── */
-.cta-section { padding: 3rem 1rem; background: #f8f9fa; }
+.cta-section {
+  padding: 3rem 1rem;
+  background: linear-gradient(180deg, #f0f9ff 0%, #f8f9fa 30%, #f0fdf4 100%);
+}
 .cta-button {
   display: flex;
   align-items: center;
@@ -1113,10 +1302,116 @@ const shareText = () =>
   .cta-emoji { display: none; }
 }
 
+/* ── Vegan Growth — Full Width ─────────────────────── */
+.growth-section {
+  padding: 3rem 0;
+  background: #1b2a1b;
+  color: #fff;
+}
+.growth-inner {
+  max-width: 100%;
+  padding: 0 1.5rem;
+}
+.growth-title {
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+.growth-stats {
+  display: flex;
+  justify-content: center;
+  gap: 3rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+.growth-stat {
+  text-align: center;
+}
+.growth-stat-number {
+  display: block;
+  font-size: clamp(1.5rem, 5vw, 2.5rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+  opacity: 0.5;
+}
+.growth-stat-number--green {
+  color: #2ecc71;
+  opacity: 1;
+}
+.growth-stat-label {
+  display: block;
+  font-size: 0.8rem;
+  opacity: 0.6;
+  margin-top: 0.25rem;
+}
+
+/* Progress bar — full viewport width */
+.growth-progress {
+  width: 100%;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 1.5rem;
+}
+.growth-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2ecc71, #27ae60, #1abc9c);
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 0.75rem;
+  min-width: 60px;
+  transition: width 0.5s ease-out;
+  box-shadow: 0 0 20px rgba(46, 204, 113, 0.4);
+  position: relative;
+}
+.growth-progress-fill::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 40px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2));
+  border-radius: 0 24px 24px 0;
+  animation: progressShimmer 2s infinite;
+}
+@keyframes progressShimmer {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.8; }
+}
+.growth-progress-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  white-space: nowrap;
+  z-index: 1;
+}
+.growth-message {
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 500;
+  opacity: 0.8;
+  max-width: 520px;
+  margin: 0 auto 1rem;
+  line-height: 1.6;
+}
+.growth-source {
+  text-align: center;
+  font-size: 0.7rem;
+  opacity: 0.3;
+}
+
 /* ── Impact Timeline ──────────────────────────────── */
 .impact-section {
   padding: 3.5rem 1rem;
-  background: linear-gradient(180deg, #f0fdf4 0%, #f8f9fa 100%);
+  background: linear-gradient(180deg, #f0fdf4 0%, #ecfdf5 40%, #f0f9ff 100%);
 }
 .impact-subtitle {
   text-align: center;
@@ -1273,26 +1568,27 @@ const shareText = () =>
 .personal-tracker-prompt {
   color: #6c757d;
   font-size: 0.95rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.25rem;
 }
-.personal-input-row {
-  display: flex;
-  justify-content: center;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-.personal-date-input {
-  padding: 0.6rem 1.25rem;
-  border: 2px solid #dee2e6;
-  border-radius: 10px;
+.personal-open-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 2rem;
+  background: linear-gradient(135deg, #2ecc71, #27ae60);
+  color: #fff;
+  border: none;
+  border-radius: 50px;
   font-size: 1rem;
+  font-weight: 600;
   font-family: inherit;
-  outline: none;
-  transition: border-color 0.2s;
-  background: #f8f9fa;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
 }
-.personal-date-input:focus {
-  border-color: #2ecc71;
+.personal-open-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4);
 }
 
 .personal-tracker-header {
@@ -1369,6 +1665,47 @@ const shareText = () =>
   margin-top: 0.5rem;
   font-weight: 500;
 }
+.personal-share {
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #f1f3f5;
+}
+.personal-share-label {
+  font-size: 0.8rem;
+  color: #6c757d;
+  margin-bottom: 0.6rem;
+}
+.personal-share-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.personal-share-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem 1rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: inherit;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  transition: all 0.15s;
+}
+.personal-share-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.1);
+  color: #fff;
+  text-decoration: none;
+}
+.personal-share-btn--x { background: #000; }
+.personal-share-btn--wa { background: #25d366; }
+.personal-share-btn--tg { background: #54a9eb; }
+.personal-share-btn--copy { background: #6c757d; }
 
 /* ── CTA Intro & Closing ──────────────────────────── */
 .cta-intro {
@@ -1495,7 +1832,11 @@ const shareText = () =>
 }
 
 /* ── Share ─────────────────────────────────────────── */
-.share-section { padding: 2.5rem 1rem; text-align: center; }
+.share-section {
+  padding: 2.5rem 1rem;
+  text-align: center;
+  background: linear-gradient(180deg, #f0fdf4 0%, #f8f9fa 100%);
+}
 
 /* ── Footer ───────────────────────────────────────── */
 .site-footer {
@@ -1514,4 +1855,130 @@ const shareText = () =>
 .footer-github:hover { opacity: 0.8; }
 .footer-github img { filter: invert(1); }
 .footer-version { opacity: 0.4; font-size: 0.75rem; }
+
+/* ── Modal (inline, scoped) ───────────────────────── */
+.vt-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+  animation: fadeIn 0.2s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.vt-modal {
+  background: #fff;
+  border-radius: 24px;
+  padding: 2.5rem 2rem 2rem;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.2);
+  position: relative;
+  text-align: center;
+  animation: modalSlideIn 0.3s ease;
+}
+@keyframes modalSlideIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.vt-modal-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #ccc;
+  cursor: pointer;
+  line-height: 1;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.15s;
+}
+.vt-modal-close:hover {
+  background: #f1f3f5;
+  color: #333;
+}
+.vt-modal-emoji {
+  font-size: 3rem;
+  margin-bottom: 0.75rem;
+}
+.vt-modal-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+.vt-modal-desc {
+  font-size: 0.9rem;
+  color: #6c757d;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+.vt-modal-input {
+  display: block;
+  margin: 0 auto;
+  padding: 0.75rem 1.25rem;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  background: #f8f9fa;
+  width: 100%;
+  max-width: 240px;
+  text-align: center;
+}
+.vt-modal-input:focus {
+  border-color: #2ecc71;
+  box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.15);
+}
+.vt-modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+.vt-modal-btn {
+  padding: 0.65rem 1.75rem;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+.vt-modal-btn--save {
+  background: linear-gradient(135deg, #2ecc71, #27ae60);
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
+}
+.vt-modal-btn--save:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(46, 204, 113, 0.4);
+}
+.vt-modal-btn--save:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.vt-modal-btn--reset {
+  background: #f8f9fa;
+  color: #e74c3c;
+}
+.vt-modal-btn--reset:hover {
+  background: #fff5f5;
+}
 </style>
+
