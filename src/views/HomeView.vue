@@ -1980,5 +1980,211 @@ const shareText = () =>
 .vt-modal-btn--reset:hover {
   background: #fff5f5;
 }
+
+/* ══════════════════════════════════════════════════════
+   MOBILE POLISH — max-width: 767px
+   ══════════════════════════════════════════════════════ */
+@media (max-width: 767px) {
+  /* Hero */
+  .hero {
+    padding: 2rem 1rem 1.5rem;
+  }
+  .hero-counter-number {
+    font-size: clamp(2rem, 12vw, 3rem);
+  }
+  .victim-ticker {
+    height: 100px;
+  }
+  .victim-bubble {
+    font-size: 0.7rem;
+    padding: 0.3rem 0.65rem;
+  }
+
+  /* Animal cards */
+  .animals-section {
+    padding: 1.25rem 0 2rem;
+  }
+  .animal-card {
+    border-radius: 10px;
+    margin-bottom: 0.4rem;
+  }
+  .animal-card-main {
+    padding: 0.85rem 1rem;
+    gap: 0.6rem;
+  }
+  .animal-emoji {
+    font-size: 1.6rem;
+  }
+  .animal-label {
+    font-size: 1rem;
+  }
+  .animal-stat-value {
+    font-size: 0.95rem;
+  }
+  .animal-card-footer {
+    padding: 0 1rem 0.6rem;
+  }
+  .animal-card-emojis {
+    padding: 0 1rem 0.6rem;
+    font-size: 0.75rem;
+  }
+  .animal-children {
+    font-size: 0.8rem;
+  }
+  .animal-child {
+    padding: 0.4rem 1rem 0.4rem 1.75rem;
+  }
+
+  /* Emoji summary */
+  .emoji-section {
+    padding: 2rem 0.75rem;
+  }
+  .emoji-badge {
+    font-size: 0.8rem;
+    padding: 0.35rem 0.75rem;
+  }
+
+  /* Growth section */
+  .growth-section {
+    padding: 2rem 0;
+  }
+  .growth-inner {
+    padding: 0 1rem;
+  }
+  .growth-stats {
+    gap: 1.5rem;
+  }
+  .growth-stat-number {
+    font-size: clamp(1.2rem, 6vw, 2rem);
+  }
+  .growth-progress {
+    height: 36px;
+    border-radius: 18px;
+  }
+  .growth-progress-fill {
+    border-radius: 18px;
+    min-width: 50px;
+  }
+  .growth-progress-label {
+    font-size: 0.7rem;
+  }
+
+  /* Impact timeline */
+  .impact-section {
+    padding: 2rem 0.75rem;
+  }
+  .impact-tabs {
+    gap: 0.3rem;
+  }
+  .impact-tab {
+    padding: 0.4rem 0.6rem;
+    min-width: 58px;
+    border-radius: 10px;
+  }
+  .impact-tab-emoji {
+    font-size: 1rem;
+  }
+  .impact-tab-label {
+    font-size: 0.6rem;
+  }
+  .impact-card {
+    padding: 1.25rem 1.25rem;
+    border-radius: 14px;
+  }
+  .impact-card-icon {
+    font-size: 2rem;
+  }
+  .impact-card-value {
+    font-size: 1.5rem;
+  }
+  .impact-card-comparisons li {
+    font-size: 0.78rem;
+  }
+
+  /* Personal tracker */
+  .personal-tracker {
+    padding: 1.5rem 1.25rem;
+    border-radius: 14px;
+  }
+  .personal-impact-cards {
+    gap: 0.5rem;
+  }
+  .personal-share-buttons {
+    gap: 0.35rem;
+  }
+  .personal-share-btn {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  /* CTA section */
+  .cta-section {
+    padding: 2rem 0.75rem;
+  }
+  .cta-intro-text {
+    font-size: 0.95rem;
+  }
+  .motivation-strip {
+    gap: 0.6rem;
+    margin: 1.5rem auto 2rem;
+  }
+  .motivation-fact {
+    padding: 1rem 0.75rem;
+  }
+  .motivation-number {
+    font-size: 2rem;
+  }
+  .motivation-label {
+    font-size: 0.78rem;
+  }
+  .action-grid {
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+  .action-category {
+    padding: 1.25rem;
+    border-radius: 12px;
+  }
+  .cta-closing {
+    font-size: 1rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+  }
+
+  /* Share */
+  .share-section {
+    padding: 2rem 0.75rem;
+  }
+
+  /* Footer */
+  .site-footer {
+    padding: 1.5rem 0.75rem;
+  }
+  .footer-bottom {
+    gap: 1rem;
+    font-size: 0.8rem;
+  }
+
+  /* Modal */
+  .vt-modal {
+    padding: 2rem 1.5rem 1.5rem;
+    border-radius: 18px;
+  }
+  .vt-modal-emoji {
+    font-size: 2.5rem;
+  }
+  .vt-modal-title {
+    font-size: 1.1rem;
+  }
+
+  /* Section titles */
+  .section-title {
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+  }
+  .section-title--sm {
+    font-size: 1.1rem;
+  }
+}
 </style>
 

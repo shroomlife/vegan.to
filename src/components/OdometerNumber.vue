@@ -57,7 +57,7 @@ const formattedDigits = computed(() => {
   display: inline-flex;
   align-items: center;
   line-height: 1;
-  gap: 1px;
+  gap: 2px;
 }
 .odo-slot {
   display: inline-block;
@@ -66,46 +66,50 @@ const formattedDigits = computed(() => {
   display: inline-block;
   width: 0.3em;
   text-align: center;
-  opacity: 0.35;
+  opacity: 0.3;
+  font-weight: 400;
 }
 .odo-cell {
   display: inline-block;
-  height: 1.15em;
+  /* Use a fixed aspect ratio to prevent subpixel jitter */
+  height: 1.2em;
   overflow: hidden;
-  width: 0.65em;
+  width: 0.72em;
   text-align: center;
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 5px;
   position: relative;
 }
-/* Top/bottom edge fade for depth illusion */
 .odo-cell::before,
 .odo-cell::after {
   content: '';
   position: absolute;
   left: 0;
   right: 0;
-  height: 25%;
+  height: 20%;
   z-index: 1;
   pointer-events: none;
 }
 .odo-cell::before {
   top: 0;
   background: linear-gradient(to bottom, currentColor, transparent);
-  opacity: 0.08;
+  opacity: 0.06;
 }
 .odo-cell::after {
   bottom: 0;
   background: linear-gradient(to top, currentColor, transparent);
-  opacity: 0.08;
+  opacity: 0.06;
 }
 .odo-strip {
   display: flex;
   flex-direction: column;
-  transition: transform 0.4s cubic-bezier(0.15, 0.85, 0.25, 1);
+  /* GPU compositing — prevents subpixel jitter during animation */
+  will-change: transform;
+  transform: translateZ(0);
+  transition: transform 0.5s cubic-bezier(0.2, 0.9, 0.3, 1);
 }
 .odo-num {
-  height: 1.15em;
+  height: 1.2em;
   display: flex;
   align-items: center;
   justify-content: center;
