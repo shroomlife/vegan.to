@@ -22,11 +22,13 @@
     "lint": "eslint src/"
   },
   "dependencies": {
-    "vue": "^3.5.13",
-    "vue-router": "^4.5.0",
+    "@vueuse/core": "^13.1.0",
     "dayjs": "^1.11.13",
     "humanize-duration": "^3.32.1",
-    "@vueuse/core": "^13.1.0"
+    "motion": "^12.38.0",
+    "motion-v": "^2.2.0",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0"
   },
   "devDependencies": {
     "vite": "^6.3.1",
