@@ -3,16 +3,73 @@
 <head>
   <base href="/" />
   <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
 
-  <title>Mit Tierliebe die Welt verbessern! 🐷🐮🐔 - vegan.to</title>
-  <meta name="description" content="Viele Tiere müssen für Menschen jeden Tag sterben. Ohne Hoffnung. Ohne Perspektive. Zeit für mehr Liebe. Für Alle.">
+  <!-- SEO -->
+  <title>Tiermorde in Deutschland — Echtzeit-Zähler | vegan.to</title>
+  <meta name="description" content="Echtzeit-Zähler: So viele Tiere werden in Deutschland jede Sekunde geschlachtet. Offizielle Destatis-Zahlen 2024/2025. Informiere dich und werde aktiv. #GoVegan">
+  <meta name="keywords" content="vegan, Tiermorde, Schlachtungen, Deutschland, Echtzeit, Statistik, Destatis, Tierrechte, GoVegan, Tierschutz, Massentierhaltung">
   <meta name="author" content="shroomlife">
+  <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
+  <link rel="canonical" href="https://vegan.to/" />
 
-  <link rel="shortcut icon" type="image/png" href="/favicon.ico"/>
-  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+  <!-- Open Graph -->
+  <meta property="og:site_name" content="vegan.to" />
+  <meta property="og:url" content="https://vegan.to/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:locale" content="de_DE" />
+  <meta property="og:title" content="Tiermorde in Deutschland — Echtzeit-Zähler" />
+  <meta property="og:description" content="Über 700 Millionen Tiere werden jedes Jahr allein in Deutschland geschlachtet. Sieh die Zahlen in Echtzeit und erfahre, was du tun kannst." />
+  <meta property="og:image" content="https://vegan.to/img/icon.png" />
+  <meta property="og:image:width" content="512" />
+  <meta property="og:image:height" content="512" />
+  <meta property="og:image:alt" content="vegan.to — Echtzeit-Zähler für Tiermorde in Deutschland" />
 
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Tiermorde in Deutschland — Echtzeit-Zähler" />
+  <meta name="twitter:description" content="Über 700 Millionen Tiere pro Jahr. Sieh die Zahlen in Echtzeit." />
+  <meta name="twitter:image" content="https://vegan.to/img/icon.png" />
+
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "vegan.to",
+    "url": "https://vegan.to",
+    "description": "Echtzeit-Zähler für Tierschlachtungen in Deutschland, basierend auf offiziellen Destatis-Statistiken.",
+    "applicationCategory": "EducationalApplication",
+    "operatingSystem": "All",
+    "inLanguage": "de",
+    "author": {
+      "@type": "Person",
+      "name": "shroomlife"
+    },
+    "about": {
+      "@type": "Thing",
+      "name": "Tierschlachtungen in Deutschland",
+      "description": "Gewerbliche Schlachtungen von Tieren in Deutschland basierend auf Daten des Statistischen Bundesamts (Destatis) 2024/2025."
+    },
+    "isBasedOn": [
+      {
+        "@type": "Dataset",
+        "name": "Gewerbliche Schlachtungen 2024",
+        "url": "https://www-genesis.destatis.de/genesis/online?selectionname=41331-0001",
+        "creator": { "@type": "GovernmentOrganization", "name": "Statistisches Bundesamt (Destatis)" }
+      },
+      {
+        "@type": "Dataset",
+        "name": "Geflügelschlachtereien 2025",
+        "url": "https://www-genesis.destatis.de/genesis/online?selectionname=41322-0001",
+        "creator": { "@type": "GovernmentOrganization", "name": "Statistisches Bundesamt (Destatis)" }
+      }
+    ]
+  }
+  </script>
+
+  <!-- Favicon & Icons -->
+  <link rel="shortcut icon" type="image/png" href="/favicon.ico" />
   <link rel="apple-touch-icon" sizes="57x57" href="/img/icons/apple-icon-57x57.png">
   <link rel="apple-touch-icon" sizes="60x60" href="/img/icons/apple-icon-60x60.png">
   <link rel="apple-touch-icon" sizes="72x72" href="/img/icons/apple-icon-72x72.png">
@@ -27,16 +84,16 @@
   <link rel="icon" type="image/png" sizes="96x96" href="/img/icons/favicon-96x96.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/img/icons/favicon-16x16.png">
   <meta name="msapplication-TileImage" content="/img/icons/ms-icon-144x144.png">
-  <meta name="msapplication-TileColor" content="#343a40">
-  <meta name="theme-color" content="#343a40">
+  <meta name="msapplication-TileColor" content="#1b1b3a">
+  <meta name="theme-color" content="#1b1b3a">
 
+  <!-- PWA & Manifest -->
   <link rel="manifest" href="/manifest.json">
 
-  <meta property="og:url" content="https://vegan.to" />
-  <meta property="og:type" content="article" />
-  <meta property="og:title" content="Tiermorde in Deutschland" />
-  <meta property="og:description" content="Viele Tiere müssen für Menschen jeden Tag sterben. Ohne Hoffnung. Ohne Perspektive. Zeit für mehr Liebe. Für Alle." />
-  <meta property="og:image" content="https://vegan.to/img/icon.png" />
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
 </head>
 <body>
   <div id="app"></div>

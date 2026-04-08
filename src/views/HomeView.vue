@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useTransition, TransitionPresets } from '@vueuse/core'
-import { Motion, AnimatePresence } from 'motion-v'
+import { Motion } from 'motion-v'
 import { useTimer } from '@/composables/useTimer'
 import { useAnimalData, type ComputedAnimal } from '@/composables/useAnimalData'
 import { useVictimTicker } from '@/composables/useVictimTicker'
+import { usePersonalTracker } from '@/composables/usePersonalTracker'
 import { formatNumber } from '@/utils/formatNumber'
 import AnimatedNumber from '@/components/AnimatedNumber.vue'
 
@@ -12,8 +13,106 @@ declare const __APP_VERSION__: string
 const appVersion = __APP_VERSION__
 
 const timer = useTimer()
-const { animalData, totalDeathCount, totalDeathEmojis } = useAnimalData(timer)
-const { victims } = useVictimTicker(2500, 5)
+const { animalData, totalDeathCount } = useAnimalData(timer)
+const { victims } = useVictimTicker(250)
+
+// Seeded random for deterministic but natural-looking emoji positions
+function seededRandom(seed: number): () => number {
+  let s = seed
+  return () => {
+    s = (s * 16807 + 0) % 2147483647
+    return s / 2147483647
+  }
+}
+
+const floatingEmojis = (() => {
+  const emojis = ['🐷', '🐄', '🐔', '🐑', '🐐', '🦆', '🦃', '🐴', '🪿']
+  const rand = seededRandom(42)
+  return Array.from({ length: 25 }, () => ({
+    emoji: emojis[Math.floor(rand() * emojis.length)]!,
+    left: `${(rand() * 90 + 5).toFixed(1)}%`,
+    delay: `${(rand() * 15).toFixed(1)}s`,
+    duration: `${(14 + rand() * 16).toFixed(1)}s`,
+    size: `${(1 + rand() * 1.5).toFixed(2)}rem`,
+  }))
+})()
+
+/**
+ * Impact-Daten: Was eine*r Person pro Zeitraum spart (vegan vs. Durchschnitt).
+ * Quellen: Poore & Nemecek (2018, Science), Oxford Martin School,
+ * Water Footprint Network, Destatis Schlachtstatistik 2024.
+ *
+ * Basis pro Tag: ~1 Tierleben, ~4.164 L Wasser, ~8,1 kg CO₂eq, ~3,1 m² Land
+ */
+const impactTimeline = [
+  { label: '1 Tag',      days: 1,       emoji: '🌅' },
+  { label: '1 Woche',    days: 7,       emoji: '📅' },
+  { label: '1 Monat',    days: 30,      emoji: '🌙' },
+  { label: '6 Monate',   days: 182,     emoji: '🌿' },
+  { label: '1 Jahr',     days: 365,     emoji: '🌍' },
+  { label: '10 Jahre',   days: 3650,    emoji: '🌳' },
+  { label: '50 Jahre',   days: 18250,   emoji: '💚' },
+]
+
+const DAILY_LIVES = 1
+const DAILY_WATER_L = 4164
+const DAILY_CO2_KG = 8.1
+const DAILY_LAND_M2 = 3.1
+
+const activeImpact = ref(4) // Default: 1 Jahr
+const { veganSince, isSet: hasPersonalDate, daysSinceVegan, formattedDuration, clear: clearPersonalDate } = usePersonalTracker()
+
+function impactFor(days: number) {
+  const lives = days * DAILY_LIVES
+  const water = days * DAILY_WATER_L
+  const co2 = days * DAILY_CO2_KG
+  const land = days * DAILY_LAND_M2
+
+  return {
+    lives: { value: formatNumber(lives), comparisons: lifeComparisons(lives) },
+    water: { value: formatNumber(water), comparisons: waterComparisons(water) },
+    co2: { value: formatNumber(co2), comparisons: co2Comparisons(co2) },
+    land: { value: formatNumber(land), comparisons: landComparisons(land) },
+  }
+}
+
+function lifeComparisons(lives: number): string[] {
+  const r: string[] = []
+  if (lives >= 365) r.push(`Eine ganze Schulklasse rettet so ${formatNumber(lives * 25)} Tiere`)
+  if (lives >= 30) r.push(`${formatNumber(lives)} fühlende Wesen mit eigenem Charakter`)
+  if (lives >= 1) r.push(`Jedes einzelne wollte leben`)
+  return r.slice(0, 2)
+}
+
+function waterComparisons(liters: number): string[] {
+  const r: string[] = []
+  const bathtubs = liters / 150
+  const pools = liters / 50_000
+  if (pools >= 1) r.push(`${formatNumber(pools)} Schwimmbecken voll Wasser`)
+  if (bathtubs >= 1) r.push(`${formatNumber(bathtubs)} volle Badewannen`)
+  if (liters >= 1000) r.push(`${formatNumber(liters / 1000)} Tonnen — genug für ein kleines Dorf`)
+  return r.slice(0, 2)
+}
+
+function co2Comparisons(kg: number): string[] {
+  const r: string[] = []
+  const flights = kg / 750 // Frankfurt–Mallorca ~750kg CO2
+  const carKm = kg / 0.15 // ~150g CO2/km Durchschnitt
+  if (flights >= 1) r.push(`${formatNumber(flights)}× Frankfurt–Mallorca fliegen`)
+  if (carKm >= 1) r.push(`${formatNumber(carKm)} km Autofahren`)
+  if (kg >= 100) r.push(`So viel wie ${formatNumber(kg / 22)} Bäume pro Jahr binden`)
+  return r.slice(0, 2)
+}
+
+function landComparisons(m2: number): string[] {
+  const r: string[] = []
+  const soccer = m2 / 7140 // FIFA Fußballfeld
+  const tennis = m2 / 261 // Tennisplatz
+  if (soccer >= 1) r.push(`${formatNumber(soccer)} Fußballfelder`)
+  if (tennis >= 1) r.push(`${formatNumber(tennis)} Tennisplätze`)
+  if (m2 >= 10) r.push(`${formatNumber(m2 / 10)} Parkplätze weniger versiegelt`)
+  return r.slice(0, 2)
+}
 
 const childViewState = ref<Record<string, boolean>>({})
 
@@ -39,6 +138,42 @@ const shareText = () =>
 <template>
   <!-- Hero Section -->
   <section class="hero">
+    <!-- Floating Emoji Background -->
+    <div class="hero-emojis" aria-hidden="true">
+      <span
+        v-for="(fe, i) in floatingEmojis"
+        :key="'emoji-' + i"
+        class="floating-emoji"
+        :style="{
+          left: fe.left,
+          animationDelay: fe.delay,
+          animationDuration: fe.duration,
+          fontSize: fe.size,
+        }"
+      >{{ fe.emoji }}</span>
+    </div>
+
+    <!-- Floating Victim Bubbles -->
+    <div class="victim-layer" aria-hidden="true">
+      <div
+        v-for="victim in victims"
+        :key="victim.id"
+        class="victim-bubble"
+        :style="{
+          left: victim.left,
+          animationDuration: victim.duration + 's',
+          animationDelay: victim.startOffset ? victim.startOffset + 's' : '0s',
+        }"
+      >
+        <span class="victim-emoji">{{ victim.emoji }}</span>
+        <span class="victim-name">{{ victim.name }}</span>
+        <span class="victim-divider">·</span>
+        <span class="victim-meta">{{ victim.age }}</span>
+        <span class="victim-divider">·</span>
+        <span class="victim-location">{{ victim.location }}</span>
+      </div>
+    </div>
+
     <div class="hero-inner">
       <Motion
         tag="p"
@@ -67,8 +202,8 @@ const shareText = () =>
         :animate="{ opacity: 0.8, y: 0 }"
         :transition="{ duration: 0.8, delay: 0.3 }"
       >
-        Jeden Tag werden in Deutschland Tiere getötet, damit sie auf dem Teller landen.
-        Ohne Hoffnung. Ohne Perspektive. Ohne Wahl.
+        Jeden Tag werden in Deutschland Tiere getötet, damit sie auf Tellern landen.
+        Sie hatten einen Namen. Ein Alter. Keine Wahl.
       </Motion>
 
       <!-- Live Counter -->
@@ -83,26 +218,6 @@ const shareText = () =>
         <span class="hero-counter-label">Tiere getötet seit du hier bist</span>
         <span class="hero-counter-time">🕰 {{ timer.elapsedFormatted.value }}</span>
       </Motion>
-
-      <!-- Victim Ticker -->
-      <div class="victim-ticker">
-        <AnimatePresence>
-          <Motion
-            v-for="victim in victims"
-            :key="victim.id"
-            class="victim-entry"
-            :initial="{ opacity: 0, y: -15, filter: 'blur(4px)' }"
-            :animate="{ opacity: 1, y: 0, filter: 'blur(0px)' }"
-            :exit="{ opacity: 0, y: 15, filter: 'blur(4px)' }"
-            :transition="{ duration: 0.5 }"
-          >
-            <span class="victim-emoji">{{ victim.emoji }}</span>
-            <span class="victim-name">{{ victim.name }}</span>
-            <span class="victim-age">({{ victim.age }} alt)</span>
-            <span class="victim-fate">— wurde getötet</span>
-          </Motion>
-        </AnimatePresence>
-      </div>
     </div>
   </section>
 
@@ -113,7 +228,7 @@ const shareText = () =>
       <Motion
         class="animal-header d-none d-md-flex"
         :initial="{ opacity: 0 }"
-        :in-view="{ opacity: 1 }"
+        :whileInView="{ opacity: 1 }"
         :transition="{ duration: 0.4 }"
       >
         <div class="animal-header-name">Tier</div>
@@ -128,9 +243,9 @@ const shareText = () =>
         :key="animal.names.single"
         class="animal-card"
         :initial="{ opacity: 0, y: 40 }"
-        :in-view="{ opacity: 1, y: 0 }"
+        :whileInView="{ opacity: 1, y: 0 }"
         :transition="{ duration: 0.5, delay: index * 0.06 }"
-        :in-view-options="{ once: true, amount: 0.2 }"
+        :inViewOptions="{ once: true, amount: 0.2 }"
       >
         <div class="animal-card-main">
           <div class="animal-card-name">
@@ -189,28 +304,198 @@ const shareText = () =>
     </div>
   </section>
 
-  <!-- Emoji Summary -->
+  <!-- Live Death Counter Summary -->
   <Motion
     v-if="totalDeathCount > 0"
     tag="section"
     class="emoji-section"
     :initial="{ opacity: 0 }"
-    :in-view="{ opacity: 1 }"
+    :whileInView="{ opacity: 1 }"
     :transition="{ duration: 0.8 }"
-    :in-view-options="{ once: true, amount: 0.3 }"
+    :inViewOptions="{ once: true, amount: 0.3 }"
   >
     <div class="container">
-      <h2 class="section-title">Seit du da bist</h2>
-      <p class="emoji-cloud">{{ totalDeathEmojis }}</p>
+      <h2 class="section-title">Während du hier bist, sterben sie weiter</h2>
+      <p class="emoji-section-sub">
+        In nur {{ timer.elapsedFormatted.value }} seit du da bist:
+      </p>
       <div class="emoji-badges">
         <span v-for="animal in animalData" :key="'badge-' + animal.names.single">
           <span v-if="animal.killedSinceStart > 0" class="emoji-badge">
-            {{ animal.killedSinceStart }} {{ animal.names.emoji }} {{ animal.getNameByCount(animal.killedSinceStart) }}
+            {{ animal.names.emoji }}
+            <strong>{{ formatNumber(animal.killedSinceStart) }}</strong>
+            {{ animal.getNameByCount(animal.killedSinceStart) }}
           </span>
         </span>
       </div>
+      <div class="emoji-total">
+        <AnimatedNumber :value="totalDeathCount" /> Tiere — allein seit du diese Seite geöffnet hast.
+      </div>
     </div>
   </Motion>
+
+  <!-- Impact Timeline -->
+  <section class="impact-section">
+    <div class="container">
+      <Motion
+        tag="h2"
+        class="section-title"
+        :initial="{ opacity: 0, y: 30 }"
+        :whileInView="{ opacity: 1, y: 0 }"
+        :transition="{ duration: 0.6, type: 'spring' }"
+        :inViewOptions="{ once: true }"
+      >
+        Dein Impact — wenn du heute anfängst
+      </Motion>
+      <Motion
+        tag="p"
+        class="impact-subtitle"
+        :initial="{ opacity: 0 }"
+        :whileInView="{ opacity: 1 }"
+        :transition="{ duration: 0.5, delay: 0.1 }"
+        :inViewOptions="{ once: true }"
+      >
+        Eine einzige Person spart durch vegane Ernährung:
+      </Motion>
+
+      <!-- Timeline Selector -->
+      <div class="impact-tabs">
+        <button
+          v-for="(item, i) in impactTimeline"
+          :key="item.label"
+          class="impact-tab"
+          :class="{ 'impact-tab--active': activeImpact === i }"
+          @click="activeImpact = i"
+        >
+          <span class="impact-tab-emoji">{{ item.emoji }}</span>
+          <span class="impact-tab-label">{{ item.label }}</span>
+        </button>
+      </div>
+
+      <!-- Impact Cards — vertical, with comparisons -->
+      <div class="impact-cards">
+        <div class="impact-card impact-card--lives">
+          <div class="impact-card-head">
+            <span class="impact-card-icon">🐾</span>
+            <div>
+              <span class="impact-card-value">{{ impactFor(impactTimeline[activeImpact]!.days).lives.value }}</span>
+              <span class="impact-card-label">Tierleben gerettet</span>
+            </div>
+          </div>
+          <ul class="impact-card-comparisons">
+            <li v-for="c in impactFor(impactTimeline[activeImpact]!.days).lives.comparisons" :key="c">{{ c }}</li>
+          </ul>
+        </div>
+
+        <div class="impact-card impact-card--water">
+          <div class="impact-card-head">
+            <span class="impact-card-icon">💧</span>
+            <div>
+              <span class="impact-card-value">{{ impactFor(impactTimeline[activeImpact]!.days).water.value }} L</span>
+              <span class="impact-card-label">Wasser gespart</span>
+            </div>
+          </div>
+          <ul class="impact-card-comparisons">
+            <li v-for="c in impactFor(impactTimeline[activeImpact]!.days).water.comparisons" :key="c">{{ c }}</li>
+          </ul>
+        </div>
+
+        <div class="impact-card impact-card--co2">
+          <div class="impact-card-head">
+            <span class="impact-card-icon">🌿</span>
+            <div>
+              <span class="impact-card-value">{{ impactFor(impactTimeline[activeImpact]!.days).co2.value }} kg</span>
+              <span class="impact-card-label">CO₂ vermieden</span>
+            </div>
+          </div>
+          <ul class="impact-card-comparisons">
+            <li v-for="c in impactFor(impactTimeline[activeImpact]!.days).co2.comparisons" :key="c">{{ c }}</li>
+          </ul>
+        </div>
+
+        <div class="impact-card impact-card--land">
+          <div class="impact-card-head">
+            <span class="impact-card-icon">🌾</span>
+            <div>
+              <span class="impact-card-value">{{ impactFor(impactTimeline[activeImpact]!.days).land.value }} m²</span>
+              <span class="impact-card-label">Land geschont</span>
+            </div>
+          </div>
+          <ul class="impact-card-comparisons">
+            <li v-for="c in impactFor(impactTimeline[activeImpact]!.days).land.comparisons" :key="c">{{ c }}</li>
+          </ul>
+        </div>
+      </div>
+
+      <p class="impact-source">
+        Quellen: Poore &amp; Nemecek (2018, <em>Science</em>), Oxford Martin School, Water Footprint Network
+      </p>
+
+      <!-- Personal Tracker -->
+      <Motion
+        class="personal-tracker"
+        :initial="{ opacity: 0, y: 30 }"
+        :whileInView="{ opacity: 1, y: 0 }"
+        :transition="{ duration: 0.6 }"
+        :inViewOptions="{ once: true }"
+      >
+        <h3 class="personal-tracker-title">🌟 Dein persönlicher Impact</h3>
+
+        <div v-if="!hasPersonalDate" class="personal-tracker-form">
+          <p class="personal-tracker-prompt">
+            Seit wann lebst du vegan? Gib dein Datum ein und sieh, was du schon bewirkt hast.
+          </p>
+          <div class="personal-input-row">
+            <input
+              v-model="veganSince"
+              type="date"
+              class="personal-date-input"
+              :max="new Date().toISOString().split('T')[0]"
+            />
+          </div>
+        </div>
+
+        <div v-else class="personal-tracker-result">
+          <div class="personal-tracker-header">
+            <p class="personal-duration">
+              🎉 Du lebst seit <strong>{{ formattedDuration }}</strong> vegan!
+            </p>
+            <button class="personal-reset" @click="clearPersonalDate">
+              ändern
+            </button>
+          </div>
+
+          <!-- Personal impact cards -->
+          <div class="personal-impact-cards">
+            <div class="personal-impact-card">
+              <span class="personal-impact-icon">🐾</span>
+              <span class="personal-impact-value personal-impact-value--lives">{{ impactFor(daysSinceVegan).lives.value }}</span>
+              <span class="personal-impact-label">Tierleben gerettet</span>
+            </div>
+            <div class="personal-impact-card">
+              <span class="personal-impact-icon">💧</span>
+              <span class="personal-impact-value personal-impact-value--water">{{ impactFor(daysSinceVegan).water.value }} L</span>
+              <span class="personal-impact-label">Wasser gespart</span>
+            </div>
+            <div class="personal-impact-card">
+              <span class="personal-impact-icon">🌿</span>
+              <span class="personal-impact-value personal-impact-value--co2">{{ impactFor(daysSinceVegan).co2.value }} kg</span>
+              <span class="personal-impact-label">CO₂ vermieden</span>
+            </div>
+            <div class="personal-impact-card">
+              <span class="personal-impact-icon">🌾</span>
+              <span class="personal-impact-value personal-impact-value--land">{{ impactFor(daysSinceVegan).land.value }} m²</span>
+              <span class="personal-impact-label">Land geschont</span>
+            </div>
+          </div>
+
+          <p class="personal-share-hint">
+            Danke, dass du Teil der Veränderung bist. 💚
+          </p>
+        </div>
+      </Motion>
+    </div>
+  </section>
 
   <!-- CTA -->
   <section class="cta-section">
@@ -219,26 +504,221 @@ const shareText = () =>
         tag="h2"
         class="section-title"
         :initial="{ opacity: 0, y: 30 }"
-        :in-view="{ opacity: 1, y: 0 }"
+        :whileInView="{ opacity: 1, y: 0 }"
         :transition="{ duration: 0.6, type: 'spring' }"
-        :in-view-options="{ once: true }"
+        :inViewOptions="{ once: true }"
       >
-        Was kann ich tun?
+        Du kannst etwas verändern.
       </Motion>
+
+      <Motion
+        tag="div"
+        class="cta-intro"
+        :initial="{ opacity: 0, y: 20 }"
+        :whileInView="{ opacity: 1, y: 0 }"
+        :transition="{ duration: 0.6, delay: 0.1 }"
+        :inViewOptions="{ once: true }"
+      >
+        <p class="cta-intro-text">
+          Die Zahlen sind erschreckend — aber du bist nicht machtlos.
+          <strong>Jede*r Einzelne</strong> kann durch bewusste Entscheidungen jeden Tag
+          Leben retten. Die gute Nachricht: Es war noch nie so einfach wie heute.
+        </p>
+        <p class="cta-intro-text">
+          Pflanzliche Alternativen gibt es inzwischen für <em>alles</em> — im Supermarkt,
+          im Restaurant, beim Bäcker*in um die Ecke. Du musst auf nichts verzichten.
+          Du entscheidest dich nur anders.
+        </p>
+      </Motion>
+
+      <!-- Main CTA -->
       <Motion
         tag="a"
-        href="https://veganstart.de/"
+        href="https://veganuary.com/de/"
         class="cta-button"
         target="_blank"
         rel="noopener"
         :initial="{ opacity: 0, scale: 0.9 }"
-        :in-view="{ opacity: 1, scale: 1 }"
+        :whileInView="{ opacity: 1, scale: 1 }"
         :transition="{ duration: 0.5, delay: 0.15, type: 'spring', stiffness: 200 }"
-        :in-view-options="{ once: true }"
+        :inViewOptions="{ once: true }"
       >
         <span class="cta-emoji">🐷🐮🐔</span>
         <span class="cta-text">#GoVegan</span>
         <span class="cta-emoji">🐔🐮🐷</span>
+      </Motion>
+
+      <!-- Motivation Facts -->
+      <Motion
+        class="motivation-strip"
+        :initial="{ opacity: 0 }"
+        :whileInView="{ opacity: 1 }"
+        :transition="{ duration: 0.6, delay: 0.2 }"
+        :inViewOptions="{ once: true }"
+      >
+        <div class="motivation-fact">
+          <span class="motivation-number">365</span>
+          <span class="motivation-label">Tage im Jahr, an denen du etwas bewirken kannst</span>
+        </div>
+        <div class="motivation-fact">
+          <span class="motivation-number">3x</span>
+          <span class="motivation-label">am Tag triffst du eine Entscheidung — Frühstück, Mittag, Abend</span>
+        </div>
+        <div class="motivation-fact">
+          <span class="motivation-number">1</span>
+          <span class="motivation-label">Mensch reicht, um den Anfang zu machen — du.</span>
+        </div>
+      </Motion>
+
+      <!-- Resource Grid -->
+      <div class="action-grid">
+        <!-- Vegan starten -->
+        <Motion
+          class="action-category"
+          :initial="{ opacity: 0, y: 30 }"
+          :whileInView="{ opacity: 1, y: 0 }"
+          :transition="{ duration: 0.5 }"
+          :inViewOptions="{ once: true }"
+        >
+          <h3 class="action-category-title">🌱 Einfach anfangen</h3>
+          <p class="action-category-desc">
+            Du brauchst keinen perfekten Plan. Starte mit einer Challenge — tausende machen mit.
+          </p>
+          <div class="action-links">
+            <a href="https://veganuary.com/de/" target="_blank" rel="noopener" class="action-link">
+              <span class="action-link-name">Veganuary</span>
+              <span class="action-link-desc">31 Tage vegan — mit Rezepten, Tipps und Community</span>
+            </a>
+            <a href="https://www.challenge22.com/" target="_blank" rel="noopener" class="action-link">
+              <span class="action-link-name">Challenge 22</span>
+              <span class="action-link-desc">22 Tage mit persönlicher Beratung — komplett kostenlos</span>
+            </a>
+            <a href="https://proveg.org/de/" target="_blank" rel="noopener" class="action-link">
+              <span class="action-link-name">ProVeg</span>
+              <span class="action-link-desc">Deutschlands größte Organisation für pflanzliche Ernährung</span>
+            </a>
+          </div>
+        </Motion>
+
+        <!-- Informieren -->
+        <Motion
+          class="action-category"
+          :initial="{ opacity: 0, y: 30 }"
+          :whileInView="{ opacity: 1, y: 0 }"
+          :transition="{ duration: 0.5, delay: 0.08 }"
+          :inViewOptions="{ once: true }"
+        >
+          <h3 class="action-category-title">🎬 Augen öffnen</h3>
+          <p class="action-category-desc">
+            Wissen ist der erste Schritt. Diese Dokus verändern Perspektiven — bei Millionen Menschen weltweit.
+          </p>
+          <div class="action-links">
+            <a href="https://www.watchdominion.org/" target="_blank" rel="noopener" class="action-link">
+              <span class="action-link-name">Dominion</span>
+              <span class="action-link-desc">Die wichtigste Doku über industrielle Tierhaltung</span>
+            </a>
+            <a href="https://www.cowspiracy.com/" target="_blank" rel="noopener" class="action-link">
+              <span class="action-link-name">Cowspiracy</span>
+              <span class="action-link-desc">Warum Tierhaltung die größte Umweltbedrohung ist</span>
+            </a>
+            <a href="https://www.seaspiracy.org/" target="_blank" rel="noopener" class="action-link">
+              <span class="action-link-name">Seaspiracy</span>
+              <span class="action-link-desc">Die Wahrheit über Fischerei und unsere Meere</span>
+            </a>
+            <a href="https://www.vegan.eu/" target="_blank" rel="noopener" class="action-link">
+              <span class="action-link-name">vegan.eu</span>
+              <span class="action-link-desc">Deutsches Infoportal — Fakten, Studien, Hintergründe</span>
+            </a>
+            <a href="https://www.vegpool.de/" target="_blank" rel="noopener" class="action-link">
+              <span class="action-link-name">Vegpool</span>
+              <span class="action-link-desc">Deutsches Magazin mit Forum und aktiver Community</span>
+            </a>
+          </div>
+        </Motion>
+
+        <!-- Aktivismus -->
+        <Motion
+          class="action-category"
+          :initial="{ opacity: 0, y: 30 }"
+          :whileInView="{ opacity: 1, y: 0 }"
+          :transition="{ duration: 0.5, delay: 0.16 }"
+          :inViewOptions="{ once: true }"
+        >
+          <h3 class="action-category-title">✊ Stimme erheben</h3>
+          <p class="action-category-desc">
+            Allein sein war gestern. Diese Organisationen kämpfen jeden Tag für die Tiere — schließ dich an.
+          </p>
+          <div class="action-links">
+            <a href="https://www.ariwa.org/" target="_blank" rel="noopener" class="action-link">
+              <span class="action-link-name">ARIWA</span>
+              <span class="action-link-desc">Undercover-Recherchen und vegane Aufklärungsarbeit</span>
+            </a>
+            <a href="https://albert-schweitzer-stiftung.de/" target="_blank" rel="noopener" class="action-link">
+              <span class="action-link-name">Albert Schweitzer Stiftung</span>
+              <span class="action-link-desc">Wirksamer Einsatz gegen Massentierhaltung</span>
+            </a>
+            <a href="https://animalequality.de/" target="_blank" rel="noopener" class="action-link">
+              <span class="action-link-name">Animal Equality</span>
+              <span class="action-link-desc">Internationale Tierrechtsorganisation — auch in Deutschland</span>
+            </a>
+            <a href="https://soko-tierschutz.org/" target="_blank" rel="noopener" class="action-link">
+              <span class="action-link-name">SOKO Tierschutz</span>
+              <span class="action-link-desc">Verdeckte Ermittlungen, die Missstände aufdecken</span>
+            </a>
+            <a href="https://www.anonymousforthevoiceless.org/" target="_blank" rel="noopener" class="action-link">
+              <span class="action-link-name">Anonymous for the Voiceless</span>
+              <span class="action-link-desc">Cube of Truth — Straßenaktivismus in deiner Stadt</span>
+            </a>
+            <a href="https://www.land-der-tiere.de/" target="_blank" rel="noopener" class="action-link">
+              <span class="action-link-name">Land der Tiere</span>
+              <span class="action-link-desc">Lebenshof besuchen — geretteten Tieren begegnen</span>
+            </a>
+          </div>
+        </Motion>
+
+        <!-- Im Alltag -->
+        <Motion
+          class="action-category"
+          :initial="{ opacity: 0, y: 30 }"
+          :whileInView="{ opacity: 1, y: 0 }"
+          :transition="{ duration: 0.5, delay: 0.24 }"
+          :inViewOptions="{ once: true }"
+        >
+          <h3 class="action-category-title">🥗 Jeden Tag leben</h3>
+          <p class="action-category-desc">
+            Vegan im Alltag ist heute einfacher denn je. Diese Tools helfen dir dabei.
+          </p>
+          <div class="action-links">
+            <a href="https://www.happycow.net/" target="_blank" rel="noopener" class="action-link">
+              <span class="action-link-name">HappyCow</span>
+              <span class="action-link-desc">Vegane Restaurants und Cafés in deiner Nähe finden</span>
+            </a>
+            <a href="https://nutritionfacts.org/" target="_blank" rel="noopener" class="action-link">
+              <span class="action-link-name">NutritionFacts</span>
+              <span class="action-link-desc">Evidenzbasierte Ernährungsforschung — kostenlos</span>
+            </a>
+            <a href="https://v-partei.de/" target="_blank" rel="noopener" class="action-link">
+              <span class="action-link-name">V-Partei³</span>
+              <span class="action-link-desc">Politisch aktiv werden — für echte Veränderung wählen</span>
+            </a>
+            <a href="https://www.tierschutzpartei.de/" target="_blank" rel="noopener" class="action-link">
+              <span class="action-link-name">Tierschutzpartei</span>
+              <span class="action-link-desc">Partei Mensch Umwelt Tierschutz — politische Stimme</span>
+            </a>
+          </div>
+        </Motion>
+      </div>
+
+      <!-- Closing message -->
+      <Motion
+        tag="p"
+        class="cta-closing"
+        :initial="{ opacity: 0 }"
+        :whileInView="{ opacity: 1 }"
+        :transition="{ duration: 0.8, delay: 0.1 }"
+        :inViewOptions="{ once: true }"
+      >
+        Jede Mahlzeit ist eine Chance. Jeder Einkauf eine Entscheidung. Jede*r von uns kann Teil der Lösung sein.
       </Motion>
     </div>
   </section>
@@ -285,7 +765,9 @@ const shareText = () =>
 <style scoped>
 /* ── Hero ─────────────────────────────────────────── */
 .hero {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  background: linear-gradient(135deg, #2d1b69, #1a1a4e, #0d3b66, #1b4332);
+  background-size: 400% 400%;
+  animation: heroGradient 20s ease infinite;
   color: #fff;
   padding: 3rem 1.5rem 2rem;
   text-align: center;
@@ -293,11 +775,52 @@ const shareText = () =>
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+  overflow: hidden;
 }
+@keyframes heroGradient {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ── Floating Emoji Background ────────────────────── */
+.hero-emojis {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.floating-emoji {
+  position: absolute;
+  bottom: -3rem;
+  opacity: 0;
+  animation: floatUp linear infinite;
+  filter: grayscale(1);
+}
+@keyframes floatUp {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0;
+  }
+  5% {
+    opacity: 0.12;
+  }
+  80% {
+    opacity: 0.08;
+  }
+  100% {
+    transform: translateY(-110svh) rotate(20deg);
+    opacity: 0;
+  }
+}
+
 .hero-inner {
   max-width: 720px;
   margin: 0 auto;
   width: 100%;
+  position: relative;
+  z-index: 1;
 }
 .hero-label {
   text-transform: uppercase;
@@ -330,7 +853,12 @@ const shareText = () =>
   color: #e74c3c;
   line-height: 1;
   font-variant-numeric: tabular-nums;
-  text-shadow: 0 0 40px rgba(231, 76, 60, 0.4);
+  text-shadow: 0 0 60px rgba(231, 76, 60, 0.5), 0 0 120px rgba(231, 76, 60, 0.2);
+  animation: pulse-glow 2s ease-in-out infinite alternate;
+}
+@keyframes pulse-glow {
+  from { text-shadow: 0 0 40px rgba(231, 76, 60, 0.4), 0 0 80px rgba(231, 76, 60, 0.1); }
+  to   { text-shadow: 0 0 60px rgba(231, 76, 60, 0.6), 0 0 120px rgba(231, 76, 60, 0.25); }
 }
 .hero-counter-label {
   font-size: 1rem;
@@ -341,40 +869,52 @@ const shareText = () =>
   opacity: 0.5;
 }
 
-/* ── Victim Ticker ────────────────────────────────── */
-.victim-ticker {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.35rem;
-  min-height: 120px;
-  position: relative;
+/* ── Floating Victim Bubbles ───────────────────────── */
+.victim-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 0;
 }
-.victim-entry {
-  display: flex;
+.victim-bubble {
+  position: absolute;
+  bottom: -4rem;
+  display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.35rem 1rem;
-  background: rgba(255, 255, 255, 0.06);
+  gap: 0.4rem;
+  padding: 0.4rem 1rem;
+  background: rgba(255, 255, 255, 0.09);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 50px;
-  font-size: clamp(0.7rem, 2vw, 0.85rem);
-  backdrop-filter: blur(4px);
+  font-size: clamp(0.8rem, 1.8vw, 0.95rem);
   white-space: nowrap;
+  color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(6px);
+  animation: bubbleRise linear forwards;
 }
-.victim-emoji {
-  font-size: 1.1em;
-}
-.victim-name {
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
-}
-.victim-age {
-  opacity: 0.5;
-}
-.victim-fate {
-  color: #e74c3c;
-  opacity: 0.8;
-  font-size: 0.9em;
+.victim-bubble .victim-emoji { font-size: 1.15em; }
+.victim-bubble .victim-name { font-weight: 600; color: rgba(255, 255, 255, 0.92); }
+.victim-bubble .victim-divider { opacity: 0.25; }
+.victim-bubble .victim-meta { opacity: 0.5; font-size: 0.9em; }
+.victim-bubble .victim-location { opacity: 0.45; font-size: 0.9em; }
+
+@keyframes bubbleRise {
+  0% {
+    transform: translateY(0) scale(0.8);
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.85;
+    transform: translateY(-8svh) scale(1);
+  }
+  60% {
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateY(-115svh) scale(0.9);
+    opacity: 0;
+  }
 }
 
 /* ── Animals Section ──────────────────────────────── */
@@ -500,26 +1040,45 @@ const shareText = () =>
 .animal-child-stat { flex: 1; text-align: right; font-variant-numeric: tabular-nums; }
 .animal-child-stat--wide { flex: 1.3; }
 
-/* ── Emoji Summary ────────────────────────────────── */
-.emoji-section { padding: 3rem 1rem; text-align: center; }
+/* ── Live Death Summary ────────────────────────────── */
+.emoji-section {
+  padding: 3rem 1rem;
+  text-align: center;
+  background: #fff;
+}
 .section-title { font-size: 1.75rem; font-weight: 700; margin-bottom: 1.5rem; text-align: center; }
 .section-title--sm { font-size: 1.25rem; }
-.emoji-cloud {
-  font-size: 1.1rem;
-  line-height: 2;
-  word-break: break-all;
-  max-width: 800px;
-  margin: 0 auto 1.5rem;
+.emoji-section-sub {
+  font-size: 1rem;
+  color: #6c757d;
+  margin-bottom: 1.25rem;
 }
-.emoji-badges { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem; }
+.emoji-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  max-width: 700px;
+  margin: 0 auto;
+}
 .emoji-badge {
-  display: inline-block;
-  background: #1a1a2e;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: #1b1b3a;
   color: #fff;
-  padding: 0.35rem 0.85rem;
+  padding: 0.45rem 1rem;
   border-radius: 50px;
-  font-size: 0.85rem;
-  font-weight: 500;
+  font-size: 0.9rem;
+}
+.emoji-badge strong {
+  font-variant-numeric: tabular-nums;
+}
+.emoji-total {
+  margin-top: 1.5rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #e74c3c;
 }
 
 /* ── CTA ──────────────────────────────────────────── */
@@ -554,12 +1113,393 @@ const shareText = () =>
   .cta-emoji { display: none; }
 }
 
+/* ── Impact Timeline ──────────────────────────────── */
+.impact-section {
+  padding: 3.5rem 1rem;
+  background: linear-gradient(180deg, #f0fdf4 0%, #f8f9fa 100%);
+}
+.impact-subtitle {
+  text-align: center;
+  font-size: 1.05rem;
+  color: #6c757d;
+  margin-bottom: 2rem;
+}
+.impact-tabs {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 2rem;
+}
+.impact-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.6rem 0.9rem;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  background: #fff;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 72px;
+}
+.impact-tab:hover {
+  border-color: #2ecc71;
+  background: #f0fdf4;
+}
+.impact-tab--active {
+  border-color: #2ecc71;
+  background: #2ecc71;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
+  transform: translateY(-2px);
+}
+.impact-tab-emoji {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+.impact-tab-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.impact-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 640px;
+  margin: 0 auto;
+}
+.impact-card {
+  display: flex;
+  flex-direction: column;
+  padding: 1.75rem 2rem;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  transition: transform 0.3s, box-shadow 0.3s;
+  border-left: 5px solid transparent;
+}
+.impact-card:hover {
+  transform: translateX(4px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+.impact-card--lives { border-left-color: #e74c3c; }
+.impact-card--water { border-left-color: #3498db; }
+.impact-card--co2   { border-left-color: #2ecc71; }
+.impact-card--land  { border-left-color: #f39c12; }
+
+.impact-card-head {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+.impact-card-icon {
+  font-size: 2.5rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.impact-card-value {
+  display: block;
+  font-size: clamp(1.75rem, 5vw, 2.25rem);
+  font-weight: 700;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.impact-card--lives .impact-card-value { color: #e74c3c; }
+.impact-card--water .impact-card-value { color: #3498db; }
+.impact-card--co2 .impact-card-value   { color: #2ecc71; }
+.impact-card--land .impact-card-value  { color: #f39c12; }
+
+.impact-card-label {
+  display: block;
+  font-size: 0.85rem;
+  color: #6c757d;
+  font-weight: 500;
+  margin-top: 0.1rem;
+}
+.impact-card-comparisons {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #f1f3f5;
+}
+.impact-card-comparisons li {
+  font-size: 0.82rem;
+  color: #495057;
+  line-height: 1.4;
+  padding-left: 1.2rem;
+  position: relative;
+}
+.impact-card-comparisons li::before {
+  content: '≈';
+  position: absolute;
+  left: 0;
+  color: #adb5bd;
+  font-weight: 700;
+}
+.impact-source {
+  text-align: center;
+  font-size: 0.75rem;
+  color: #adb5bd;
+  margin-top: 1.5rem;
+}
+
+/* ── Personal Tracker ─────────────────────────────── */
+.personal-tracker {
+  margin-top: 2.5rem;
+  padding: 2rem;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
+  max-width: 640px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  border: 2px solid #e9ecef;
+}
+.personal-tracker-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+.personal-tracker-prompt {
+  color: #6c757d;
+  font-size: 0.95rem;
+  margin-bottom: 1rem;
+}
+.personal-input-row {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.personal-date-input {
+  padding: 0.6rem 1.25rem;
+  border: 2px solid #dee2e6;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+  background: #f8f9fa;
+}
+.personal-date-input:focus {
+  border-color: #2ecc71;
+}
+
+.personal-tracker-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+.personal-duration {
+  font-size: 1.1rem;
+  margin: 0;
+}
+.personal-duration strong {
+  color: #2ecc71;
+}
+.personal-reset {
+  background: none;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.75rem;
+  color: #6c757d;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.personal-reset:hover {
+  background: #f1f3f5;
+  color: #333;
+}
+
+.personal-impact-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+@media (min-width: 480px) {
+  .personal-impact-cards {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+.personal-impact-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.75rem 0.5rem;
+  border-radius: 12px;
+  background: #f8f9fa;
+}
+.personal-impact-icon {
+  font-size: 1.5rem;
+  margin-bottom: 0.3rem;
+}
+.personal-impact-value {
+  font-size: 1.15rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+.personal-impact-value--lives { color: #e74c3c; }
+.personal-impact-value--water { color: #3498db; }
+.personal-impact-value--co2   { color: #2ecc71; }
+.personal-impact-value--land  { color: #f39c12; }
+.personal-impact-label {
+  font-size: 0.7rem;
+  color: #6c757d;
+  margin-top: 0.15rem;
+}
+.personal-share-hint {
+  font-size: 0.9rem;
+  color: #2d6a4f;
+  margin-top: 0.5rem;
+  font-weight: 500;
+}
+
+/* ── CTA Intro & Closing ──────────────────────────── */
+.cta-intro {
+  max-width: 680px;
+  margin: 0 auto 2rem;
+  text-align: center;
+}
+.cta-intro-text {
+  font-size: clamp(1rem, 2.5vw, 1.15rem);
+  line-height: 1.7;
+  color: #495057;
+  margin-bottom: 0.75rem;
+}
+.cta-intro-text strong {
+  color: #2d6a4f;
+}
+.cta-intro-text em {
+  font-style: normal;
+  text-decoration: underline;
+  text-decoration-color: #2ecc71;
+  text-underline-offset: 3px;
+}
+.cta-closing {
+  text-align: center;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #2d6a4f;
+  margin-top: 2.5rem;
+  padding-top: 2rem;
+  border-top: 2px solid #e9ecef;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+}
+
+/* ── Motivation Strip ─────────────────────────────── */
+.motivation-strip {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin: 2rem auto 2.5rem;
+  max-width: 720px;
+}
+.motivation-fact {
+  text-align: center;
+  padding: 1.25rem 1rem;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+.motivation-number {
+  display: block;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #2ecc71;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+.motivation-label {
+  display: block;
+  font-size: 0.85rem;
+  color: #6c757d;
+  line-height: 1.4;
+}
+
+/* ── Action Grid ──────────────────────────────────── */
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
+  margin-top: 2.5rem;
+}
+.action-category {
+  background: #fff;
+  border-radius: 14px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+.action-category-title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+.action-category-desc {
+  font-size: 0.85rem;
+  color: #6c757d;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #f1f3f5;
+}
+.action-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.action-link {
+  display: block;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+  transition: background 0.15s, transform 0.15s;
+}
+.action-link:hover {
+  background: #f0fdf4;
+  transform: translateX(4px);
+  text-decoration: none;
+  color: inherit;
+}
+.action-link-name {
+  display: block;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #2d6a4f;
+}
+.action-link-desc {
+  display: block;
+  font-size: 0.8rem;
+  color: #6c757d;
+  margin-top: 0.15rem;
+  line-height: 1.3;
+}
+
 /* ── Share ─────────────────────────────────────────── */
 .share-section { padding: 2.5rem 1rem; text-align: center; }
 
 /* ── Footer ───────────────────────────────────────── */
 .site-footer {
-  background: #1a1a2e;
+  background: #1b1b3a;
   color: rgba(255, 255, 255, 0.6);
   padding: 2rem 1rem;
   font-size: 0.85rem;
