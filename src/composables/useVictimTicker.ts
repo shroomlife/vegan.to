@@ -172,13 +172,13 @@ function generateVictim(): Victim {
  * and gets garbage-collected from the array once that time has elapsed.
  * This keeps DOM node count stable even over long sessions.
  */
-export function useVictimTicker(spawnIntervalMs = 250) {
+export function useVictimTicker(spawnIntervalMs = 250, seedCount = 12) {
   // shallowRef + manual trigger for performance — avoids deep reactivity on the array
   const victims = shallowRef<Victim[]>([])
 
   // Seed immediately — use negative animation-delay to place them mid-flight
   const seed: Victim[] = []
-  for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < seedCount; i++) {
     const v = generateVictim()
     // Negative offset makes CSS animation start partway through
     const offset = randomInt(1, v.duration - 1)

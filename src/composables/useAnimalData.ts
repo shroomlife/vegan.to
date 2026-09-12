@@ -1,10 +1,15 @@
-import { computed } from 'vue'
+import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import { animals as rawAnimals, type Animal, type AnimalChild } from '@/data/animals'
 import { formatNumber } from '@/utils/formatNumber'
 import { shuffle } from '@/utils/shuffle'
 
-/** Max emojis rendered per animal card; keeps the DOM small in long sessions */
-const EMOJI_RENDER_CAP = 2000
+/** Default max emojis rendered per animal card; keeps the DOM small in long sessions */
+const DEFAULT_EMOJI_RENDER_CAP = 2000
+
+export interface AnimalDataOptions {
+  /** Max emojis rendered per animal card, e.g. lower on small screens */
+  emojiRenderCap?: MaybeRefOrGetter<number>
+}
 
 export interface ComputedChild {
   name: string
@@ -27,7 +32,7 @@ export interface ComputedAnimal {
   currentYearFormatted: string
   killedSinceStart: number
   killedSinceStartEmojis: string
-  /** Kills beyond EMOJI_RENDER_CAP that are not rendered as emojis */
+  /** Kills beyond the emoji render cap that are not rendered as emojis */
   killedSinceStartHidden: number
   children: ComputedChild[]
   childView: boolean
@@ -76,8 +81,9 @@ function computeChild(child: AnimalChild, clock: Clock): ComputedChild {
 // Sort by yearly deaths descending
 const sortedAnimals = [...rawAnimals].sort((a, b) => b.deaths.year - a.deaths.year)
 
-export function useAnimalData(timer: Timer) {
+export function useAnimalData(timer: Timer, options: AnimalDataOptions = {}) {
   const animalData = computed<ComputedAnimal[]>(() => {
+    const emojiCap = toValue(options.emojiRenderCap) ?? DEFAULT_EMOJI_RENDER_CAP
     const clock: Clock = {
       secYear: timer.secondsSinceYearStart.value,
       secDay: timer.secondsSinceDayStart.value,
@@ -109,8 +115,8 @@ export function useAnimalData(timer: Timer) {
         currentYear: Math.round(currentYear),
         currentYearFormatted: formatNumber(currentYear),
         killedSinceStart: killedCount,
-        killedSinceStartEmojis: animal.names.emoji.repeat(Math.min(killedCount, EMOJI_RENDER_CAP)),
-        killedSinceStartHidden: Math.max(0, killedCount - EMOJI_RENDER_CAP),
+        killedSinceStartEmojis: animal.names.emoji.repeat(Math.min(killedCount, emojiCap)),
+        killedSinceStartHidden: Math.max(0, killedCount - emojiCap),
         children,
         childView: false,
         getNameByCount: (count: number) =>

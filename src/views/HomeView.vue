@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, useTemplateRef } from 'vue'
 import dayjs from 'dayjs'
-import { useTransition, TransitionPresets } from '@vueuse/core'
+import { useTransition, TransitionPresets, useMediaQuery } from '@vueuse/core'
 import { Motion } from 'motion-v'
 import { useTimer } from '@/composables/useTimer'
 import { useAnimalData, type ComputedAnimal } from '@/composables/useAnimalData'
@@ -18,8 +18,12 @@ declare const __APP_VERSION__: string
 const appVersion = __APP_VERSION__
 
 const timer = useTimer()
-const { animalData, totalDeathCount } = useAnimalData(timer)
-const { victims } = useVictimTicker(250)
+const isMobile = useMediaQuery('(max-width: 767px)')
+// Smaller screens get a shorter emoji wall and fewer bubbles over the hero text
+const { animalData, totalDeathCount } = useAnimalData(timer, {
+  emojiRenderCap: () => (isMobile.value ? 240 : 2000),
+})
+const { victims } = useVictimTicker(isMobile.value ? 600 : 250, isMobile.value ? 6 : 12)
 
 // Seeded random for deterministic but natural-looking emoji positions
 function seededRandom(seed: number): () => number {
@@ -380,9 +384,9 @@ const shareText = () =>
         <div v-if="isChildViewOpen(animal)" class="animal-children">
           <div v-for="child in animal.children" :key="child.name" class="animal-child">
             <span class="animal-child-name">davon {{ child.name }}</span>
-            <span class="animal-child-stat">{{ child.currentDayFormatted }}</span>
-            <span class="animal-child-stat">{{ child.perDayFormatted }}</span>
-            <span class="animal-child-stat animal-child-stat--wide">{{ child.currentYearFormatted }}</span>
+            <span class="animal-child-stat" data-label="heute">{{ child.currentDayFormatted }}</span>
+            <span class="animal-child-stat" data-label="pro Tag">{{ child.perDayFormatted }}</span>
+            <span class="animal-child-stat animal-child-stat--wide" data-label="dieses Jahr">{{ child.currentYearFormatted }}</span>
           </div>
         </div>
       </Motion>
@@ -1281,12 +1285,6 @@ const shareText = () =>
 }
 .animal-stat-value--danger { color: #e74c3c; }
 
-/* Mobile: stack cards vertically */
-@media (max-width: 767px) {
-  .animal-card-main { flex-direction: column; align-items: stretch; }
-  .animal-card-stats { flex-direction: column; }
-  .animal-stat { justify-content: space-between; }
-}
 @media (min-width: 768px) {
   .animal-stat { justify-content: flex-end; }
 }
@@ -2197,6 +2195,11 @@ const shareText = () =>
   .hero-counter-number {
     font-size: clamp(2rem, 12vw, 3rem);
   }
+  .hero-title,
+  .hero-subtitle,
+  .hero-counter {
+    text-shadow: 0 2px 14px rgba(0, 0, 0, 0.45);
+  }
   .victim-ticker {
     height: 100px;
   }
@@ -2205,39 +2208,83 @@ const shareText = () =>
     padding: 0.3rem 0.65rem;
   }
 
-  /* Animal cards */
+  /* Animal cards: name on top, then a key/value list instead of three columns */
   .animals-section {
     padding: 1.25rem 0 2rem;
   }
   .animal-card {
     border-radius: 10px;
-    margin-bottom: 0.4rem;
+    margin-bottom: 0.5rem;
   }
   .animal-card-main {
-    padding: 0.85rem 1rem;
-    gap: 0.6rem;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0.85rem 1rem 0.25rem;
+    gap: 0.5rem;
   }
   .animal-emoji {
     font-size: 1.6rem;
   }
   .animal-label {
-    font-size: 1rem;
+    font-size: 1.05rem;
+  }
+  .animal-card-stats {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+  }
+  .animal-stat,
+  .animal-stat--wide {
+    flex: none;
+    justify-content: space-between;
+    padding: 0.45rem 0;
+    border-top: 1px solid #f1f3f5;
+  }
+  .animal-stat-label {
+    font-size: 0.68rem;
   }
   .animal-stat-value {
-    font-size: 0.95rem;
+    font-size: 1rem;
+    white-space: nowrap;
   }
   .animal-card-footer {
-    padding: 0 1rem 0.6rem;
+    padding: 0.5rem 1rem 0.6rem;
   }
   .animal-card-emojis {
     padding: 0 1rem 0.6rem;
     font-size: 0.75rem;
   }
+  /* Sub groups: name on its own line, the three values with tiny labels below */
   .animal-children {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
   }
   .animal-child {
-    padding: 0.4rem 1rem 0.4rem 1.75rem;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.15rem 0.75rem;
+    padding: 0.6rem 1rem;
+    border-top: 1px solid #f1f3f5;
+  }
+  .animal-child-name {
+    grid-column: 1 / -1;
+    font-weight: 600;
+    color: #343a40;
+  }
+  .animal-child-stat,
+  .animal-child-stat--wide {
+    flex: none;
+    text-align: left;
+  }
+  .animal-child-stat::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #6c757d;
+  }
+  .animal-child-stat--wide {
+    text-align: right;
   }
 
   /* Emoji summary */
@@ -2282,8 +2329,9 @@ const shareText = () =>
     gap: 0.3rem;
   }
   .impact-tab {
-    padding: 0.4rem 0.6rem;
-    min-width: 58px;
+    flex: 1 1 22%;
+    padding: 0.4rem 0.4rem;
+    min-width: 0;
     border-radius: 10px;
   }
   .impact-tab-emoji {
