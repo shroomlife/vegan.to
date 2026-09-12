@@ -101,9 +101,12 @@ test.describe('live counters', () => {
     const card = page.locator('.animal-card', { hasText: 'Fische' })
     // fish reach the cap within a few seconds
     await expect(card.locator('.animal-card-emojis-more')).toContainText('weitere', { timeout: 30_000 })
-    const emojiText = await card
-      .locator('.animal-card-emojis')
-      .evaluate((el) => el.childNodes[0]?.textContent?.trim() ?? '')
-    expect([...emojiText].length).toBeLessThanOrEqual(2000)
+    const emojiText = await card.locator('.animal-card-emojis-wall').innerText()
+    expect([...emojiText.trim()].length).toBeLessThanOrEqual(140)
+    // the strip keeps its height while it fills, so nothing below it moves
+    const height = await card.locator('.animal-card-emojis-wall').evaluate((el) => el.getBoundingClientRect().height)
+    await page.waitForTimeout(3000)
+    const heightLater = await card.locator('.animal-card-emojis-wall').evaluate((el) => el.getBoundingClientRect().height)
+    expect(heightLater).toBe(height)
   })
 })

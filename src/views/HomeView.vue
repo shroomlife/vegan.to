@@ -16,9 +16,17 @@ import GrowthTimeline from '@/components/GrowthTimeline.vue'
 
 const timer = useTimer()
 const isMobile = useMediaQuery('(max-width: 767px)')
+/**
+ * The emoji wall is a fixed two-row strip, so the page never shifts while it fills.
+ * Caps roughly match what two rows hold; the rest is counted as "+ N weitere".
+ * Species below WALL_MIN_PER_DAY get no strip, their first emoji would take hours.
+ */
+const WALL_CAP_DESKTOP = 140
+const WALL_CAP_MOBILE = 42
+const WALL_MIN_PER_DAY = 500
 // Smaller screens get a shorter emoji wall and fewer bubbles over the hero text
 const { animalData, totalDeathCount } = useAnimalData(timer, {
-  emojiRenderCap: () => (isMobile.value ? 240 : 2000),
+  emojiRenderCap: () => (isMobile.value ? WALL_CAP_MOBILE : WALL_CAP_DESKTOP),
 })
 const { victims } = useVictimTicker(isMobile.value ? 600 : 250, isMobile.value ? 6 : 12)
 
@@ -282,7 +290,6 @@ const shareText = () =>
 
       <!-- Live Counter -->
       <Motion
-        v-if="totalDeathCount > 0"
         class="hero-counter"
         :initial="{ opacity: 0, scale: 0.8 }"
         :animate="{ opacity: 1, scale: 1 }"
@@ -290,7 +297,7 @@ const shareText = () =>
       >
         <span class="hero-counter-number">{{ formatNumber(animatedTotalDeaths) }}</span>
         <span class="hero-counter-label">Tiere getötet seit du hier bist</span>
-        <span class="hero-counter-note">Fische als Schätzung mitgezählt</span>
+        <RouterLink to="/quellen#methodik" class="hero-counter-note">Fische als Schätzung mitgezählt</RouterLink>
         <span class="hero-counter-time">🕰 {{ timer.elapsedFormatted.value }}</span>
       </Motion>
     </div>
@@ -326,12 +333,12 @@ const shareText = () =>
           <div class="animal-card-name">
             <span class="animal-emoji">{{ animal.names.emoji }}</span>
             <span class="animal-label">{{ animal.names.plural }}</span>
-            <span
+            <RouterLink
               v-if="animal.estimate"
+              to="/quellen#methodik"
               class="animal-estimate"
               :title="animal.estimate.note"
-              tabindex="0"
-            >Schätzung</span>
+            >Schätzung</RouterLink>
           </div>
           <div class="animal-card-stats">
             <div class="animal-stat">
@@ -349,30 +356,29 @@ const shareText = () =>
           </div>
         </div>
 
-        <div
-          v-if="animal.killedSinceStart > 0 || animal.children.length > 0"
-          class="animal-card-footer"
-        >
+        <div class="animal-card-footer">
           <div class="animal-card-since">
             <small v-if="animal.killedSinceStart > 0">
               Seit du da bist {{ animal.killedSinceStart > 1 ? 'wurden' : 'wurde' }}
               <span class="text-killed">{{ animal.killedSinceStart }} {{ animal.getNameByCount(animal.killedSinceStart) }}</span>
               getötet...
             </small>
+            <small v-else>Seit du da bist: noch keins.</small>
           </div>
           <button
             v-if="animal.children.length > 0"
             class="btn-children"
+            :aria-expanded="isChildViewOpen(animal)"
             @click="toggleChildView(animal)"
           >
             {{ isChildViewOpen(animal) ? 'ausblenden' : 'Untergruppen' }}
           </button>
         </div>
 
-        <div v-if="animal.killedSinceStart > 0" class="animal-card-emojis">
-          {{ animal.killedSinceStartEmojis }}
-          <span v-if="animal.killedSinceStartHidden > 0" class="animal-card-emojis-more">
-            + {{ formatNumber(animal.killedSinceStartHidden) }} weitere
+        <div v-if="animal.perDay >= WALL_MIN_PER_DAY" class="animal-card-emojis">
+          <div class="animal-card-emojis-wall" aria-hidden="true">{{ animal.killedSinceStartEmojis }}</div>
+          <span class="animal-card-emojis-more">
+            <template v-if="animal.killedSinceStartHidden > 0">+ {{ formatNumber(animal.killedSinceStartHidden) }} weitere</template>
           </span>
         </div>
 
@@ -390,7 +396,6 @@ const shareText = () =>
 
   <!-- Live Death Counter Summary -->
   <Motion
-    v-if="totalDeathCount > 0"
     tag="section"
     class="emoji-section"
     :initial="{ opacity: 0 }"
@@ -1118,8 +1123,17 @@ const shareText = () =>
 .hero-counter-note {
   display: block;
   font-size: 0.75rem;
-  opacity: 0.45;
+  opacity: 0.55;
   margin-top: 0.15rem;
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: rgba(246, 241, 231, 0.4);
+  text-underline-offset: 3px;
+}
+.hero-counter-note:hover,
+.hero-counter-note:focus-visible {
+  color: inherit;
+  opacity: 0.9;
 }
 
 /* ── Floating Victim Bubbles ───────────────────────── */
@@ -1228,7 +1242,13 @@ const shareText = () =>
   letter-spacing: 0.06em;
   text-transform: uppercase;
   vertical-align: middle;
-  cursor: help;
+  text-decoration: none;
+}
+.animal-estimate:hover,
+.animal-estimate:focus-visible {
+  background: #ffe8a3;
+  color: #6b4a00;
+  text-decoration: none;
 }
 .animal-card-stats {
   flex: 3;
@@ -1265,6 +1285,7 @@ const shareText = () =>
   display: flex;
   align-items: center;
   justify-content: space-between;
+  min-height: 2.5rem;
   padding: 0 1.25rem 0.75rem;
   gap: 0.75rem;
   flex-wrap: wrap;
@@ -1286,11 +1307,17 @@ const shareText = () =>
 .animal-card-emojis {
   padding: 0 1.25rem 0.75rem;
   font-size: 0.85rem;
+}
+/* Exactly two rows, always the same height: no layout shift while it fills */
+.animal-card-emojis-wall {
+  height: 3.6em;
+  overflow: hidden;
   line-height: 1.8;
   word-break: break-all;
 }
 .animal-card-emojis-more {
   display: block;
+  min-height: 1.2rem;
   margin-top: 0.25rem;
   font-size: 0.8rem;
   font-weight: 600;
@@ -1327,6 +1354,7 @@ const shareText = () =>
   justify-content: center;
   gap: 0.5rem;
   max-width: 700px;
+  min-height: 5.5rem;
   margin: 0 auto;
 }
 .emoji-badge {

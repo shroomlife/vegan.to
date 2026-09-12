@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import BrandWordmark from '@/components/BrandWordmark.vue'
+import { useAnchorNavigation } from '@/composables/useAnchorNavigation'
 
 const navLinks = [
   { label: 'Zahlen', to: '/#zahlen', mobile: false },
   { label: 'Impact', to: '/#impact', mobile: false },
   { label: 'Quellen', to: '/quellen', mobile: true },
 ]
+
+const { onNavClick } = useAnchorNavigation()
 </script>
 
 <template>
@@ -19,10 +22,11 @@ const navLinks = [
           :to="link.to"
           class="site-header-link"
           :class="{ 'site-header-link--desktop': !link.mobile }"
+          @click="onNavClick(link.to)"
         >
           {{ link.label }}
         </RouterLink>
-        <RouterLink to="/#mitmachen" class="site-header-cta">#GoVegan</RouterLink>
+        <RouterLink to="/#mitmachen" class="site-header-cta" @click="onNavClick('/#mitmachen')">#GoVegan</RouterLink>
       </nav>
     </div>
   </header>
@@ -59,6 +63,8 @@ const navLinks = [
   gap: 32px;
 }
 .site-header-link {
+  position: relative;
+  padding: 6px 0;
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -67,10 +73,27 @@ const navLinks = [
   text-decoration: none;
   transition: color 0.15s;
 }
+.site-header-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--brand-accent);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.2s;
+}
 .site-header-link:hover,
 .site-header-link:focus-visible {
   color: #e9c9a8;
   text-decoration: none;
+}
+.site-header-link:hover::after,
+.site-header-link.router-link-exact-active::after {
+  transform: scaleX(1);
 }
 .site-header-cta {
   font-size: 12px;

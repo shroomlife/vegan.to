@@ -1,6 +1,13 @@
+<script setup lang="ts">
+import { useAnchorNavigation } from '@/composables/useAnchorNavigation'
+
+// On the start page the logo scrolls back to the top instead of doing nothing
+const { onNavClick } = useAnchorNavigation()
+</script>
+
 <template>
   <!-- Size follows the parent's font-size; the leaf replaces the dot -->
-  <RouterLink to="/" class="wordmark" aria-label="vegan.to, zur Startseite">
+  <RouterLink to="/" class="wordmark" aria-label="vegan.to, zur Startseite" @click="onNavClick('/')">
     <span>vegan</span>
     <svg class="wordmark-leaf" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
       <path d="M20 4c-8 0-14 4-15 12 4-6 9-8 12-9-3 2-7 5-9 12 9 0 13-7 12-15z" />

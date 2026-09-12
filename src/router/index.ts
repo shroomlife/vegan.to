@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '@/views/HomeView.vue'
+import { scrollBehavior as motionPreference } from '@/utils/scroll'
 
 /** Sticky header height plus a little air, so anchors are not hidden behind it */
 const ANCHOR_OFFSET = 84
@@ -19,11 +20,19 @@ const router = createRouter({
       component: () => import('@/views/SourcesView.vue'),
       meta: { title: 'Quellen und Methodik | vegan.to' },
     },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'NotFound',
+      component: () => import('@/views/NotFoundView.vue'),
+      meta: { title: 'Seite nicht gefunden | vegan.to' },
+    },
   ],
   scrollBehavior(to, _from, savedPosition) {
+    // Back and forward restore where the visitor was
     if (savedPosition) return savedPosition
-    if (to.hash) return { el: to.hash, top: ANCHOR_OFFSET, behavior: 'smooth' }
-    return { top: 0 }
+    const behavior = motionPreference()
+    if (to.hash) return { el: to.hash, top: ANCHOR_OFFSET, behavior }
+    return { top: 0, behavior }
   },
 })
 
