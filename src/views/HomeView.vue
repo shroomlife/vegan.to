@@ -6,6 +6,7 @@ import { Motion } from 'motion-v'
 import { useTimer } from '@/composables/useTimer'
 import { useAnimalData, type ComputedAnimal } from '@/composables/useAnimalData'
 import { animals } from '@/data/animals'
+import { sources, sourceList } from '@/data/sources'
 import { useVictimTicker } from '@/composables/useVictimTicker'
 import { usePersonalTracker } from '@/composables/usePersonalTracker'
 import { formatNumber } from '@/utils/formatNumber'
@@ -139,7 +140,6 @@ function co2Comparisons(kg: number): string[] {
   const carKm = kg / 0.23 // UBA TREMOD 2024: Pkw inkl. Vorkette, ca. 230 g CO2e pro Fahrzeug-km
   if (flights >= 1) r.push(`${formatNumber(flights)}× nach Mallorca und zurück fliegen`)
   if (carKm >= 1) r.push(`${formatNumber(carKm)} km Autofahren`)
-  if (kg >= 100) r.push(`So viel wie ${formatNumber(kg / 22)} Bäume pro Jahr binden`)
   return r.slice(0, 2)
 }
 
@@ -499,7 +499,10 @@ const shareText = () =>
       </Motion>
 
       <p class="growth-source">
-        Quellen: NVS II (2008), VEBU (2015), SKOPOS (2016), IfD Allensbach AWA (2018 bis 2025)
+        Quellen:
+        <a :href="sources.skopos.url" target="_blank" rel="noopener">NVS II (2008) und SKOPOS (2016)</a>,
+        <a :href="sources.vebu.url" target="_blank" rel="noopener">VEBU (2015)</a>,
+        <a :href="sources.awa.url" target="_blank" rel="noopener">IfD Allensbach AWA (2018 bis 2025)</a>
       </p>
     </div>
   </section>
@@ -598,7 +601,11 @@ const shareText = () =>
       </div>
 
       <p class="impact-source">
-        Quellen: Scarborough et al. (2023, <em>Nature Food</em>), Destatis, Umweltbundesamt, myclimate
+        Quellen:
+        <a :href="sources.scarborough.url" target="_blank" rel="noopener">Scarborough et al. (2023, <em>Nature Food</em>)</a>,
+        <a :href="sources.destatisPopulation.url" target="_blank" rel="noopener">Destatis</a>,
+        <a :href="sources.uba.url" target="_blank" rel="noopener">Umweltbundesamt</a>,
+        <a :href="sources.myclimate.url" target="_blank" rel="noopener">myclimate</a>
       </p>
 
       <!-- Personal Tracker -->
@@ -1012,20 +1019,16 @@ const shareText = () =>
     <div class="container">
       <div class="footer-sources">
         <p class="footer-sources-title">Quellen</p>
-        <p>
-          <a href="https://www-genesis.destatis.de/genesis/online?language=de&sequenz=tabelleErgebnis&selectionname=41331-0001" target="_blank" rel="noopener">Gewerbliche Schlachtungen 2025</a>
-          &amp;
-          <a href="https://www-genesis.destatis.de/genesis/online?language=de&sequenz=tabelleErgebnis&selectionname=41322-0001" target="_blank" rel="noopener">Geflügelschlachtereien 2025</a>
-          , Statistisches Bundesamt (Destatis)
-        </p>
         <p class="footer-note">
-          Fische: Schätzung nach
-          <a href="https://fishcount.org.uk/estimates/wildfishes/data03/fishcount_global_wild_fish_estimate.php?selyear=2003to2022&selcountry=Germany&selspecies=*+All+species+*" target="_blank" rel="noopener">fishcount.org.uk</a>
-          (Fang der deutschen Fischerei, Schnitt 2003 bis 2022, 3,7 bis 5,0 Mrd.) und
-          <a href="https://www.destatis.de/DE/Presse/Pressemitteilungen/2026/06/PD26_188_41362.html" target="_blank" rel="noopener">Destatis Aquakultur 2025</a>.
-          Fische werden amtlich nur in Tonnen erfasst.
+          Alle Zahlen sind eine Hochrechnung aus den folgenden Quellen. Fische werden amtlich nur in Tonnen erfasst,
+          ihre Stückzahl ist deshalb eine gekennzeichnete Schätzung.
         </p>
-        <p class="footer-note">Die Zahlen sind eine Hochrechnung basierend auf offiziellen Statistiken.</p>
+        <ul class="sources-list">
+          <li v-for="source in sourceList" :key="source.url">
+            <a :href="source.url" target="_blank" rel="noopener">{{ source.label }}</a>
+            <span class="sources-use">{{ source.usedFor }}</span>
+          </li>
+        </ul>
       </div>
       <div class="footer-bottom">
         <span>&copy; 2020–{{ currentYear }} vegan.to</span>
@@ -2038,8 +2041,40 @@ const shareText = () =>
 .site-footer a:hover { color: #fff; }
 .footer-sources { text-align: center; margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
 .footer-sources-title { font-weight: 700; color: rgba(255, 255, 255, 0.8); margin-bottom: 0.5rem; }
-.footer-note { font-size: 0.8rem; opacity: 0.5; margin-top: 0.5rem; }
+.footer-note { font-size: 0.8rem; opacity: 0.5; margin-top: 0.5rem; max-width: 640px; margin-left: auto; margin-right: auto; }
 .footer-note a { color: inherit; text-decoration: underline; }
+.sources-list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem auto 0;
+  max-width: 900px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 0.5rem 1.5rem;
+  text-align: left;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+.sources-list li {
+  padding-left: 0.75rem;
+  border-left: 2px solid rgba(255, 255, 255, 0.12);
+}
+.sources-list a {
+  color: rgba(255, 255, 255, 0.75);
+  text-decoration-color: rgba(255, 255, 255, 0.25);
+  overflow-wrap: anywhere;
+}
+.sources-use {
+  display: block;
+  opacity: 0.45;
+  font-size: 0.72rem;
+}
+.growth-source a,
+.impact-source a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
 .footer-bottom { display: flex; align-items: center; justify-content: center; gap: 1.5rem; flex-wrap: wrap; }
 .footer-github { opacity: 0.4; transition: opacity 0.2s; }
 .footer-github:hover { opacity: 0.8; }

@@ -23,8 +23,9 @@ Jede Sekunde werden in Deutschland Tiere getötet. Diese Seite macht das sichtba
 | Rinder, Schweine, Schafe, Ziegen, Pferde | [Destatis GENESIS 41331-0001](https://www-genesis.destatis.de/genesis/online?selectionname=41331-0001) | 2025 |
 | Hühner, Enten, Truthühner, Gänse | [Destatis GENESIS 41322-0001](https://www-genesis.destatis.de/genesis/online?selectionname=41322-0001) | 2025 |
 | Fische (Schätzung) | [fishcount.org.uk](https://fishcount.org.uk/estimates/wildfishes/data03/fishcount_global_wild_fish_estimate.php?selyear=2003to2022&selcountry=Germany&selspecies=*+All+species+*) Fang der deutschen Fischerei, [Destatis Aquakultur](https://www.destatis.de/DE/Presse/Pressemitteilungen/2026/06/PD26_188_41362.html) | Schnitt 2003 bis 2022, 2025 |
-| Impact-Berechnung | Scarborough et al. (2023, *Nature Food*), Destatis, Umweltbundesamt, myclimate | 2023 |
-| Veganer\*innen in DE | NVS II, VEBU, SKOPOS, IfD Allensbach (AWA) | 2008 bis 2025 |
+| Impact-Berechnung | [Scarborough et al. (2023, *Nature Food*)](https://doi.org/10.1038/s43016-023-00795-w), [Destatis Bevölkerung](https://www.destatis.de/DE/Presse/Pressemitteilungen/2026/06/PD26_203_124.html), [Umweltbundesamt](https://www.umweltbundesamt.de/themen/verkehr/emissionsdaten), [myclimate](https://co2.myclimate.org/de/flight_calculators/new) | 2023 bis 2025 |
+| Veganer\*innen in DE | [SKOPOS mit NVS II](https://www.skopos-group.de/news/13-millionen-deutsche-leben-vegan.html), [VEBU](https://www.marktmeinungmensch.de/studien/anzahl-der-veganer-und-vegetarier-in-deutschland-u/), [IfD Allensbach AWA](https://de.statista.com/statistik/daten/studie/445155/umfrage/umfrage-in-deutschland-zur-anzahl-der-veganer/) | 2008 bis 2025 |
+| Schlachtalter im Ticker | [BZL](https://www.landwirtschaft.de/tier-und-pflanze/tier/nutztiere-allgemein/wie-lange-leben-rind-schwein-schaf-und-huhn), [LfL Bayern](https://www.lfl.bayern.de/ifi/karpfenteichwirtschaft/149835/index.php) | 2026 |
 | Schlachthof-Standorte | Tönnies, Vion, Westfleisch, PHW, Danish Crown u.a. | 130+ Orte |
 
 ## Tech Stack
@@ -44,7 +45,10 @@ bun run dev       # Dev-Server mit HMR
 bun run build     # Type-Check + Production Build → docs/
 bun run preview   # Production Build lokal testen
 bun run lint      # ESLint
+bun run test:e2e  # Playwright End-to-End-Tests (Desktop + Mobile, baut und startet die Preview selbst)
 ```
+
+Die vollständige Quellenliste steht in `src/data/sources.ts` und im Footer der Seite.
 
 Build-Output geht nach `docs/` für GitHub Pages (CNAME: vegan.to).
 

@@ -4,7 +4,11 @@
   "private": false,
   "type": "module",
   "description": "The Official Website of Vegan.to",
-  "keywords": ["vegan", "animals", "love"],
+  "keywords": [
+    "vegan",
+    "animals",
+    "love"
+  ],
   "homepage": "https://github.com/shroomlife/vegan.to#readme",
   "bugs": {
     "url": "https://github.com/shroomlife/vegan.to/issues"
@@ -19,7 +23,9 @@
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
-    "lint": "eslint src/"
+    "lint": "eslint src/",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
   },
   "dependencies": {
     "@vueuse/core": "^13.1.0",
@@ -30,15 +36,16 @@
     "vue-router": "^4.5.0"
   },
   "devDependencies": {
-    "vite": "^6.3.1",
-    "@vitejs/plugin-vue": "^5.2.3",
-    "vite-plugin-pwa": "^1.0.0",
-    "typescript": "^5.8.3",
-    "vue-tsc": "^2.2.8",
-    "eslint": "^9.24.0",
+    "@playwright/test": "1.62.0",
+    "@types/node": "^22.14.1",
     "@typescript-eslint/eslint-plugin": "^8.29.1",
     "@typescript-eslint/parser": "^8.29.1",
+    "@vitejs/plugin-vue": "^5.2.3",
+    "eslint": "^9.24.0",
     "eslint-plugin-vue": "^10.0.0",
-    "@types/node": "^22.14.1"
+    "typescript": "^5.8.3",
+    "vite": "^6.3.1",
+    "vite-plugin-pwa": "^1.0.0",
+    "vue-tsc": "^2.2.8"
   }
 }
