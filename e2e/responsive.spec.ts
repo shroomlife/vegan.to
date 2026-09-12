@@ -11,7 +11,8 @@ const KEY_SECTIONS = [
   '.impact-card',
   '.why-how-card',
   '.cta-button',
-  '.sources-list',
+  '.site-footer',
+  '.site-header',
 ]
 
 test.describe('responsive layout', () => {

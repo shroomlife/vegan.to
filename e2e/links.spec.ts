@@ -37,15 +37,37 @@ test.describe('outbound links and sources', () => {
     }
   })
 
-  test('the footer lists every data source with a link', async ({ page }) => {
+  test('header and footer carry the brand, the partner links and the sources page', async ({ page }) => {
     await page.goto('/')
-    const sources = page.locator('.sources-list li')
-    expect(await sources.count()).toBeGreaterThanOrEqual(10)
+    await expect(page.locator('.site-header .wordmark')).toHaveText(/vegan\s*to/)
+    await expect(page.locator('.site-header').getByRole('link', { name: 'Quellen' })).toHaveAttribute('href', '/quellen')
+    const footer = page.locator('.site-footer')
+    await expect(footer.locator('.wordmark')).toBeVisible()
+    await expect(footer.locator('.pride-flag')).toBeVisible()
+    for (const domain of ['warum-vegan.com', 'wie-vegan.com', 'vegan-community.de']) {
+      await expect(footer.getByRole('link', { name: domain })).toHaveAttribute('href', `https://${domain}/`)
+    }
+    await expect(footer.getByRole('link', { name: 'Quellen und Methodik' })).toHaveAttribute('href', '/quellen')
+  })
+
+  test('the sources page lists every data source with a link and explains the method', async ({ page }) => {
+    await page.goto('/quellen')
+    await expect(page).toHaveTitle(/Quellen und Methodik/)
+    const sources = page.locator('.sources-item')
+    expect(await sources.count()).toBeGreaterThanOrEqual(14)
     for (const item of await sources.all()) {
       await expect(item.locator('a[href^="https://"]').first()).toHaveAttribute('href', /^https:\/\//)
     }
-    await expect(page.locator('.sources-list')).toContainText('Destatis')
-    await expect(page.locator('.sources-list')).toContainText('fishcount')
-    await expect(page.locator('.sources-list')).toContainText('Scarborough')
+    await expect(page.locator('.sources-body')).toContainText('Destatis')
+    await expect(page.locator('.sources-body')).toContainText('fishcount')
+    await expect(page.locator('.sources-body')).toContainText('Scarborough')
+    await expect(page.locator('#methodik')).toContainText('Vom Jahr zur Sekunde')
+    await expect(page.locator('.site-footer')).toBeVisible()
+  })
+
+  test('the 404 fallback serves the app for deep links', async ({ request }) => {
+    const res = await request.get('/404.html')
+    expect(res.status()).toBe(200)
+    expect(await res.text()).toContain('id="app"')
   })
 })

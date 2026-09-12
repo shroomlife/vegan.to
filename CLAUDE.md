@@ -21,7 +21,7 @@ Build output goes to `docs/` (configured in `vite.config.ts`) for GitHub Pages d
 
 - **Vue 3.5** + TypeScript + Composition API (`<script setup lang="ts">`)
 - **Vite 6** with `@vitejs/plugin-vue` and `vite-plugin-pwa`
-- **Vue Router 4** (history mode, single route `/`)
+- **Vue Router 4** (history mode, routes `/` and `/quellen`; `docs/404.html` is a copy of index.html so GitHub Pages deep links reach the router)
 - **@vueuse/core** — `useTransition` for animated number counters
 - **dayjs** — lightweight date math (replaces moment.js)
 - **humanize-duration** — German-language elapsed time display
@@ -40,7 +40,9 @@ Build output goes to `docs/` (configured in `vite.config.ts`) for GitHub Pages d
 
 - `src/utils/formatNumber.ts` — `Intl.NumberFormat('de-DE')` wrapper (replaces humanize package)
 - `src/utils/shuffle.ts` — Fisher-Yates shuffle (replaces lodash)
-- `src/App.vue` — navbar + `<RouterView />`
+- `src/App.vue` — `SiteHeader` (sticky glass header) + `<RouterView />` + `SiteFooter`
+- `src/components/BrandWordmark.vue`, `PrideFlag.vue`, `SiteHeader.vue`, `SiteFooter.vue` — brand shell; tokens in `src/assets/custom.css` (forest green, cream, accent, Unbounded display font)
+- `src/data/sources.ts` — every external figure's source with category; rendered on `/quellen` (`src/views/SourcesView.vue`)
 - `public/` — static assets, CNAME, manifest.json, icons
 
 ### Styling

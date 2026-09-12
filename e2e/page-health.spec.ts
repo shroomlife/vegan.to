@@ -21,7 +21,6 @@ test.describe('page health', () => {
         naturalWidth: img.naturalWidth,
       })),
     )
-    expect(images.length).toBeGreaterThan(0)
     for (const img of images) {
       expect(img.alt, img.src).not.toBe('')
       expect(img.complete, img.src).toBe(true)

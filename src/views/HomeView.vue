@@ -6,16 +6,13 @@ import { Motion } from 'motion-v'
 import { useTimer } from '@/composables/useTimer'
 import { useAnimalData, type ComputedAnimal } from '@/composables/useAnimalData'
 import { animals } from '@/data/animals'
-import { sources, sourceList } from '@/data/sources'
+import { sources } from '@/data/sources'
 import { useVictimTicker } from '@/composables/useVictimTicker'
 import { usePersonalTracker } from '@/composables/usePersonalTracker'
 import { formatNumber } from '@/utils/formatNumber'
 import AnimatedNumber from '@/components/AnimatedNumber.vue'
 import OdometerNumber from '@/components/OdometerNumber.vue'
 import GrowthTimeline from '@/components/GrowthTimeline.vue'
-
-declare const __APP_VERSION__: string
-const appVersion = __APP_VERSION__
 
 const timer = useTimer()
 const isMobile = useMediaQuery('(max-width: 767px)')
@@ -208,8 +205,6 @@ const animatedTotalDeaths = useTransition(totalDeathCount, {
   transition: TransitionPresets.easeOutCubic,
 })
 
-const currentYear = new Date().getFullYear()
-
 const shareText = () =>
   `In nur ${timer.elapsedFormatted.value} in denen ich auf https://vegan.to war, sind in #Deutschland schon ${totalDeathCount.value} Tiere ermordet worden...\n\n#GoVegan\n#StopEatingAnimals\n#PostmeatGeneration\n\n🐷🐮🐔`
 </script>
@@ -302,7 +297,7 @@ const shareText = () =>
   </section>
 
   <!-- Animal Data -->
-  <section class="animals-section">
+  <section id="zahlen" class="animals-section">
     <div class="container">
       <!-- Desktop Header -->
       <Motion
@@ -492,7 +487,7 @@ const shareText = () =>
   </section>
 
   <!-- Impact Timeline -->
-  <section class="impact-section">
+  <section id="impact" class="impact-section">
     <div class="container">
       <Motion
         tag="h2"
@@ -721,7 +716,7 @@ const shareText = () =>
   </section>
 
   <!-- CTA -->
-  <section class="cta-section">
+  <section id="mitmachen" class="cta-section">
     <div class="container">
       <Motion
         tag="h2"
@@ -998,43 +993,18 @@ const shareText = () =>
     </div>
   </section>
 
-  <!-- Footer -->
-  <footer class="site-footer">
-    <div class="container">
-      <div class="footer-sources">
-        <p class="footer-sources-title">Quellen</p>
-        <p class="footer-note">
-          Alle Zahlen sind eine Hochrechnung aus den folgenden Quellen. Fische werden amtlich nur in Tonnen erfasst,
-          ihre Stückzahl ist deshalb eine gekennzeichnete Schätzung.
-        </p>
-        <ul class="sources-list">
-          <li v-for="source in sourceList" :key="source.url">
-            <a :href="source.url" target="_blank" rel="noopener">{{ source.label }}</a>
-            <span class="sources-use">{{ source.usedFor }}</span>
-          </li>
-        </ul>
-      </div>
-      <div class="footer-bottom">
-        <span>&copy; 2020–{{ currentYear }} vegan.to</span>
-        <a class="footer-github" href="https://github.com/shroomlife/vegan.to" target="_blank" rel="noopener">
-          <img src="/img/GitHub-Mark-32px.png" width="24" height="24" alt="GitHub" />
-        </a>
-        <span class="footer-version">v{{ appVersion }}</span>
-      </div>
-    </div>
-  </footer>
 </template>
 
 <style scoped>
 /* ── Hero ─────────────────────────────────────────── */
 .hero {
-  background: linear-gradient(135deg, #2d1b69, #1a1a4e, #0d3b66, #1b4332);
+  background: linear-gradient(160deg, var(--brand-green-deep), var(--brand-green), var(--brand-green-soft), #2f5f3a);
   background-size: 400% 400%;
   animation: heroGradient 20s ease infinite;
-  color: #fff;
+  color: var(--brand-cream);
   padding: 3rem 1.5rem 2rem;
   text-align: center;
-  min-height: 100svh;
+  min-height: calc(100svh - var(--header-height));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1101,6 +1071,8 @@ const shareText = () =>
   text-transform: uppercase;
   letter-spacing: 0.2em;
   font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--brand-accent);
   margin-bottom: 0.75rem;
 }
 .hero-title {
@@ -2013,56 +1985,6 @@ const shareText = () =>
   background: linear-gradient(180deg, #f0fdf4 0%, #f8f9fa 100%);
 }
 
-/* ── Footer ───────────────────────────────────────── */
-.site-footer {
-  background: #1b1b3a;
-  color: rgba(255, 255, 255, 0.6);
-  padding: 2rem 1rem;
-  font-size: 0.85rem;
-}
-.site-footer a { color: rgba(255, 255, 255, 0.5); text-decoration: underline; text-decoration-color: rgba(255, 255, 255, 0.2); }
-.site-footer a:hover { color: #fff; }
-.footer-sources { text-align: center; margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
-.footer-sources-title { font-weight: 700; color: rgba(255, 255, 255, 0.8); margin-bottom: 0.5rem; }
-.footer-note { font-size: 0.8rem; opacity: 0.5; margin-top: 0.5rem; max-width: 640px; margin-left: auto; margin-right: auto; }
-.footer-note a { color: inherit; text-decoration: underline; }
-.sources-list {
-  list-style: none;
-  padding: 0;
-  margin: 1rem auto 0;
-  max-width: 900px;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 0.5rem 1.5rem;
-  text-align: left;
-  font-size: 0.78rem;
-  line-height: 1.4;
-}
-.sources-list li {
-  padding-left: 0.75rem;
-  border-left: 2px solid rgba(255, 255, 255, 0.12);
-}
-.sources-list a {
-  color: rgba(255, 255, 255, 0.75);
-  text-decoration-color: rgba(255, 255, 255, 0.25);
-  overflow-wrap: anywhere;
-}
-.sources-use {
-  display: block;
-  opacity: 0.45;
-  font-size: 0.72rem;
-}
-.growth-source a,
-.impact-source a {
-  color: inherit;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-.footer-bottom { display: flex; align-items: center; justify-content: center; gap: 1.5rem; flex-wrap: wrap; }
-.footer-github { opacity: 0.4; transition: opacity 0.2s; }
-.footer-github:hover { opacity: 0.8; }
-.footer-github img { filter: invert(1); }
-.footer-version { opacity: 0.4; font-size: 0.75rem; }
 
 /* ── Modal (inline, scoped) ───────────────────────── */
 .vt-modal {
@@ -2415,14 +2337,7 @@ const shareText = () =>
     padding: 2rem 0.75rem;
   }
 
-  /* Footer */
-  .site-footer {
-    padding: 1.5rem 0.75rem;
-  }
-  .footer-bottom {
-    gap: 1rem;
-    font-size: 0.8rem;
-  }
+  /* Modal on small screens */
 
   /* Modal */
   .vt-modal {

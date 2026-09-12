@@ -48,7 +48,7 @@ bun run lint      # ESLint
 bun run test:e2e  # Playwright End-to-End-Tests (Desktop + Mobile, baut und startet die Preview selbst)
 ```
 
-Die vollständige Quellenliste steht in `src/data/sources.ts` und im Footer der Seite.
+Die vollständige Quellenliste samt Methodik steht in `src/data/sources.ts` und auf [vegan.to/quellen](https://vegan.to/quellen).
 
 Build-Output geht nach `docs/` für GitHub Pages (CNAME: vegan.to).
 

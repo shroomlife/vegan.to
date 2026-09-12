@@ -1,7 +1,24 @@
+:root {
+  /* Brand: forest green, cream and a warm signal accent */
+  --brand-green: #14361f;
+  --brand-green-deep: #0f2a17;
+  --brand-green-soft: #1f4a2c;
+  --brand-cream: #f6f1e7;
+  --brand-accent: #ff6a3d;
+  --font-display: 'Unbounded', 'Arial Black', sans-serif;
+  --header-height: 68px;
+}
+
+@media (max-width: 767px) {
+  :root {
+    --header-height: 60px;
+  }
+}
+
 html, body {
   font-family: 'Lato', sans-serif;
 }
 
-.children {
-  font-size: 90%;
+html {
+  scroll-padding-top: calc(var(--header-height) + 16px);
 }
