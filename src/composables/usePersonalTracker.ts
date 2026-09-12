@@ -36,16 +36,20 @@ export function usePersonalTracker() {
     return Math.max(0, Math.floor(diff / (1000 * 60 * 60 * 24)))
   })
 
+  /**
+   * Duration in dative case, because it is always used after "seit"
+   * ("seit 2 Jahren", "seit 1 Monat", "seit 5 Tagen").
+   */
   const formattedDuration = computed(() => {
     const days = daysSinceVegan.value
-    if (days === 0) return ''
+    if (days === 0) return 'heute'
     const years = Math.floor(days / 365)
     const months = Math.floor((days % 365) / 30)
-    const remainingDays = days % 30
+    const remainingDays = (days % 365) % 30
     const parts: string[] = []
-    if (years > 0) parts.push(`${years} ${years === 1 ? 'Jahr' : 'Jahre'}`)
-    if (months > 0) parts.push(`${months} ${months === 1 ? 'Monat' : 'Monate'}`)
-    if (remainingDays > 0 && years === 0) parts.push(`${remainingDays} ${remainingDays === 1 ? 'Tag' : 'Tage'}`)
+    if (years > 0) parts.push(`${years} ${years === 1 ? 'Jahr' : 'Jahren'}`)
+    if (months > 0) parts.push(`${months} ${months === 1 ? 'Monat' : 'Monaten'}`)
+    if (remainingDays > 0 && years === 0) parts.push(`${remainingDays} ${remainingDays === 1 ? 'Tag' : 'Tagen'}`)
     return parts.join(', ')
   })
 

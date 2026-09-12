@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, watch, onUnmounted } from 'vue'
+import { ref, computed, watch, onUnmounted, useTemplateRef } from 'vue'
+import dayjs from 'dayjs'
 import { useTransition, TransitionPresets } from '@vueuse/core'
 import { Motion } from 'motion-v'
 import { useTimer } from '@/composables/useTimer'
@@ -9,6 +10,7 @@ import { usePersonalTracker } from '@/composables/usePersonalTracker'
 import { formatNumber } from '@/utils/formatNumber'
 import AnimatedNumber from '@/components/AnimatedNumber.vue'
 import OdometerNumber from '@/components/OdometerNumber.vue'
+import GrowthTimeline from '@/components/GrowthTimeline.vue'
 
 declare const __APP_VERSION__: string
 const appVersion = __APP_VERSION__
@@ -61,12 +63,24 @@ const DAILY_CO2_KG = 8.1
 const DAILY_LAND_M2 = 3.1
 
 const activeImpact = ref(4) // Default: 1 Jahr
+const activeImpactData = computed(() => impactFor(impactTimeline[activeImpact.value]!.days))
 const { veganSince, isSet: hasPersonalDate, daysSinceVegan, formattedDuration, clear: clearPersonalDate } = usePersonalTracker()
-const showTrackerModal = ref(false)
+const personalImpact = computed(() => impactFor(daysSinceVegan.value))
 const copyLabel = ref('Kopieren')
 
+// Native <dialog>: top layer, focus trap, Escape to close, backdrop for free
+const trackerDialog = useTemplateRef<HTMLDialogElement>('trackerDialog')
+function openTrackerModal() {
+  trackerDialog.value?.showModal()
+}
+function closeTrackerModal() {
+  trackerDialog.value?.close()
+}
+// Local date (not UTC), so "today" is selectable right after midnight in Germany
+const todayLocalIso = computed(() => dayjs(timer.now.value).format('YYYY-MM-DD'))
+
 const personalShareText = computed(() => {
-  const impact = impactFor(daysSinceVegan.value)
+  const impact = personalImpact.value
   return `Seit ${formattedDuration.value} lebe ich vegan und habe damit schon ${impact.lives.value} Tierleben gerettet, ${impact.water.value} L Wasser gespart und ${impact.co2.value} kg CO₂ vermieden. 🌱\n\nWas ist dein Impact? 👉 https://vegan.to\n\n#GoVegan #VeganFürDieTiere`
 })
 
@@ -105,15 +119,15 @@ function waterComparisons(liters: number): string[] {
   const pools = liters / 50_000
   if (pools >= 1) r.push(`${formatNumber(pools)} Schwimmbecken voll Wasser`)
   if (bathtubs >= 1) r.push(`${formatNumber(bathtubs)} volle Badewannen`)
-  if (liters >= 1000) r.push(`${formatNumber(liters / 1000)} Tonnen — genug für ein kleines Dorf`)
+  if (liters >= 1000) r.push(`${formatNumber(liters / 1000)} Tonnen Wasser, genug für ein kleines Dorf`)
   return r.slice(0, 2)
 }
 
 function co2Comparisons(kg: number): string[] {
   const r: string[] = []
-  const flights = kg / 750 // Frankfurt–Mallorca ~750kg CO2
+  const flights = kg / 750 // Frankfurt nach Mallorca, ca. 750 kg CO2
   const carKm = kg / 0.15 // ~150g CO2/km Durchschnitt
-  if (flights >= 1) r.push(`${formatNumber(flights)}× Frankfurt–Mallorca fliegen`)
+  if (flights >= 1) r.push(`${formatNumber(flights)}× von Frankfurt nach Mallorca fliegen`)
   if (carKm >= 1) r.push(`${formatNumber(carKm)} km Autofahren`)
   if (kg >= 100) r.push(`So viel wie ${formatNumber(kg / 22)} Bäume pro Jahr binden`)
   return r.slice(0, 2)
@@ -130,7 +144,7 @@ function landComparisons(m2: number): string[] {
 }
 
 /**
- * Veganer*innen in Deutschland — AWA/Allensbach Zeitreihe + BMEL
+ * Veganer*innen in Deutschland: AWA/Allensbach Zeitreihe + BMEL
  * Quellen: IfD Allensbach / AWA (via Statista), BMEL Ernährungsreport (Forsa)
  */
 const POPULATION_DE = 84_400_000
@@ -146,6 +160,7 @@ const veganTimeline = [
 ]
 
 const latestVeganCount = veganTimeline[veganTimeline.length - 1]!
+const veganTimelineAxisYears = [2008, 2012, 2016, 2020, 2025]
 
 // Visual growth: 1 new vegan every ~3 seconds
 const VISUAL_GROWTH_PER_SEC = 1 / 3
@@ -168,7 +183,7 @@ const animatedVeganCount = computed(() =>
   Math.round(veganCounterStart + timer.secondsSinceStart.value * VISUAL_GROWTH_PER_SEC),
 )
 
-// Save counter every 10 seconds
+// Persist the visual counter whenever it changes (once per second)
 watch(animatedVeganCount, (val) => {
   try { localStorage.setItem(VEGAN_STORAGE_KEY, val.toString()) } catch { /* */ }
 }, { flush: 'post' })
@@ -271,8 +286,8 @@ const shareText = () =>
         :animate="{ opacity: 0.8, y: 0 }"
         :transition="{ duration: 0.8, delay: 0.3 }"
       >
-        Jeden Tag werden in Deutschland Tiere getötet, damit sie auf Tellern landen.
-        Sie hatten einen Namen. Ein Alter. Keine Wahl.
+        Jeden Tag sterben in Deutschland Tiere, damit sie auf Tellern landen.
+        Jedes von ihnen hatte einen Namen und ein Alter. Keins hatte eine Wahl.
       </Motion>
 
       <!-- Live Counter -->
@@ -359,6 +374,9 @@ const shareText = () =>
 
         <div v-if="animal.killedSinceStart > 0" class="animal-card-emojis">
           {{ animal.killedSinceStartEmojis }}
+          <span v-if="animal.killedSinceStartHidden > 0" class="animal-card-emojis-more">
+            + {{ formatNumber(animal.killedSinceStartHidden) }} weitere
+          </span>
         </div>
 
         <div v-if="isChildViewOpen(animal)" class="animal-children">
@@ -398,12 +416,12 @@ const shareText = () =>
         </span>
       </div>
       <div class="emoji-total">
-        <AnimatedNumber :value="totalDeathCount" /> Tiere — allein seit du diese Seite geöffnet hast.
+        <AnimatedNumber :value="totalDeathCount" /> Tiere, seit du diese Seite geöffnet hast.
       </div>
     </div>
   </Motion>
 
-  <!-- Vegan Growth — Full-Width Progress Bar -->
+  <!-- Vegan Growth: Full-Width Progress Bar -->
   <section class="growth-section">
     <div class="growth-inner">
       <Motion
@@ -426,7 +444,7 @@ const shareText = () =>
         </div>
         <div class="growth-stat">
           <span class="growth-stat-number">{{ formatNumber(POPULATION_DE) }}</span>
-          <span class="growth-stat-label">Gesamtbevölkerung — das Ziel</span>
+          <span class="growth-stat-label">Gesamtbevölkerung. Da wollen wir hin.</span>
         </div>
       </div>
 
@@ -443,6 +461,15 @@ const shareText = () =>
       </div>
 
       <Motion
+        :initial="{ opacity: 0, y: 12 }"
+        :whileInView="{ opacity: 1, y: 0 }"
+        :transition="{ duration: 0.6, delay: 0.1 }"
+        :inViewOptions="{ once: true }"
+      >
+        <GrowthTimeline :points="veganTimeline" :label-years="veganTimelineAxisYears" />
+      </Motion>
+
+      <Motion
         tag="p"
         class="growth-message"
         :initial="{ opacity: 0 }"
@@ -450,7 +477,7 @@ const shareText = () =>
         :transition="{ duration: 0.6, delay: 0.2 }"
         :inViewOptions="{ once: true }"
       >
-        Von 80.000 auf fast 2 Millionen in 17 Jahren — und es werden jede Sekunde mehr.
+        2008 waren es 80.000. Heute sind es über 1,6 Millionen. Und es werden jede Sekunde mehr.
       </Motion>
 
       <p class="growth-source">
@@ -470,7 +497,7 @@ const shareText = () =>
         :transition="{ duration: 0.6, type: 'spring' }"
         :inViewOptions="{ once: true }"
       >
-        Dein Impact — wenn du heute anfängst
+        Dein Impact, wenn du heute anfängst
       </Motion>
       <Motion
         tag="p"
@@ -497,18 +524,18 @@ const shareText = () =>
         </button>
       </div>
 
-      <!-- Impact Cards — vertical, with comparisons -->
+      <!-- Impact Cards: vertical, with comparisons -->
       <div class="impact-cards">
         <div class="impact-card impact-card--lives">
           <div class="impact-card-head">
             <span class="impact-card-icon">🐾</span>
             <div>
-              <span class="impact-card-value">{{ impactFor(impactTimeline[activeImpact]!.days).lives.value }}</span>
+              <span class="impact-card-value">{{ activeImpactData.lives.value }}</span>
               <span class="impact-card-label">Tierleben gerettet</span>
             </div>
           </div>
           <ul class="impact-card-comparisons">
-            <li v-for="c in impactFor(impactTimeline[activeImpact]!.days).lives.comparisons" :key="c">{{ c }}</li>
+            <li v-for="c in activeImpactData.lives.comparisons" :key="c">{{ c }}</li>
           </ul>
         </div>
 
@@ -516,12 +543,12 @@ const shareText = () =>
           <div class="impact-card-head">
             <span class="impact-card-icon">💧</span>
             <div>
-              <span class="impact-card-value">{{ impactFor(impactTimeline[activeImpact]!.days).water.value }} L</span>
+              <span class="impact-card-value">{{ activeImpactData.water.value }} L</span>
               <span class="impact-card-label">Wasser gespart</span>
             </div>
           </div>
           <ul class="impact-card-comparisons">
-            <li v-for="c in impactFor(impactTimeline[activeImpact]!.days).water.comparisons" :key="c">{{ c }}</li>
+            <li v-for="c in activeImpactData.water.comparisons" :key="c">{{ c }}</li>
           </ul>
         </div>
 
@@ -529,12 +556,12 @@ const shareText = () =>
           <div class="impact-card-head">
             <span class="impact-card-icon">🌿</span>
             <div>
-              <span class="impact-card-value">{{ impactFor(impactTimeline[activeImpact]!.days).co2.value }} kg</span>
+              <span class="impact-card-value">{{ activeImpactData.co2.value }} kg</span>
               <span class="impact-card-label">CO₂ vermieden</span>
             </div>
           </div>
           <ul class="impact-card-comparisons">
-            <li v-for="c in impactFor(impactTimeline[activeImpact]!.days).co2.comparisons" :key="c">{{ c }}</li>
+            <li v-for="c in activeImpactData.co2.comparisons" :key="c">{{ c }}</li>
           </ul>
         </div>
 
@@ -542,12 +569,12 @@ const shareText = () =>
           <div class="impact-card-head">
             <span class="impact-card-icon">🌾</span>
             <div>
-              <span class="impact-card-value">{{ impactFor(impactTimeline[activeImpact]!.days).land.value }} m²</span>
+              <span class="impact-card-value">{{ activeImpactData.land.value }} m²</span>
               <span class="impact-card-label">Land geschont</span>
             </div>
           </div>
           <ul class="impact-card-comparisons">
-            <li v-for="c in impactFor(impactTimeline[activeImpact]!.days).land.comparisons" :key="c">{{ c }}</li>
+            <li v-for="c in activeImpactData.land.comparisons" :key="c">{{ c }}</li>
           </ul>
         </div>
       </div>
@@ -570,7 +597,7 @@ const shareText = () =>
           <p class="personal-tracker-prompt">
             Du lebst schon vegan? Finde heraus, was du bereits bewirkt hast.
           </p>
-          <button class="personal-open-btn" @click="showTrackerModal = true">
+          <button class="personal-open-btn" @click="openTrackerModal">
             Jetzt eintragen
           </button>
         </div>
@@ -580,7 +607,7 @@ const shareText = () =>
             <p class="personal-duration">
               🎉 Du lebst seit <strong>{{ formattedDuration }}</strong> vegan!
             </p>
-            <button class="personal-reset" @click="showTrackerModal = true">
+            <button class="personal-reset" @click="openTrackerModal">
               ändern
             </button>
           </div>
@@ -588,22 +615,22 @@ const shareText = () =>
           <div class="personal-impact-cards">
             <div class="personal-impact-card">
               <span class="personal-impact-icon">🐾</span>
-              <span class="personal-impact-value personal-impact-value--lives">{{ impactFor(daysSinceVegan).lives.value }}</span>
+              <span class="personal-impact-value personal-impact-value--lives">{{ personalImpact.lives.value }}</span>
               <span class="personal-impact-label">Tierleben gerettet</span>
             </div>
             <div class="personal-impact-card">
               <span class="personal-impact-icon">💧</span>
-              <span class="personal-impact-value personal-impact-value--water">{{ impactFor(daysSinceVegan).water.value }} L</span>
+              <span class="personal-impact-value personal-impact-value--water">{{ personalImpact.water.value }} L</span>
               <span class="personal-impact-label">Wasser gespart</span>
             </div>
             <div class="personal-impact-card">
               <span class="personal-impact-icon">🌿</span>
-              <span class="personal-impact-value personal-impact-value--co2">{{ impactFor(daysSinceVegan).co2.value }} kg</span>
+              <span class="personal-impact-value personal-impact-value--co2">{{ personalImpact.co2.value }} kg</span>
               <span class="personal-impact-label">CO₂ vermieden</span>
             </div>
             <div class="personal-impact-card">
               <span class="personal-impact-icon">🌾</span>
-              <span class="personal-impact-value personal-impact-value--land">{{ impactFor(daysSinceVegan).land.value }} m²</span>
+              <span class="personal-impact-value personal-impact-value--land">{{ personalImpact.land.value }} m²</span>
               <span class="personal-impact-label">Land geschont</span>
             </div>
           </div>
@@ -647,39 +674,40 @@ const shareText = () =>
         </div>
       </Motion>
 
-      <!-- Tracker Modal — inline, no Teleport -->
-      <div v-if="showTrackerModal" class="vt-modal-overlay" @mousedown.self="showTrackerModal = false">
-        <div class="vt-modal" @mousedown.stop>
-          <button class="vt-modal-close" @click="showTrackerModal = false" aria-label="Schließen">&times;</button>
-          <div class="vt-modal-emoji">🌱</div>
-          <h3 class="vt-modal-title">Seit wann lebst du vegan?</h3>
+      <!-- Tracker modal: native <dialog>, opened via showModal() -->
+      <dialog ref="trackerDialog" class="vt-modal" aria-labelledby="vt-modal-title" @mousedown.self="closeTrackerModal">
+        <div class="vt-modal-body">
+          <button class="vt-modal-close" aria-label="Schließen" @click="closeTrackerModal">&times;</button>
+          <div class="vt-modal-emoji" aria-hidden="true">🌱</div>
+          <h3 id="vt-modal-title" class="vt-modal-title">Seit wann lebst du vegan?</h3>
           <p class="vt-modal-desc">
-            Wähle das Datum — wir berechnen deinen Impact.
+            Wähle das Datum, wir rechnen den Rest aus.
           </p>
           <input
             v-model="veganSince"
             type="date"
             class="vt-modal-input"
-            :max="new Date().toISOString().split('T')[0]"
+            autofocus
+            :max="todayLocalIso"
           />
           <div class="vt-modal-actions">
             <button
               v-if="hasPersonalDate"
               class="vt-modal-btn vt-modal-btn--reset"
-              @click="clearPersonalDate(); showTrackerModal = false"
+              @click="clearPersonalDate(); closeTrackerModal()"
             >
               Zurücksetzen
             </button>
             <button
               class="vt-modal-btn vt-modal-btn--save"
               :disabled="!hasPersonalDate"
-              @click="showTrackerModal = false"
+              @click="closeTrackerModal"
             >
               Speichern
             </button>
           </div>
         </div>
-      </div>
+      </dialog>
     </div>
   </section>
 
@@ -706,15 +734,43 @@ const shareText = () =>
         :inViewOptions="{ once: true }"
       >
         <p class="cta-intro-text">
-          Die Zahlen sind erschreckend — aber du bist nicht machtlos.
-          <strong>Jede*r Einzelne</strong> kann durch bewusste Entscheidungen jeden Tag
-          Leben retten. Die gute Nachricht: Es war noch nie so einfach wie heute.
+          Die Zahlen sind erschreckend. Aber du bist nicht machtlos.
+          Mit jeder Mahlzeit entscheidest du mit, und jede dieser Entscheidungen kann ein Leben retten.
+          Und ehrlich: So einfach wie heute war das noch nie.
         </p>
         <p class="cta-intro-text">
-          Pflanzliche Alternativen gibt es inzwischen für <em>alles</em> — im Supermarkt,
-          im Restaurant, beim Bäcker*in um die Ecke. Du musst auf nichts verzichten.
+          Pflanzliche Alternativen gibt es inzwischen für <em>alles</em>, im Supermarkt genauso
+          wie im Restaurant oder in der Bäckerei um die Ecke. Du verzichtest auf nichts.
           Du entscheidest dich nur anders.
         </p>
+      </Motion>
+
+      <!-- Die zwei Kernfragen: Warum? Wie? -->
+      <Motion
+        class="why-how"
+        :initial="{ opacity: 0, y: 20 }"
+        :whileInView="{ opacity: 1, y: 0 }"
+        :transition="{ duration: 0.5, delay: 0.1 }"
+        :inViewOptions="{ once: true }"
+      >
+        <a href="https://warum-vegan.com/" target="_blank" rel="noopener" class="why-how-card why-how-card--why">
+          <span class="why-how-kicker">Die Frage nach dem Grund</span>
+          <span class="why-how-title">Warum vegan?</span>
+          <span class="why-how-desc">
+            Warum Tiere Rechte haben und was Speziesismus damit zu tun hat.
+            Mit Dokus und Texten, die hängen bleiben.
+          </span>
+          <span class="why-how-domain">warum-vegan.com</span>
+        </a>
+        <a href="https://wie-vegan.com/" target="_blank" rel="noopener" class="why-how-card why-how-card--how">
+          <span class="why-how-kicker">Die Frage nach dem Weg</span>
+          <span class="why-how-title">Wie vegan?</span>
+          <span class="why-how-desc">
+            Der praktische Teil: Was essen, was anziehen, worauf beim Einkauf achten.
+            Mit kostenlosen Guides zum Runterladen.
+          </span>
+          <span class="why-how-domain">wie-vegan.com</span>
+        </a>
       </Motion>
 
       <!-- Main CTA -->
@@ -748,11 +804,11 @@ const shareText = () =>
         </div>
         <div class="motivation-fact">
           <span class="motivation-number">3x</span>
-          <span class="motivation-label">am Tag triffst du eine Entscheidung — Frühstück, Mittag, Abend</span>
+          <span class="motivation-label">am Tag entscheidest du, was auf den Teller kommt</span>
         </div>
         <div class="motivation-fact">
           <span class="motivation-number">1</span>
-          <span class="motivation-label">Mensch reicht, um den Anfang zu machen — du.</span>
+          <span class="motivation-label">Mensch reicht für den Anfang. Du.</span>
         </div>
       </Motion>
 
@@ -768,16 +824,16 @@ const shareText = () =>
         >
           <h3 class="action-category-title">🌱 Einfach anfangen</h3>
           <p class="action-category-desc">
-            Du brauchst keinen perfekten Plan. Starte mit einer Challenge — tausende machen mit.
+            Du brauchst keinen perfekten Plan. Fang mit einer Challenge an, da bist du nicht allein.
           </p>
           <div class="action-links">
             <a href="https://veganuary.com/de/" target="_blank" rel="noopener" class="action-link">
               <span class="action-link-name">Veganuary</span>
-              <span class="action-link-desc">31 Tage vegan — mit Rezepten, Tipps und Community</span>
+              <span class="action-link-desc">31 Tage vegan, mit Rezepten und Leuten, die gerade dasselbe ausprobieren</span>
             </a>
             <a href="https://www.challenge22.com/" target="_blank" rel="noopener" class="action-link">
               <span class="action-link-name">Challenge 22</span>
-              <span class="action-link-desc">22 Tage mit persönlicher Beratung — komplett kostenlos</span>
+              <span class="action-link-desc">22 Tage mit persönlicher Begleitung, kostenlos</span>
             </a>
             <a href="https://proveg.org/de/" target="_blank" rel="noopener" class="action-link">
               <span class="action-link-name">ProVeg</span>
@@ -796,28 +852,28 @@ const shareText = () =>
         >
           <h3 class="action-category-title">🎬 Augen öffnen</h3>
           <p class="action-category-desc">
-            Wissen ist der erste Schritt. Diese Dokus verändern Perspektiven — bei Millionen Menschen weltweit.
+            Diese Dokus haben bei vielen Menschen den Blick verändert. Vielleicht auch bei dir.
           </p>
           <div class="action-links">
             <a href="https://www.watchdominion.org/" target="_blank" rel="noopener" class="action-link">
               <span class="action-link-name">Dominion</span>
-              <span class="action-link-desc">Die wichtigste Doku über industrielle Tierhaltung</span>
+              <span class="action-link-desc">Die Doku über industrielle Tierhaltung. Schwer auszuhalten, aber wichtig.</span>
             </a>
             <a href="https://www.cowspiracy.com/" target="_blank" rel="noopener" class="action-link">
               <span class="action-link-name">Cowspiracy</span>
-              <span class="action-link-desc">Warum Tierhaltung die größte Umweltbedrohung ist</span>
+              <span class="action-link-desc">Was Tierhaltung mit Klima, Wasser und Wald macht</span>
             </a>
             <a href="https://www.seaspiracy.org/" target="_blank" rel="noopener" class="action-link">
               <span class="action-link-name">Seaspiracy</span>
-              <span class="action-link-desc">Die Wahrheit über Fischerei und unsere Meere</span>
+              <span class="action-link-desc">Was Fischerei mit den Meeren macht</span>
             </a>
             <a href="https://www.vegan.eu/" target="_blank" rel="noopener" class="action-link">
               <span class="action-link-name">vegan.eu</span>
-              <span class="action-link-desc">Deutsches Infoportal — Fakten, Studien, Hintergründe</span>
+              <span class="action-link-desc">Infoportal mit Fakten und Studien, auf Deutsch</span>
             </a>
             <a href="https://www.vegpool.de/" target="_blank" rel="noopener" class="action-link">
               <span class="action-link-name">Vegpool</span>
-              <span class="action-link-desc">Deutsches Magazin mit Forum und aktiver Community</span>
+              <span class="action-link-desc">Magazin mit Forum, auf Deutsch</span>
             </a>
           </div>
         </Motion>
@@ -832,7 +888,7 @@ const shareText = () =>
         >
           <h3 class="action-category-title">✊ Stimme erheben</h3>
           <p class="action-category-desc">
-            Allein sein war gestern. Diese Organisationen kämpfen jeden Tag für die Tiere — schließ dich an.
+            Diese Organisationen arbeiten jeden Tag für die Tiere. Sie freuen sich über jede helfende Hand.
           </p>
           <div class="action-links">
             <a href="https://www.ariwa.org/" target="_blank" rel="noopener" class="action-link">
@@ -841,23 +897,23 @@ const shareText = () =>
             </a>
             <a href="https://albert-schweitzer-stiftung.de/" target="_blank" rel="noopener" class="action-link">
               <span class="action-link-name">Albert Schweitzer Stiftung</span>
-              <span class="action-link-desc">Wirksamer Einsatz gegen Massentierhaltung</span>
+              <span class="action-link-desc">Setzt sich gegen Massentierhaltung ein</span>
             </a>
             <a href="https://animalequality.de/" target="_blank" rel="noopener" class="action-link">
               <span class="action-link-name">Animal Equality</span>
-              <span class="action-link-desc">Internationale Tierrechtsorganisation — auch in Deutschland</span>
+              <span class="action-link-desc">Internationale Tierrechtsorganisation mit deutschem Team</span>
             </a>
             <a href="https://soko-tierschutz.org/" target="_blank" rel="noopener" class="action-link">
               <span class="action-link-name">SOKO Tierschutz</span>
-              <span class="action-link-desc">Verdeckte Ermittlungen, die Missstände aufdecken</span>
+              <span class="action-link-desc">Verdeckte Ermittlungen in Ställen und Schlachthöfen</span>
             </a>
             <a href="https://www.anonymousforthevoiceless.org/" target="_blank" rel="noopener" class="action-link">
               <span class="action-link-name">Anonymous for the Voiceless</span>
-              <span class="action-link-desc">Cube of Truth — Straßenaktivismus in deiner Stadt</span>
+              <span class="action-link-desc">Cube of Truth, Straßenaktivismus in deiner Stadt</span>
             </a>
             <a href="https://www.land-der-tiere.de/" target="_blank" rel="noopener" class="action-link">
               <span class="action-link-name">Land der Tiere</span>
-              <span class="action-link-desc">Lebenshof besuchen — geretteten Tieren begegnen</span>
+              <span class="action-link-desc">Lebenshof, auf dem du geretteten Tieren begegnen kannst</span>
             </a>
           </div>
         </Motion>
@@ -872,7 +928,7 @@ const shareText = () =>
         >
           <h3 class="action-category-title">🥗 Jeden Tag leben</h3>
           <p class="action-category-desc">
-            Vegan im Alltag ist heute einfacher denn je. Diese Tools helfen dir dabei.
+            Vegan im Alltag. Diese Seiten helfen dir dabei.
           </p>
           <div class="action-links">
             <a href="https://www.happycow.net/" target="_blank" rel="noopener" class="action-link">
@@ -881,15 +937,15 @@ const shareText = () =>
             </a>
             <a href="https://nutritionfacts.org/" target="_blank" rel="noopener" class="action-link">
               <span class="action-link-name">NutritionFacts</span>
-              <span class="action-link-desc">Evidenzbasierte Ernährungsforschung — kostenlos</span>
+              <span class="action-link-desc">Ernährungsforschung, verständlich aufbereitet und kostenlos</span>
             </a>
             <a href="https://v-partei.de/" target="_blank" rel="noopener" class="action-link">
               <span class="action-link-name">V-Partei³</span>
-              <span class="action-link-desc">Politisch aktiv werden — für echte Veränderung wählen</span>
+              <span class="action-link-desc">Politisch aktiv werden und vegan wählen</span>
             </a>
             <a href="https://www.tierschutzpartei.de/" target="_blank" rel="noopener" class="action-link">
               <span class="action-link-name">Tierschutzpartei</span>
-              <span class="action-link-desc">Partei Mensch Umwelt Tierschutz — politische Stimme</span>
+              <span class="action-link-desc">Partei Mensch Umwelt Tierschutz, die politische Stimme für Tiere</span>
             </a>
           </div>
         </Motion>
@@ -904,7 +960,7 @@ const shareText = () =>
         :transition="{ duration: 0.8, delay: 0.1 }"
         :inViewOptions="{ once: true }"
       >
-        Jede Mahlzeit ist eine Chance. Jeder Einkauf eine Entscheidung. Jede*r von uns kann Teil der Lösung sein.
+        Jede Mahlzeit ist eine Chance. Nimm sie.
       </Motion>
     </div>
   </section>
@@ -933,7 +989,7 @@ const shareText = () =>
           <a href="https://www-genesis.destatis.de/genesis/online?language=de&sequenz=tabelleErgebnis&selectionname=41331-0001" target="_blank" rel="noopener">Gewerbliche Schlachtungen 2024</a>
           &amp;
           <a href="https://www-genesis.destatis.de/genesis/online?language=de&sequenz=tabelleErgebnis&selectionname=41322-0001" target="_blank" rel="noopener">Geflügelschlachtereien 2025</a>
-          — Statistisches Bundesamt (Destatis)
+          , Statistisches Bundesamt (Destatis)
         </p>
         <p class="footer-note">Die Zahlen sind eine Hochrechnung basierend auf offiziellen Statistiken.</p>
       </div>
@@ -976,6 +1032,18 @@ const shareText = () =>
   inset: 0;
   pointer-events: none;
   overflow: hidden;
+}
+/* Soft bleed into the light stats section; bubbles rise out of the haze */
+.hero::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: clamp(80px, 14vh, 160px);
+  background: linear-gradient(to bottom, rgba(248, 249, 250, 0) 0%, rgba(248, 249, 250, 0.55) 55%, #f8f9fa 100%);
+  pointer-events: none;
+  z-index: 0;
 }
 .floating-emoji {
   position: absolute;
@@ -1214,6 +1282,13 @@ const shareText = () =>
   line-height: 1.8;
   word-break: break-all;
 }
+.animal-card-emojis-more {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #6c757d;
+}
 .animal-children { border-top: 1px solid #f1f3f5; background: #fafbfc; }
 .animal-child {
   display: flex;
@@ -1271,6 +1346,63 @@ const shareText = () =>
 .cta-section {
   padding: 3rem 1rem;
   background: linear-gradient(180deg, #f0f9ff 0%, #f8f9fa 30%, #f0fdf4 100%);
+}
+.why-how {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+  max-width: 720px;
+  margin: 0 auto 2.5rem;
+}
+.why-how-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1.5rem;
+  border-radius: 14px;
+  background: #fff;
+  border: 2px solid transparent;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  color: inherit;
+  text-decoration: none;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+.why-how-card:hover,
+.why-how-card:focus-visible {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  color: inherit;
+  text-decoration: none;
+}
+.why-how-card--why:hover,
+.why-how-card--why:focus-visible { border-color: #e74c3c; }
+.why-how-card--how:hover,
+.why-how-card--how:focus-visible { border-color: #2ecc71; }
+.why-how-kicker {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #6c757d;
+}
+.why-how-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.why-how-card--why .why-how-title { color: #e74c3c; }
+.why-how-card--how .why-how-title { color: #2d6a4f; }
+.why-how-desc {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: #495057;
+}
+.why-how-domain {
+  margin-top: auto;
+  padding-top: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #6c757d;
 }
 .cta-button {
   display: flex;
@@ -1857,32 +1989,32 @@ const shareText = () =>
 .footer-version { opacity: 0.4; font-size: 0.75rem; }
 
 /* ── Modal (inline, scoped) ───────────────────────── */
-.vt-modal-overlay {
-  position: fixed;
-  inset: 0;
+.vt-modal {
+  /* Native <dialog>: the UA centers it in the top layer, we only style the card */
+  border: none;
+  padding: 0;
+  background: #fff;
+  border-radius: 24px;
+  max-width: 400px;
+  width: calc(100% - 2rem);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.2);
+  text-align: center;
+}
+.vt-modal[open] {
+  animation: modalSlideIn 0.3s ease;
+}
+.vt-modal::backdrop {
   background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(8px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 1rem;
   animation: fadeIn 0.2s ease;
+}
+.vt-modal-body {
+  position: relative;
+  padding: 2.5rem 2rem 2rem;
 }
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
-}
-.vt-modal {
-  background: #fff;
-  border-radius: 24px;
-  padding: 2.5rem 2rem 2rem;
-  max-width: 400px;
-  width: 100%;
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.2);
-  position: relative;
-  text-align: center;
-  animation: modalSlideIn 0.3s ease;
 }
 @keyframes modalSlideIn {
   from { opacity: 0; transform: translateY(20px) scale(0.95); }
@@ -1982,7 +2114,7 @@ const shareText = () =>
 }
 
 /* ══════════════════════════════════════════════════════
-   MOBILE POLISH — max-width: 767px
+   MOBILE POLISH: max-width: 767px
    ══════════════════════════════════════════════════════ */
 @media (max-width: 767px) {
   /* Hero */
@@ -2167,8 +2299,10 @@ const shareText = () =>
 
   /* Modal */
   .vt-modal {
-    padding: 2rem 1.5rem 1.5rem;
     border-radius: 18px;
+  }
+  .vt-modal-body {
+    padding: 2rem 1.5rem 1.5rem;
   }
   .vt-modal-emoji {
     font-size: 2.5rem;
