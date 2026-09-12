@@ -1576,6 +1576,7 @@ const shareText = () =>
   text-align: center;
   font-size: 0.7rem;
   opacity: 0.3;
+  text-wrap: balance;
 }
 
 /* ── Impact Timeline ──────────────────────────────── */
@@ -1715,6 +1716,7 @@ const shareText = () =>
   font-size: 0.75rem;
   color: #adb5bd;
   margin-top: 1.5rem;
+  text-wrap: balance;
 }
 
 /* ── Personal Tracker ─────────────────────────────── */
@@ -1797,7 +1799,7 @@ const shareText = () =>
   gap: 0.75rem;
   margin-bottom: 1rem;
 }
-@media (min-width: 480px) {
+@media (min-width: 768px) {
   .personal-impact-cards {
     grid-template-columns: repeat(4, 1fr);
   }
@@ -1819,6 +1821,7 @@ const shareText = () =>
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   line-height: 1.2;
+  white-space: nowrap;
 }
 .personal-impact-value--lives { color: #e74c3c; }
 .personal-impact-value--water { color: #3498db; }
@@ -1828,6 +1831,8 @@ const shareText = () =>
   font-size: 0.7rem;
   color: #6c757d;
   margin-top: 0.15rem;
+  text-align: center;
+  text-wrap: balance;
 }
 .personal-share-hint {
   font-size: 0.9rem;
@@ -2328,9 +2333,10 @@ const shareText = () =>
   .impact-tabs {
     gap: 0.3rem;
   }
+  /* four per row, the remaining three centered underneath */
   .impact-tab {
-    flex: 1 1 22%;
-    padding: 0.4rem 0.4rem;
+    flex: 0 0 calc(25% - 0.3rem);
+    padding: 0.4rem 0.3rem;
     min-width: 0;
     border-radius: 10px;
   }
