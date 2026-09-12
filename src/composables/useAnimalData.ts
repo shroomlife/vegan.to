@@ -3,14 +3,8 @@ import { animals as rawAnimals, type Animal, type AnimalChild } from '@/data/ani
 import { formatNumber } from '@/utils/formatNumber'
 import { shuffle } from '@/utils/shuffle'
 
-const SECONDS_PER_DAY = 86_400
-const SECONDS_PER_YEAR = 365.25 * SECONDS_PER_DAY
 /** Max emojis rendered per animal card; keeps the DOM small in long sessions */
 const EMOJI_RENDER_CAP = 2000
-
-function perSec(yearlyCount: number): number {
-  return yearlyCount / SECONDS_PER_YEAR
-}
 
 export interface ComputedChild {
   name: string
@@ -44,6 +38,17 @@ interface Timer {
   secondsSinceStart: { value: number }
   secondsSinceYearStart: { value: number }
   secondsSinceDayStart: { value: number }
+  daysInCurrentYear: { value: number }
+  secondsInCurrentYear: { value: number }
+}
+
+/** Seconds elapsed in the current year, day, and since page load, plus the year's length */
+interface Clock {
+  secYear: number
+  secDay: number
+  secStart: number
+  daysInYear: number
+  secondsInYear: number
 }
 
 /**
@@ -51,11 +56,11 @@ interface Timer {
  * the time elapsed since page load. Do NOT add secondsSinceStart on top,
  * otherwise the counters run at twice the real rate.
  */
-function computeChild(child: AnimalChild, secYear: number, secDay: number): ComputedChild {
-  const rate = perSec(child.deaths.year)
-  const currentDay = rate * secDay
-  const currentYear = rate * secYear
-  const perDayValue = child.deaths.year / 365.25
+function computeChild(child: AnimalChild, clock: Clock): ComputedChild {
+  const rate = child.deaths.year / clock.secondsInYear
+  const currentDay = rate * clock.secDay
+  const currentYear = rate * clock.secYear
+  const perDayValue = child.deaths.year / clock.daysInYear
 
   return {
     name: child.name,
@@ -73,20 +78,25 @@ const sortedAnimals = [...rawAnimals].sort((a, b) => b.deaths.year - a.deaths.ye
 
 export function useAnimalData(timer: Timer) {
   const animalData = computed<ComputedAnimal[]>(() => {
-    const secYear = timer.secondsSinceYearStart.value
-    const secDay = timer.secondsSinceDayStart.value
-    const secStart = timer.secondsSinceStart.value
+    const clock: Clock = {
+      secYear: timer.secondsSinceYearStart.value,
+      secDay: timer.secondsSinceDayStart.value,
+      secStart: timer.secondsSinceStart.value,
+      daysInYear: timer.daysInCurrentYear.value,
+      secondsInYear: timer.secondsInCurrentYear.value,
+    }
 
     return sortedAnimals.map((animal) => {
-      const rate = perSec(animal.deaths.year)
-      const freshKilled = rate * secStart
-      const currentDay = rate * secDay
-      const currentYear = rate * secYear
-      const perDayValue = animal.deaths.year / 365.25
+      // The yearly figure spread evenly over the current year (365 or 366 days)
+      const rate = animal.deaths.year / clock.secondsInYear
+      const freshKilled = rate * clock.secStart
+      const currentDay = rate * clock.secDay
+      const currentYear = rate * clock.secYear
+      const perDayValue = animal.deaths.year / clock.daysInYear
       const killedCount = Math.round(freshKilled)
 
       const children = (animal.children ?? [])
-        .map((child) => computeChild(child, secYear, secDay))
+        .map((child) => computeChild(child, clock))
         .sort((a, b) => b.currentYear - a.currentYear)
 
       return {

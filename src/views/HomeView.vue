@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, onUnmounted, useTemplateRef } from 'vue'
+import { ref, computed, useTemplateRef } from 'vue'
 import dayjs from 'dayjs'
 import { useTransition, TransitionPresets } from '@vueuse/core'
 import { Motion } from 'motion-v'
@@ -170,44 +170,24 @@ const veganTimeline = [
   { year: 2025, count: 1_680_000 },
 ]
 
-const latestVeganCount = veganTimeline[veganTimeline.length - 1]!
 const veganTimelineAxisYears = [2008, 2012, 2016, 2020, 2025]
 
-// Visual growth: 1 new vegan every ~3 seconds
-const VISUAL_GROWTH_PER_SEC = 1 / 3
-const VEGAN_STORAGE_KEY = 'vegan-to-counter'
-
-function loadVeganCounter(): number {
-  try {
-    const stored = localStorage.getItem(VEGAN_STORAGE_KEY)
-    if (stored) {
-      const val = parseInt(stored, 10)
-      if (!isNaN(val) && val >= latestVeganCount.count) return val
-    }
-  } catch { /* LocalStorage unavailable */ }
-  return latestVeganCount.count
-}
-
-const veganCounterStart = loadVeganCounter()
+/**
+ * Veganer*innen heute: der letzte AWA-Wert (2025), sekundengenau fortgeschrieben
+ * mit dem mittleren Zuwachs der letzten beiden AWA-Erhebungen (2022 bis 2025).
+ * Bezugspunkt ist die Jahresmitte 2025, weil die AWA über das Jahr verteilt erhebt.
+ * Eine Hochrechnung aus dem Trend, kein Messwert.
+ */
+const latestVeganCount = veganTimeline[veganTimeline.length - 1]!
+const previousVeganCount = veganTimeline[veganTimeline.length - 2]!
+const VEGAN_TREND_PER_SECOND =
+  (latestVeganCount.count - previousVeganCount.count) /
+  ((latestVeganCount.year - previousVeganCount.year) * 365.25 * 86_400)
+const VEGAN_REFERENCE_DATE = dayjs(`${latestVeganCount.year}-07-01`)
 
 const animatedVeganCount = computed(() =>
-  Math.round(veganCounterStart + timer.secondsSinceStart.value * VISUAL_GROWTH_PER_SEC),
+  Math.round(latestVeganCount.count + timer.now.value.diff(VEGAN_REFERENCE_DATE, 'second') * VEGAN_TREND_PER_SECOND),
 )
-
-// Persist the visual counter whenever it changes (once per second)
-watch(animatedVeganCount, (val) => {
-  try { localStorage.setItem(VEGAN_STORAGE_KEY, val.toString()) } catch { /* */ }
-}, { flush: 'post' })
-
-// Save on page leave
-function saveVeganCounter() {
-  try { localStorage.setItem(VEGAN_STORAGE_KEY, animatedVeganCount.value.toString()) } catch { /* */ }
-}
-window.addEventListener('beforeunload', saveVeganCounter)
-onUnmounted(() => {
-  saveVeganCounter()
-  window.removeEventListener('beforeunload', saveVeganCounter)
-})
 
 const childViewState = ref<Record<string, boolean>>({})
 
@@ -458,7 +438,7 @@ const shareText = () =>
           <span class="growth-stat-number growth-stat-number--green">
             <OdometerNumber :value="animatedVeganCount" :digits="7" />
           </span>
-          <span class="growth-stat-label">Veganer*innen in Deutschland</span>
+          <span class="growth-stat-label">Veganer*innen in Deutschland, AWA-Trend fortgeschrieben</span>
         </div>
         <div class="growth-stat">
           <span class="growth-stat-number">{{ formatNumber(POPULATION_DE) }}</span>
@@ -495,7 +475,7 @@ const shareText = () =>
         :transition="{ duration: 0.6, delay: 0.2 }"
         :inViewOptions="{ once: true }"
       >
-        2008 waren es 80.000. Heute sind es über 1,6 Millionen. Und es werden jede Sekunde mehr.
+        2008 waren es 80.000. Heute sind es über 1,6 Millionen. Und es werden jeden Tag mehr.
       </Motion>
 
       <p class="growth-source">

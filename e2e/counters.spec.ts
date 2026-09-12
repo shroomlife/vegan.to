@@ -2,7 +2,16 @@ import { test, expect } from '@playwright/test'
 import { parseDeNumber } from './helpers'
 import { animals } from '../src/data/animals'
 
-const SECONDS_PER_YEAR = 365.25 * 86_400
+/** Same definition as the app: the yearly figure is spread over the current year in Berlin time */
+function berlinNow(): Date {
+  return new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Berlin' }))
+}
+function daysInYear(year: number): number {
+  return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0 ? 366 : 365
+}
+function secondsPerYearNow(): number {
+  return daysInYear(berlinNow().getFullYear()) * 86_400
+}
 
 function findAnimal(plural: string) {
   const animal = animals.find((a) => a.names.plural === plural)
@@ -26,7 +35,7 @@ test.describe('live counters', () => {
     const card = page.locator('.animal-card', { hasText: 'Hühner' })
     const today = card.locator('.animal-stat-value').first()
     await expect(today).toBeVisible()
-    const expectedPerSec = findAnimal('Hühner').deaths.year / SECONDS_PER_YEAR
+    const expectedPerSec = findAnimal('Hühner').deaths.year / secondsPerYearNow()
 
     const start = parseDeNumber(await today.innerText())
     const t0 = Date.now()
@@ -37,6 +46,28 @@ test.describe('live counters', () => {
     const measured = (end - start) / seconds
     expect(measured).toBeGreaterThan(expectedPerSec * 0.8)
     expect(measured).toBeLessThan(expectedPerSec * 1.2)
+  })
+
+  test('"heute" and "dieses Jahr" equal the yearly figure spread over Berlin time', async ({ page }) => {
+    await page.goto('/')
+    const card = page.locator('.animal-card', { hasText: 'Hühner' })
+    await expect(card.locator('.animal-stat-value').first()).toBeVisible()
+
+    const yearly = findAnimal('Hühner').deaths.year
+    const now = berlinNow()
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    const startOfYear = new Date(now.getFullYear(), 0, 1)
+    const rate = yearly / secondsPerYearNow()
+    const expectedToday = rate * ((now.getTime() - startOfDay.getTime()) / 1000)
+    const expectedYear = rate * ((now.getTime() - startOfYear.getTime()) / 1000)
+    const expectedPerDay = yearly / daysInYear(now.getFullYear())
+
+    const values = await card.locator('.animal-stat-value').allInnerTexts()
+    const [today, perDay, thisYear] = values.map(parseDeNumber)
+    // a few seconds of tolerance for page load and the 1 s tick
+    expect(Math.abs((today ?? 0) - expectedToday)).toBeLessThan(rate * 15)
+    expect(Math.abs((thisYear ?? 0) - expectedYear)).toBeLessThan(rate * 15)
+    expect(Math.abs((perDay ?? 0) - expectedPerDay)).toBeLessThanOrEqual(1)
   })
 
   test('sub groups sum up to their parent', async ({ page }) => {
