@@ -763,7 +763,7 @@ const shareText = () =>
         </p>
       </Motion>
 
-      <!-- Die zwei Kernfragen: Warum? Wie? -->
+      <!-- Die drei Kernfragen: Warum? Wie? Mit wem? -->
       <Motion
         class="why-how"
         :initial="{ opacity: 0, y: 20 }"
@@ -788,6 +788,15 @@ const shareText = () =>
             Mit kostenlosen Guides zum Runterladen.
           </span>
           <span class="why-how-domain">wie-vegan.com</span>
+        </a>
+        <a href="https://vegan-community.de/" target="_blank" rel="noopener" class="why-how-card why-how-card--who">
+          <span class="why-how-kicker">Die Frage nach den anderen</span>
+          <span class="why-how-title">Mit wem?</span>
+          <span class="why-how-desc">
+            Eine kostenlose Community mit Chat, Calls und Guides.
+            Menschen, die den Weg schon gehen und dich mitnehmen.
+          </span>
+          <span class="why-how-domain">vegan-community.de</span>
         </a>
       </Motion>
 
@@ -1394,9 +1403,9 @@ const shareText = () =>
 }
 .why-how {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 1rem;
-  max-width: 720px;
+  max-width: 960px;
   margin: 0 auto 2.5rem;
 }
 .why-how-card {
@@ -1423,6 +1432,8 @@ const shareText = () =>
 .why-how-card--why:focus-visible { border-color: #e74c3c; }
 .why-how-card--how:hover,
 .why-how-card--how:focus-visible { border-color: #2ecc71; }
+.why-how-card--who:hover,
+.why-how-card--who:focus-visible { border-color: #2980b9; }
 .why-how-kicker {
   font-size: 0.72rem;
   font-weight: 600;
@@ -1437,6 +1448,7 @@ const shareText = () =>
 }
 .why-how-card--why .why-how-title { color: #e74c3c; }
 .why-how-card--how .why-how-title { color: #2d6a4f; }
+.why-how-card--who .why-how-title { color: #1f5f8b; }
 .why-how-desc {
   font-size: 0.9rem;
   line-height: 1.5;

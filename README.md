@@ -14,7 +14,7 @@ Jede Sekunde werden in Deutschland Tiere getötet. Diese Seite macht das sichtba
 - Victim Ticker: Namen, Alter und Schlachthof-Standorte als aufsteigende Bubbles
 - Persönlicher Impact: Was du sparst, wenn du vegan lebst (Tierleben, Wasser, CO2, Land)
 - Wachstum der Bewegung: Live-Odometer mit der Zahl der Veganer\*innen in Deutschland
-- Ressourcen: 20 geprüfte Links zum Starten, Informieren und Aktivwerden, darunter warum-vegan.com und wie-vegan.com
+- Ressourcen: 21 geprüfte Links zum Starten, Informieren und Aktivwerden, darunter warum-vegan.com, wie-vegan.com und vegan-community.de
 
 ## Datenquellen
 
