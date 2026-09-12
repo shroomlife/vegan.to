@@ -1,7 +1,6 @@
 import { computed, toValue, type MaybeRefOrGetter } from 'vue'
 import { animals as rawAnimals, type Animal, type AnimalChild } from '@/data/animals'
 import { formatNumber } from '@/utils/formatNumber'
-import { shuffle } from '@/utils/shuffle'
 
 /** Default max emojis rendered per animal card; keeps the DOM small in long sessions */
 const DEFAULT_EMOJI_RENDER_CAP = 2000
@@ -129,19 +128,8 @@ export function useAnimalData(timer: Timer, options: AnimalDataOptions = {}) {
     animalData.value.reduce((sum, a) => sum + a.killedSinceStart, 0),
   )
 
-  const totalDeathEmojis = computed(() => {
-    const emojis: string[] = []
-    for (const animal of animalData.value) {
-      if (animal.killedSinceStart > 0) {
-        emojis.push(...Array(animal.killedSinceStart).fill(animal.names.emoji) as string[])
-      }
-    }
-    return shuffle(emojis).join('')
-  })
-
   return {
     animalData,
     totalDeathCount,
-    totalDeathEmojis,
   }
 }

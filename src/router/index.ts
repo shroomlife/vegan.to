@@ -37,8 +37,7 @@ const router = createRouter({
 })
 
 router.afterEach((to) => {
-  const title = to.meta.title
-  if (typeof title === 'string') document.title = title
+  if (to.meta.title) document.title = to.meta.title
 })
 
 export default router

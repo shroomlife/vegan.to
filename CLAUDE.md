@@ -33,13 +33,13 @@ Build output goes to `docs/` (configured in `vite.config.ts`) for GitHub Pages d
 
 1. `src/data/animals.ts` — typed array of animal species with yearly kill counts from Destatis (2025 data). Exports raw numbers only, no rate calculations.
 2. `src/composables/useTimer.ts` — reactive timer updating every second, provides `secondsSinceStart`, `secondsSinceYearStart`, `secondsSinceDayStart`, `elapsedFormatted`.
-3. `src/composables/useAnimalData.ts` — takes timer, computes all derived values reactively (per-day rates, current year/day totals, killed-since-start counts). Returns `animalData`, `totalDeathCount`, `totalDeathEmojis`.
+3. `src/composables/useAnimalData.ts` — takes timer, computes all derived values reactively (per-day rates, current year/day totals, killed-since-start counts). Returns `animalData` and `totalDeathCount`.
 4. `src/views/HomeView.vue` — main view consuming both composables, renders counters with `useTransition` for smooth animation.
 
 ### Key files
 
 - `src/utils/formatNumber.ts` — `Intl.NumberFormat('de-DE')` wrapper (replaces humanize package)
-- `src/utils/shuffle.ts` — Fisher-Yates shuffle (replaces lodash)
+- `src/utils/scroll.ts` — smooth scrolling that respects `prefers-reduced-motion`; `src/composables/useAnchorNavigation.ts` handles same-location clicks (logo, anchors)
 - `src/App.vue` — `SiteHeader` (sticky glass header) + `<RouterView />` + `SiteFooter`
 - `src/components/BrandWordmark.vue`, `PrideFlag.vue`, `SiteHeader.vue`, `SiteFooter.vue` — brand shell; tokens in `src/assets/custom.css` (forest green, cream, accent, Unbounded display font)
 - `src/data/sources.ts` — every external figure's source with category; rendered on `/quellen` (`src/views/SourcesView.vue`)

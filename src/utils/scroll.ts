@@ -9,7 +9,7 @@ export function scrollToTop(): void {
 
 /** Scrolls to an element by hash, leaving room for the sticky header */
 export function scrollToHash(hash: string): boolean {
-  const target = document.querySelector<HTMLElement>(hash)
+  const target = document.getElementById(hash.replace(/^#/, ''))
   if (!target) return false
   const headerHeight = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--header-height')) || 0
   const top = target.getBoundingClientRect().top + window.scrollY - headerHeight - 16
