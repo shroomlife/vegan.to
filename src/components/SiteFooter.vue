@@ -6,7 +6,7 @@ import { useAnchorNavigation } from '@/composables/useAnchorNavigation'
 declare const __APP_VERSION__: string
 const appVersion = __APP_VERSION__
 const currentYear = new Date().getFullYear()
-const { onNavClick } = useAnchorNavigation()
+const { onNavClick, isPageLink } = useAnchorNavigation()
 
 const siteLinks = [
   { label: 'Zahlen', to: '/#zahlen' },
@@ -39,7 +39,13 @@ const partnerLinks = [
 
         <nav class="site-footer-col" aria-label="Seite">
           <h2 class="site-footer-title">Seite</h2>
-          <RouterLink v-for="link in siteLinks" :key="link.to" :to="link.to" @click="onNavClick(link.to)">{{ link.label }}</RouterLink>
+          <RouterLink v-for="link in siteLinks" :key="link.to" :to="link.to" custom v-slot="{ href, navigate, isExactActive }">
+            <a
+              :href="href"
+              :aria-current="isExactActive && isPageLink(link.to) ? 'page' : undefined"
+              @click="navigate($event); onNavClick(link.to)"
+            >{{ link.label }}</a>
+          </RouterLink>
         </nav>
 
         <nav class="site-footer-col" aria-label="Weitergehen">
@@ -50,7 +56,9 @@ const partnerLinks = [
         <nav class="site-footer-col" aria-label="Projekt">
           <h2 class="site-footer-title">Projekt</h2>
           <a href="https://github.com/shroomlife/vegan.to" target="_blank" rel="noopener">GitHub</a>
-          <RouterLink to="/quellen#datenstand" @click="onNavClick('/quellen#datenstand')">Datenstand 2025</RouterLink>
+          <RouterLink to="/quellen#datenstand" custom v-slot="{ href, navigate }">
+            <a :href="href" @click="navigate($event); onNavClick('/quellen#datenstand')">Datenstand 2025</a>
+          </RouterLink>
           <span class="site-footer-version">Version {{ appVersion }}</span>
         </nav>
       </div>

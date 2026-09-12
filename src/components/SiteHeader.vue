@@ -8,7 +8,7 @@ const navLinks = [
   { label: 'Quellen', to: '/quellen', mobile: true },
 ]
 
-const { onNavClick } = useAnchorNavigation()
+const { onNavClick, isPageLink } = useAnchorNavigation()
 </script>
 
 <template>
@@ -16,18 +16,30 @@ const { onNavClick } = useAnchorNavigation()
     <div class="site-header-inner">
       <BrandWordmark class="site-header-brand" />
       <nav class="site-header-nav" aria-label="Hauptnavigation">
+        <!-- custom links: anchors on the start page must not claim aria-current="page" -->
         <RouterLink
           v-for="link in navLinks"
           :key="link.to"
           :to="link.to"
-          class="site-header-link"
-          :class="{ 'site-header-link--desktop': !link.mobile }"
-          :exact-active-class="link.to.includes('#') ? '' : 'router-link-exact-active'"
-          @click="onNavClick(link.to)"
+          custom
+          v-slot="{ href, navigate, isExactActive }"
         >
-          {{ link.label }}
+          <a
+            :href="href"
+            class="site-header-link"
+            :class="{
+              'site-header-link--desktop': !link.mobile,
+              'site-header-link--active': isExactActive && isPageLink(link.to),
+            }"
+            :aria-current="isExactActive && isPageLink(link.to) ? 'page' : undefined"
+            @click="navigate($event); onNavClick(link.to)"
+          >
+            {{ link.label }}
+          </a>
         </RouterLink>
-        <RouterLink to="/#mitmachen" class="site-header-cta" @click="onNavClick('/#mitmachen')">#GoVegan</RouterLink>
+        <RouterLink to="/#mitmachen" custom v-slot="{ href, navigate }">
+          <a :href="href" class="site-header-cta" @click="navigate($event); onNavClick('/#mitmachen')">#GoVegan</a>
+        </RouterLink>
       </nav>
     </div>
   </header>
@@ -93,7 +105,7 @@ const { onNavClick } = useAnchorNavigation()
   text-decoration: none;
 }
 .site-header-link:hover::after,
-.site-header-link.router-link-exact-active::after {
+.site-header-link--active::after {
   transform: scaleX(1);
 }
 .site-header-cta {

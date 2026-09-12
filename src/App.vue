@@ -7,7 +7,8 @@ import BackToTop from '@/components/BackToTop.vue'
 <template>
   <a href="#main" class="skip-link">Zum Inhalt springen</a>
   <SiteHeader />
-  <div id="main">
+  <!-- tabindex -1 so the skip link really moves focus into the content -->
+  <div id="main" tabindex="-1">
     <RouterView />
   </div>
   <SiteFooter />
@@ -19,6 +20,9 @@ import BackToTop from '@/components/BackToTop.vue'
 :focus-visible {
   outline: 2px solid var(--brand-accent);
   outline-offset: 3px;
+}
+#main:focus {
+  outline: none;
 }
 .skip-link {
   position: absolute;

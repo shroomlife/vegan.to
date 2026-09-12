@@ -10,15 +10,18 @@ export function useAnchorNavigation() {
   const router = useRouter()
   const route = useRoute()
 
+  /** True for links to a page, false for links that only point at a section */
+  function isPageLink(to: string): boolean {
+    return !router.resolve(to).hash
+  }
+
   function onNavClick(to: string): void {
     const target = router.resolve(to)
     if (target.fullPath !== route.fullPath) return
-    if (target.hash) {
-      scrollToHash(target.hash)
-    } else {
+    if (!target.hash || !scrollToHash(target.hash)) {
       scrollToTop()
     }
   }
 
-  return { onNavClick }
+  return { onNavClick, isPageLink }
 }

@@ -1,9 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '@/views/HomeView.vue'
-import { scrollBehavior as motionPreference } from '@/utils/scroll'
-
-/** Sticky header height plus a little air, so anchors are not hidden behind it */
-const ANCHOR_OFFSET = 84
+import { anchorOffset, scrollBehavior as motionPreference } from '@/utils/scroll'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -31,7 +28,7 @@ const router = createRouter({
     // Back and forward restore where the visitor was
     if (savedPosition) return savedPosition
     const behavior = motionPreference()
-    if (to.hash) return { el: to.hash, top: ANCHOR_OFFSET, behavior }
+    if (to.hash) return { el: to.hash, top: anchorOffset(), behavior }
     return { top: 0, behavior }
   },
 })

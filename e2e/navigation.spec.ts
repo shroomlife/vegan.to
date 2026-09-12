@@ -35,6 +35,15 @@ test.describe('navigation feels right', () => {
     await expect.poll(() => page.locator('#impact').evaluate((el) => el.getBoundingClientRect().top), { timeout: 4000 }).toBeLessThan(140)
   })
 
+  test('only real pages announce themselves as current, anchors never do', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'desktop header links')
+    await page.goto('/')
+    await expect(page.locator('.site-header [aria-current="page"]')).toHaveCount(1) // the logo
+    await page.goto('/quellen')
+    await expect(page.locator('.site-header').getByRole('link', { name: 'Quellen' })).toHaveAttribute('aria-current', 'page')
+    await expect(page.locator('.site-header [aria-current="page"]')).toHaveCount(1)
+  })
+
   test('the logo brings you back to the top of the start page', async ({ page }) => {
     await page.goto('/')
     await page.evaluate(() => window.scrollTo(0, 2500))
@@ -76,5 +85,6 @@ test.describe('navigation feels right', () => {
     await expect(page.locator('.skip-link')).toBeFocused()
     await page.keyboard.press('Enter')
     await expect(page).toHaveURL(/#main$/)
+    await expect(page.locator('#main')).toBeFocused()
   })
 })
