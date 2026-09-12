@@ -22,6 +22,7 @@ const { onNavClick } = useAnchorNavigation()
           :to="link.to"
           class="site-header-link"
           :class="{ 'site-header-link--desktop': !link.mobile }"
+          :exact-active-class="link.to.includes('#') ? '' : 'router-link-exact-active'"
           @click="onNavClick(link.to)"
         >
           {{ link.label }}
