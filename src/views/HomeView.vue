@@ -5,6 +5,7 @@ import { useTransition, TransitionPresets } from '@vueuse/core'
 import { Motion } from 'motion-v'
 import { useTimer } from '@/composables/useTimer'
 import { useAnimalData, type ComputedAnimal } from '@/composables/useAnimalData'
+import { animals } from '@/data/animals'
 import { useVictimTicker } from '@/composables/useVictimTicker'
 import { usePersonalTracker } from '@/composables/usePersonalTracker'
 import { formatNumber } from '@/utils/formatNumber'
@@ -41,11 +42,16 @@ const floatingEmojis = (() => {
 })()
 
 /**
- * Impact-Daten: Was eine*r Person pro Zeitraum spart (vegan vs. Durchschnitt).
- * Quellen: Poore & Nemecek (2018, Science), Oxford Martin School,
- * Water Footprint Network, Destatis Schlachtstatistik 2024.
+ * Impact-Daten: Was eine Person pro Tag spart, wenn sie vegan statt mit
+ * mittlerem Fleischkonsum isst.
  *
- * Basis pro Tag: ~1 Tierleben, ~4.164 L Wasser, ~8,1 kg CO₂eq, ~3,1 m² Land
+ * CO2, Land, Wasser: Scarborough et al. 2023, Nature Food 4, 565-574,
+ * Tabellen 3 und 4, Differenz "vegan" zu "medium meat-eater":
+ * 2,47 vs. 7,04 kg CO2e, 4,37 vs. 11,28 m², 0,41 vs. 0,78 m³ Wasser pro Tag.
+ * https://doi.org/10.1038/s43016-023-00795-w
+ *
+ * Tierleben: Destatis-Schlachtzahlen (animals.ts) geteilt durch die
+ * Bevölkerung Deutschlands, pro Tag. Inklusive geschätzter Fische, ohne Importe.
  */
 const impactTimeline = [
   { label: '1 Tag',      days: 1,       emoji: '🌅' },
@@ -57,10 +63,13 @@ const impactTimeline = [
   { label: '50 Jahre',   days: 18250,   emoji: '💚' },
 ]
 
-const DAILY_LIVES = 1
-const DAILY_WATER_L = 4164
-const DAILY_CO2_KG = 8.1
-const DAILY_LAND_M2 = 3.1
+const POPULATION_DE = 83_500_000 // Destatis, Bevölkerungsstand Ende 2025
+const YEARLY_DEATHS_DE = animals.reduce((sum, a) => sum + a.deaths.year, 0)
+const DAILY_LIVES = YEARLY_DEATHS_DE / POPULATION_DE / 365.25
+const DAILY_WATER_L = 370
+const DAILY_CO2_KG = 4.57
+const DAILY_LAND_M2 = 6.91
+const DAYS_PER_LIFE = Math.ceil(1 / DAILY_LIVES)
 
 const activeImpact = ref(4) // Default: 1 Jahr
 const activeImpactData = computed(() => impactFor(impactTimeline[activeImpact.value]!.days))
@@ -98,7 +107,7 @@ function impactFor(days: number) {
   const land = days * DAILY_LAND_M2
 
   return {
-    lives: { value: formatNumber(lives), comparisons: lifeComparisons(lives) },
+    lives: { value: formatNumber(lives, lives < 10 ? 1 : 0), comparisons: lifeComparisons(lives) },
     water: { value: formatNumber(water), comparisons: waterComparisons(water) },
     co2: { value: formatNumber(co2), comparisons: co2Comparisons(co2) },
     land: { value: formatNumber(land), comparisons: landComparisons(land) },
@@ -107,17 +116,18 @@ function impactFor(days: number) {
 
 function lifeComparisons(lives: number): string[] {
   const r: string[] = []
-  if (lives >= 365) r.push(`Eine ganze Schulklasse rettet so ${formatNumber(lives * 25)} Tiere`)
-  if (lives >= 30) r.push(`${formatNumber(lives)} fühlende Wesen mit eigenem Charakter`)
-  if (lives >= 1) r.push(`Jedes einzelne wollte leben`)
+  if (lives >= 10) r.push(`Eine Schulklasse mit 25 Kindern rettet so ${formatNumber(lives * 25)} Tiere`)
+  if (lives >= 1) r.push(`${formatNumber(lives)} fühlende Wesen mit eigenem Charakter`)
+  if (lives < 1) r.push(`Nach ${DAYS_PER_LIFE} Tagen ist es ein ganzes Tierleben`)
+  r.push('Jedes einzelne wollte leben')
   return r.slice(0, 2)
 }
 
 function waterComparisons(liters: number): string[] {
   const r: string[] = []
   const bathtubs = liters / 150
-  const pools = liters / 50_000
-  if (pools >= 1) r.push(`${formatNumber(pools)} Schwimmbecken voll Wasser`)
+  const pools = liters / 50_000 // Gartenpool 8 x 4 m
+  if (pools >= 1) r.push(`${formatNumber(pools)} Gartenpools voll Wasser`)
   if (bathtubs >= 1) r.push(`${formatNumber(bathtubs)} volle Badewannen`)
   if (liters >= 1000) r.push(`${formatNumber(liters / 1000)} Tonnen Wasser, genug für ein kleines Dorf`)
   return r.slice(0, 2)
@@ -125,9 +135,9 @@ function waterComparisons(liters: number): string[] {
 
 function co2Comparisons(kg: number): string[] {
   const r: string[] = []
-  const flights = kg / 750 // Frankfurt nach Mallorca, ca. 750 kg CO2
-  const carKm = kg / 0.15 // ~150g CO2/km Durchschnitt
-  if (flights >= 1) r.push(`${formatNumber(flights)}× von Frankfurt nach Mallorca fliegen`)
+  const flights = kg / 494 // myclimate: Frankfurt nach Mallorca und zurück, Economy, ca. 494 kg CO2
+  const carKm = kg / 0.23 // UBA TREMOD 2024: Pkw inkl. Vorkette, ca. 230 g CO2e pro Fahrzeug-km
+  if (flights >= 1) r.push(`${formatNumber(flights)}× nach Mallorca und zurück fliegen`)
   if (carKm >= 1) r.push(`${formatNumber(carKm)} km Autofahren`)
   if (kg >= 100) r.push(`So viel wie ${formatNumber(kg / 22)} Bäume pro Jahr binden`)
   return r.slice(0, 2)
@@ -140,22 +150,23 @@ function landComparisons(m2: number): string[] {
   if (soccer >= 1) r.push(`${formatNumber(soccer)} Fußballfelder`)
   if (tennis >= 1) r.push(`${formatNumber(tennis)} Tennisplätze`)
   if (m2 >= 10) r.push(`${formatNumber(m2 / 10)} Parkplätze weniger versiegelt`)
+  if (r.length === 0) r.push(`Etwa so viel wie ein kleines Badezimmer`)
   return r.slice(0, 2)
 }
 
 /**
- * Veganer*innen in Deutschland: AWA/Allensbach Zeitreihe + BMEL
- * Quellen: IfD Allensbach / AWA (via Statista), BMEL Ernährungsreport (Forsa)
+ * Veganer*innen in Deutschland. Gemischte Quellen, weil es keine
+ * durchgehende Zeitreihe gibt:
+ * 2008 Nationale Verzehrsstudie II (unter 80.000), 2015 VEBU-Schätzung,
+ * 2016 SKOPOS, 2018 bis 2025 IfD Allensbach (AWA).
  */
-const POPULATION_DE = 84_400_000
 const veganTimeline = [
   { year: 2008, count: 80_000 },
-  { year: 2012, count: 900_000 },
+  { year: 2015, count: 900_000 },
   { year: 2016, count: 1_300_000 },
   { year: 2018, count: 950_000 },
   { year: 2020, count: 1_130_000 },
   { year: 2022, count: 1_580_000 },
-  { year: 2024, count: 1_700_000 },
   { year: 2025, count: 1_680_000 },
 ]
 
@@ -300,6 +311,7 @@ const shareText = () =>
       >
         <span class="hero-counter-number">{{ formatNumber(animatedTotalDeaths) }}</span>
         <span class="hero-counter-label">Tiere getötet seit du hier bist</span>
+        <span class="hero-counter-note">Fische als Schätzung mitgezählt</span>
         <span class="hero-counter-time">🕰 {{ timer.elapsedFormatted.value }}</span>
       </Motion>
     </div>
@@ -335,19 +347,25 @@ const shareText = () =>
           <div class="animal-card-name">
             <span class="animal-emoji">{{ animal.names.emoji }}</span>
             <span class="animal-label">{{ animal.names.plural }}</span>
+            <span
+              v-if="animal.estimate"
+              class="animal-estimate"
+              :title="animal.estimate.note"
+              tabindex="0"
+            >Schätzung</span>
           </div>
           <div class="animal-card-stats">
             <div class="animal-stat">
               <span class="animal-stat-label d-md-none">heute</span>
-              <span class="animal-stat-value animal-stat-value--danger"><AnimatedNumber :value="animal.currentDay" /></span>
+              <span class="animal-stat-value animal-stat-value--danger"><template v-if="animal.estimate">≈ </template><AnimatedNumber :value="animal.currentDay" /></span>
             </div>
             <div class="animal-stat">
               <span class="animal-stat-label d-md-none">pro Tag</span>
-              <span class="animal-stat-value">{{ formatNumber(animal.perDay) }}</span>
+              <span class="animal-stat-value">{{ animal.estimate ? '≈ ' : '' }}{{ formatNumber(animal.perDay) }}</span>
             </div>
             <div class="animal-stat animal-stat--wide">
               <span class="animal-stat-label d-md-none">dieses Jahr</span>
-              <span class="animal-stat-value animal-stat-value--danger"><AnimatedNumber :value="animal.currentYear" /></span>
+              <span class="animal-stat-value animal-stat-value--danger"><template v-if="animal.estimate">≈ </template><AnimatedNumber :value="animal.currentYear" /></span>
             </div>
           </div>
         </div>
@@ -481,7 +499,7 @@ const shareText = () =>
       </Motion>
 
       <p class="growth-source">
-        Quellen: IfD Allensbach / AWA, BMEL Ernährungsreport (Forsa)
+        Quellen: NVS II (2008), VEBU (2015), SKOPOS (2016), IfD Allensbach AWA (2018 bis 2025)
       </p>
     </div>
   </section>
@@ -580,7 +598,7 @@ const shareText = () =>
       </div>
 
       <p class="impact-source">
-        Quellen: Poore &amp; Nemecek (2018, <em>Science</em>), Oxford Martin School, Water Footprint Network
+        Quellen: Scarborough et al. (2023, <em>Nature Food</em>), Destatis, Umweltbundesamt, myclimate
       </p>
 
       <!-- Personal Tracker -->
@@ -986,10 +1004,17 @@ const shareText = () =>
       <div class="footer-sources">
         <p class="footer-sources-title">Quellen</p>
         <p>
-          <a href="https://www-genesis.destatis.de/genesis/online?language=de&sequenz=tabelleErgebnis&selectionname=41331-0001" target="_blank" rel="noopener">Gewerbliche Schlachtungen 2024</a>
+          <a href="https://www-genesis.destatis.de/genesis/online?language=de&sequenz=tabelleErgebnis&selectionname=41331-0001" target="_blank" rel="noopener">Gewerbliche Schlachtungen 2025</a>
           &amp;
           <a href="https://www-genesis.destatis.de/genesis/online?language=de&sequenz=tabelleErgebnis&selectionname=41322-0001" target="_blank" rel="noopener">Geflügelschlachtereien 2025</a>
           , Statistisches Bundesamt (Destatis)
+        </p>
+        <p class="footer-note">
+          Fische: Schätzung nach
+          <a href="https://fishcount.org.uk/estimates/wildfishes/data03/fishcount_global_wild_fish_estimate.php?selyear=2003to2022&selcountry=Germany&selspecies=*+All+species+*" target="_blank" rel="noopener">fishcount.org.uk</a>
+          (Fang der deutschen Fischerei, Schnitt 2003 bis 2022, 3,7 bis 5,0 Mrd.) und
+          <a href="https://www.destatis.de/DE/Presse/Pressemitteilungen/2026/06/PD26_188_41362.html" target="_blank" rel="noopener">Destatis Aquakultur 2025</a>.
+          Fische werden amtlich nur in Tonnen erfasst.
         </p>
         <p class="footer-note">Die Zahlen sind eine Hochrechnung basierend auf offiziellen Statistiken.</p>
       </div>
@@ -1122,6 +1147,12 @@ const shareText = () =>
   font-size: 0.85rem;
   opacity: 0.5;
 }
+.hero-counter-note {
+  display: block;
+  font-size: 0.75rem;
+  opacity: 0.45;
+  margin-top: 0.15rem;
+}
 
 /* ── Floating Victim Bubbles ───────────────────────── */
 .victim-layer {
@@ -1217,6 +1248,20 @@ const shareText = () =>
 }
 .animal-emoji { font-size: 2rem; line-height: 1; }
 .animal-label { font-size: 1.15rem; font-weight: 600; }
+.animal-estimate {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: #fff3cd;
+  color: #856404;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  vertical-align: middle;
+  cursor: help;
+}
 .animal-card-stats {
   flex: 3;
   display: flex;
@@ -1982,6 +2027,7 @@ const shareText = () =>
 .footer-sources { text-align: center; margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
 .footer-sources-title { font-weight: 700; color: rgba(255, 255, 255, 0.8); margin-bottom: 0.5rem; }
 .footer-note { font-size: 0.8rem; opacity: 0.5; margin-top: 0.5rem; }
+.footer-note a { color: inherit; text-decoration: underline; }
 .footer-bottom { display: flex; align-items: center; justify-content: center; gap: 1.5rem; flex-wrap: wrap; }
 .footer-github { opacity: 0.4; transition: opacity 0.2s; }
 .footer-github:hover { opacity: 0.8; }

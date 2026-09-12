@@ -30,7 +30,17 @@ const slaughterhouseLocations = [
   'Wilhelmshaven', 'Wittlich', 'Zerbst',
 ]
 
+/** Where fish of the German fleet and aquaculture die: fishing grounds and ports */
+const fishingLocations = [
+  'Nordsee', 'Ostsee', 'Nordostatlantik', 'Bremerhaven', 'Cuxhaven',
+  'Sassnitz', 'Rostock', 'Büsum', 'Heiligenhafen', 'Kiel', 'Aischgrund', 'Oberpfalz',
+]
+
 const namesBySpecies: Record<string, string[]> = {
+  Fisch: [
+    'Finn', 'Marina', 'Flossi', 'Blubb', 'Silba', 'Perla', 'Sprotti', 'Nixe',
+    'Kiemo', 'Welle', 'Coral', 'Tide', 'Glitzer', 'Schuppi', 'Bubbles', 'Lotse',
+  ],
   Huhn: [
     'Frieda', 'Berta', 'Hilde', 'Rosa', 'Lotte', 'Emma', 'Greta', 'Clara',
     'Martha', 'Elsa', 'Helga', 'Inge', 'Liesel', 'Minna', 'Trude', 'Alma',
@@ -67,16 +77,23 @@ const namesBySpecies: Record<string, string[]> = {
   ],
 }
 
+/**
+ * Typical age at slaughter. Source: BZL, landwirtschaft.de
+ * "Wie lange leben Rind, Schwein, Schaf und Huhn?" (Mast, not culled dairy animals).
+ * Pferd: industry sources cite 8 to 10 years on average.
+ * Fisch: Sprotte und Hering (Masse des Fangs) 1 bis 3 Jahre, Zuchtforelle 12 bis 18 Monate.
+ */
 const slaughterAges: Record<string, { min: number; max: number; unit: string }> = {
-  Huhn: { min: 28, max: 42, unit: 'Tage' },
-  Schwein: { min: 150, max: 200, unit: 'Tage' },
-  Truthuhn: { min: 90, max: 140, unit: 'Tage' },
-  Rind: { min: 14, max: 24, unit: 'Monate' },
-  Schaf: { min: 3, max: 12, unit: 'Monate' },
-  Ente: { min: 42, max: 63, unit: 'Tage' },
-  Ziege: { min: 3, max: 10, unit: 'Monate' },
-  Pferd: { min: 2, max: 8, unit: 'Jahre' },
-  Gans: { min: 100, max: 200, unit: 'Tage' },
+  Fisch: { min: 1, max: 3, unit: 'Jahre' },
+  Huhn: { min: 35, max: 49, unit: 'Tage' },
+  Schwein: { min: 180, max: 210, unit: 'Tage' },
+  Truthuhn: { min: 112, max: 154, unit: 'Tage' },
+  Rind: { min: 18, max: 21, unit: 'Monate' },
+  Schaf: { min: 4, max: 12, unit: 'Monate' },
+  Ente: { min: 49, max: 70, unit: 'Tage' },
+  Ziege: { min: 10, max: 15, unit: 'Wochen' },
+  Pferd: { min: 5, max: 10, unit: 'Jahre' },
+  Gans: { min: 112, max: 210, unit: 'Tage' },
 }
 
 export interface Victim {
@@ -95,11 +112,18 @@ export interface Victim {
   startOffset: number
 }
 
+/**
+ * Species are picked by their share of deaths, dampened with a cube root so the
+ * order stays honest but the ticker keeps variety. Raw shares would give fish
+ * about 85 % and chickens 13 % of all bubbles; dampened it is roughly 44 % and 23 %.
+ */
 const totalDeaths = animals.reduce((sum, a) => sum + a.deaths.year, 0)
-const weightedAnimals = animals.map((a) => ({
+const dampenedShares = animals.map((a) => Math.cbrt(a.deaths.year / totalDeaths))
+const dampenedTotal = dampenedShares.reduce((sum, w) => sum + w, 0)
+const weightedAnimals = animals.map((a, i) => ({
   single: a.names.single,
   emoji: a.names.emoji,
-  weight: a.deaths.year / totalDeaths,
+  weight: dampenedShares[i]! / dampenedTotal,
 }))
 
 function pickRandomSpecies() {
@@ -125,7 +149,8 @@ function generateVictim(): Victim {
   const ageData = slaughterAges[species.single] ?? { min: 1, max: 12, unit: 'Monate' }
   const age = `${randomInt(ageData.min, ageData.max)} ${ageData.unit}`
   const duration = randomInt(6, 11)
-  const location = slaughterhouseLocations[randomInt(0, slaughterhouseLocations.length - 1)]!
+  const locations = species.single === 'Fisch' ? fishingLocations : slaughterhouseLocations
+  const location = locations[randomInt(0, locations.length - 1)]!
 
   return {
     id: idCounter++,

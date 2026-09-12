@@ -24,6 +24,7 @@ export interface ComputedChild {
 
 export interface ComputedAnimal {
   names: Animal['names']
+  estimate?: Animal['estimate']
   perDay: number
   perSec: number
   currentDay: number
@@ -90,6 +91,7 @@ export function useAnimalData(timer: Timer) {
 
       return {
         names: animal.names,
+        estimate: animal.estimate,
         perDay: perDayValue,
         perSec: rate,
         currentDay: Math.round(currentDay),

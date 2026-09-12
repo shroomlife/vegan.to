@@ -31,7 +31,7 @@ Build output goes to `docs/` (configured in `vite.config.ts`) for GitHub Pages d
 
 ### Data flow
 
-1. `src/data/animals.ts` — typed array of animal species with yearly kill counts from Destatis (2024/2025 data). Exports raw numbers only, no rate calculations.
+1. `src/data/animals.ts` — typed array of animal species with yearly kill counts from Destatis (2025 data). Exports raw numbers only, no rate calculations.
 2. `src/composables/useTimer.ts` — reactive timer updating every second, provides `secondsSinceStart`, `secondsSinceYearStart`, `secondsSinceDayStart`, `elapsedFormatted`.
 3. `src/composables/useAnimalData.ts` — takes timer, computes all derived values reactively (per-day rates, current year/day totals, killed-since-start counts). Returns `animalData`, `totalDeathCount`, `totalDeathEmojis`.
 4. `src/views/HomeView.vue` — main view consuming both composables, renders counters with `useTransition` for smooth animation.
