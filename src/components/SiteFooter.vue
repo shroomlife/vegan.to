@@ -2,6 +2,8 @@
 import BrandWordmark from '@/components/BrandWordmark.vue'
 import PrideFlag from '@/components/PrideFlag.vue'
 import { useAnchorNavigation } from '@/composables/useAnchorNavigation'
+import { animals } from '@/data/animals'
+import { speciesProfiles } from '@/data/species'
 
 declare const __APP_VERSION__: string
 const appVersion = __APP_VERSION__
@@ -10,10 +12,17 @@ const { onNavClick, isPageLink } = useAnchorNavigation()
 
 const siteLinks = [
   { label: 'Zahlen', to: '/#zahlen' },
+  { label: 'Alle Tierarten', to: '/tiere' },
   { label: 'Dein Impact', to: '/#impact' },
   { label: 'Mitmachen', to: '/#mitmachen' },
   { label: 'Quellen und Methodik', to: '/quellen' },
 ]
+
+/** One link per species page, in the order of the data (fish last) */
+const speciesLinks = speciesProfiles.map((profile) => ({
+  label: animals.find((a) => a.names.single === profile.single)?.names.plural ?? profile.single,
+  to: `/tiere/${profile.slug}`,
+}))
 
 const partnerLinks = [
   { label: 'warum-vegan.com', href: 'https://warum-vegan.com/' },
@@ -45,6 +54,13 @@ const partnerLinks = [
               :aria-current="isExactActive && isPageLink(link.to) ? 'page' : undefined"
               @click="navigate($event); onNavClick(link.to)"
             >{{ link.label }}</a>
+          </RouterLink>
+        </nav>
+
+        <nav class="site-footer-col" aria-label="Tierarten">
+          <h2 class="site-footer-title">Tierarten</h2>
+          <RouterLink v-for="link in speciesLinks" :key="link.to" :to="link.to" custom v-slot="{ href, navigate, isExactActive }">
+            <a :href="href" :aria-current="isExactActive ? 'page' : undefined" @click="navigate($event); onNavClick(link.to)">{{ link.label }}</a>
           </RouterLink>
         </nav>
 
@@ -87,7 +103,7 @@ const partnerLinks = [
 }
 .site-footer-grid {
   display: grid;
-  grid-template-columns: 5fr 2fr 2fr 2fr;
+  grid-template-columns: 4fr 2fr 2fr 2fr 2fr;
   gap: 32px;
 }
 .site-footer-brand {

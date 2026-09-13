@@ -1,6 +1,6 @@
 import { shallowRef, triggerRef, onUnmounted } from 'vue'
 import { animals } from '@/data/animals'
-import { lifespanYearsBySpecies } from '@/data/lifespans'
+import { lifespanYearsBySpecies, slaughterAgeBySpecies, DAYS_PER_UNIT } from '@/data/lifespans'
 
 /** 130+ verifizierte Schlachthof-Standorte in Deutschland */
 const slaughterhouseLocations = [
@@ -78,25 +78,6 @@ const namesBySpecies: Record<string, string[]> = {
   ],
 }
 
-/**
- * Typical age at slaughter. Source: BZL, landwirtschaft.de
- * "Wie lange leben Rind, Schwein, Schaf und Huhn?" (Mast, not culled dairy animals).
- * Pferd: industry sources cite 8 to 10 years on average.
- * Fisch: Sprotte und Hering (Masse des Fangs) 1 bis 3 Jahre, Zuchtforelle 12 bis 18 Monate.
- */
-const slaughterAges: Record<string, { min: number; max: number; unit: string }> = {
-  Fisch: { min: 1, max: 3, unit: 'Jahre' },
-  Huhn: { min: 35, max: 49, unit: 'Tage' },
-  Schwein: { min: 180, max: 210, unit: 'Tage' },
-  Truthuhn: { min: 112, max: 154, unit: 'Tage' },
-  Rind: { min: 18, max: 21, unit: 'Monate' },
-  Schaf: { min: 4, max: 12, unit: 'Monate' },
-  Ente: { min: 49, max: 70, unit: 'Tage' },
-  Ziege: { min: 10, max: 15, unit: 'Wochen' },
-  Pferd: { min: 5, max: 10, unit: 'Jahre' },
-  Gans: { min: 112, max: 210, unit: 'Tage' },
-}
-
 export type Lane = 'left' | 'right'
 
 export interface Victim {
@@ -122,8 +103,6 @@ export interface Victim {
   /** Negative animation-delay in seconds for seed cards (0 for new ones) */
   startOffset: number
 }
-
-const DAYS_PER_UNIT: Record<string, number> = { Tage: 1, Wochen: 7, Monate: 30.4, Jahre: 365 }
 
 /**
  * Species are picked by their share of deaths, dampened with a cube root so the
@@ -160,10 +139,10 @@ function generateVictim(): Victim {
   const species = pickRandomSpecies()
   const names = namesBySpecies[species.single] ?? ['Unbekannt']
   const name = names[randomInt(0, names.length - 1)]!
-  const ageData = slaughterAges[species.single] ?? { min: 1, max: 12, unit: 'Monate' }
+  const ageData = slaughterAgeBySpecies[species.single] ?? { min: 1, max: 12, unit: 'Monate' }
   const ageValue = randomInt(ageData.min, ageData.max)
   const age = `${ageValue} ${ageData.unit}`
-  const livedDays = Math.round(ageValue * (DAYS_PER_UNIT[ageData.unit] ?? 1))
+  const livedDays = Math.round(ageValue * DAYS_PER_UNIT[ageData.unit])
   // Slow enough to read a name and a life; the cards are a vigil, not confetti
   const duration = randomInt(14, 18)
   const locations = species.single === 'Fisch' ? fishingLocations : slaughterhouseLocations

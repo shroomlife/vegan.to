@@ -101,8 +101,8 @@ const grouped = sourceCategories.map((category: SourceCategory) => ({
 }
 .sources-hero {
   padding: 4.5rem 0 3rem;
-  background: linear-gradient(160deg, var(--brand-green-deep) 0%, var(--brand-green) 55%, var(--brand-green-soft) 100%);
-  color: var(--brand-cream);
+  background: var(--brand-mint);
+  color: var(--brand-green);
 }
 .sources-kicker {
   margin: 0 0 0.75rem;
@@ -125,7 +125,7 @@ const grouped = sourceCategories.map((category: SourceCategory) => ({
   max-width: 620px;
   font-size: 1.05rem;
   line-height: 1.6;
-  color: rgba(246, 241, 231, 0.8);
+  color: var(--brand-muted);
 }
 .sources-body {
   padding: 3rem 0 4rem;

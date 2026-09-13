@@ -6,6 +6,7 @@ import { Motion } from 'motion-v'
 import { type ComputedAnimal } from '@/composables/useAnimalData'
 import { useLiveState } from '@/composables/useLiveState'
 import { animals } from '@/data/animals'
+import { slugBySpecies } from '@/data/species'
 import { sources } from '@/data/sources'
 import { useAnchorNavigation } from '@/composables/useAnchorNavigation'
 import { formatNumber } from '@/utils/formatNumber'
@@ -233,7 +234,7 @@ const shareText = () =>
           <div class="animal-card-main">
             <div class="animal-card-name">
               <span class="animal-emoji">{{ animal.names.emoji }}</span>
-              <span class="animal-label">{{ animal.names.plural }}</span>
+              <RouterLink :to="`/tiere/${slugBySpecies(animal.names.single)}`" class="animal-label">{{ animal.names.plural }}</RouterLink>
               <RouterLink
                 v-if="animal.estimate"
                 to="/quellen#methodik"

@@ -84,60 +84,71 @@ export interface LifeFact {
   unit: string
   text: string
   sources: readonly SourceId[]
+  /** Singular species names (as in animals.ts) this fact belongs to; shown on their pages */
+  species: readonly string[]
 }
 
 /** Kapitel 4: the conditions, quoted from law texts and documented practice */
 export const lifeFacts: readonly LifeFact[] = [
   {
     figure: '39 kg',
+    species: ['Huhn'],
     unit: 'Huhn pro Quadratmeter',
     text: 'So viel erlaubt das Gesetz im Maststall. Bei Kurzmast sind das rund 24 Tiere, jedes mit etwas weniger als einem DIN-A5-Blatt plus Bierdeckel.',
     sources: ['tierSchNutztV19', 'assMasthuehner'],
   },
   {
     figure: '32 Tage',
+    species: ['Huhn'],
     unit: 'bis 1,8 kg',
     text: 'In den 1950er Jahren brauchte ein Masthuhn dafür 101 Tage. Heute reichen 32. Die Mast endet nach 29 bis 42 Tagen.',
     sources: ['assMasthuehner'],
   },
   {
     figure: '0,75 m²',
+    species: ['Schwein'],
     unit: 'pro Mastschwein',
     text: 'So viel Platz steht einem Schwein zwischen 50 und 110 kg zu. 96 Prozent der Mastplätze haben Spaltenboden statt Stroh.',
     sources: ['tierSchNutztV29', 'assMastschweine'],
   },
   {
     figure: '5 Tage',
+    species: ['Schwein'],
     unit: 'fixiert um die Geburt',
     text: 'So lange dürfen Sauen künftig noch im Kastenstand stehen, wenn sie Ferkel bekommen. Die Übergangsfrist dafür läuft bis 2036.',
     sources: ['tierSchNutztV30'],
   },
   {
     figure: '20 bis 30 s',
+    species: ['Schwein'],
     unit: 'bis zur Wahrnehmungslosigkeit',
     text: 'So lange dauert es in der CO2-Betäubung. 90 Prozent der großen Schlachtbetriebe nutzen sie, für geschätzt 34 Millionen Schweine im Jahr.',
     sources: ['agrarheuteCo2'],
   },
   {
     figure: '1 Minute',
+    species: ['Huhn'],
     unit: 'kopfüber bei Bewusstsein',
     text: 'So lange hängen Hühner an den Beinen, bevor sie ins Elektrowasserbad getaucht werden.',
     sources: ['dgsWaterbath'],
   },
   {
     figure: '8 Stunden',
+    species: ['Schwein', 'Rind', 'Schaf', 'Pferd'],
     unit: 'Transport als Grundregel',
     text: 'Mit zugelassenen Fahrzeugen dürfen Schweine 24 Stunden unterwegs sein, Rinder 14 Stunden, 1 Stunde Pause, weitere 14 Stunden.',
     sources: ['euTransport'],
   },
   {
     figure: '40 Mio.',
+    species: ['Huhn'],
     unit: 'Küken pro Jahr',
     text: 'So viele männliche Küken wurden getötet, bis das Verbot 2022 kam. Die Brüder der Legehennen sind seitdem ein Kostenproblem, kein Müllproblem.',
     sources: ['tierSchG4c', 'bmlehInOvo'],
   },
   {
     figure: '6 bis 7 Wochen',
+    species: ['Ente'],
     unit: 'Entenleben',
     text: 'So lange lebt eine Pekingente in der Mast, praktisch ohne Zugang zu Badewasser.',
     sources: ['assEnten'],

@@ -8,6 +8,7 @@ import { useLiveState } from '@/composables/useLiveState'
 
 const navLinks = [
   { label: 'Zahlen', to: '/#zahlen', mobile: false },
+  { label: 'Tiere', to: '/tiere', mobile: false },
   { label: 'Impact', to: '/#impact', mobile: false },
   { label: 'Quellen', to: '/quellen', mobile: true },
 ]

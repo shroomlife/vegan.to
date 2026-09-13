@@ -21,7 +21,7 @@ Build output goes to `docs/` (configured in `vite.config.ts`) for GitHub Pages d
 
 - **Vue 3.5** + TypeScript + Composition API (`<script setup lang="ts">`)
 - **Vite 6** with `@vitejs/plugin-vue` and `vite-plugin-pwa`
-- **Vue Router 4** (history mode, routes `/` and `/quellen`; `docs/404.html` is a copy of index.html so GitHub Pages deep links reach the router)
+- **Vue Router 4** (history mode, routes `/`, `/tiere`, `/tiere/:slug` (one page per species from `src/data/species.ts`) and `/quellen`; `docs/404.html` is a copy of index.html so GitHub Pages deep links reach the router). `docs/sitemap.xml` is generated at build time in `vite.config.ts` from the same slug list
 - **@vueuse/core** — `useTransition` for animated number counters
 - **dayjs** — lightweight date math (replaces moment.js)
 - **humanize-duration** — German-language elapsed time display
@@ -43,9 +43,9 @@ Build output goes to `docs/` (configured in `vite.config.ts`) for GitHub Pages d
 - `src/utils/scroll.ts` — smooth scrolling that respects `prefers-reduced-motion`; `src/composables/useAnchorNavigation.ts` handles same-location clicks (logo, anchors)
 - `src/App.vue` — `SiteHeader` (sticky glass header) + `<RouterView />` + `SiteFooter`
 - `src/components/BrandWordmark.vue`, `PrideFlag.vue`, `SiteHeader.vue`, `SiteFooter.vue` — brand shell; tokens in `src/assets/custom.css` (forest green, cream, accent, Unbounded display font)
-- `src/data/sources.ts` — every external figure's source with category; rendered on `/quellen` (`src/views/SourcesView.vue`). `src/data/facts.ts` and `src/data/lifespans.ts` reference sources by id, `SourceLinks.vue` renders them inline
+- `src/data/sources.ts` — every external figure's source with category; rendered on `/quellen` (`src/views/SourcesView.vue`). `src/data/facts.ts`, `src/data/lifespans.ts` (lifespans and slaughter ages) and `src/data/species.ts` reference sources by id, `SourceLinks.vue` renders them inline. `species.ts` must stay free of runtime imports, the Vite config reads it
 - `src/components/CounterPill.vue` — the running total that follows the visitor (header on desktop, bottom pill on mobile) once the hero is out of view
-- `src/utils/documentMeta.ts` — per-route title, description, canonical and Open Graph tags (`router.afterEach`); `src/composables/useJsonLd.ts` injects schema.org blocks (FAQPage from the FAQ data). Static head tags, WebSite/Organization/WebApplication graph and the OG image (`public/img/og.png`) live in `index.html`
+- `src/utils/documentMeta.ts` — `applyDocumentMeta()` sets title, description, canonical and Open Graph tags; static routes via `router.afterEach`, dynamic pages (species) call it themselves; `src/composables/useJsonLd.ts` injects schema.org blocks (FAQPage from the FAQ data). Static head tags, WebSite/Organization/WebApplication graph and the OG image (`public/img/og.png`) live in `index.html`
 - `motion-v`: the element is set with `as="h2"`, never `tag` (that would render a div with a stray attribute)
 - `public/` — static assets, CNAME, manifest.json, icons, robots.txt, sitemap.xml
 

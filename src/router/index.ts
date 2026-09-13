@@ -16,6 +16,21 @@ const router = createRouter({
       },
     },
     {
+      path: '/tiere',
+      name: 'Species',
+      component: () => import('@/views/SpeciesIndexView.vue'),
+      meta: {
+        title: 'Alle Tierarten: Wie viele Tiere in Deutschland sterben | vegan.to',
+        description: 'Hühner, Schweine, Rinder, Fische und sechs weitere Arten: Wie viele Tiere in Deutschland pro Jahr, pro Tag und pro Sekunde für unser Essen sterben, mit amtlichen Zahlen und Quellen.',
+      },
+    },
+    {
+      // title and description come from the species data, set by the view
+      path: '/tiere/:slug',
+      name: 'SpeciesDetail',
+      component: () => import('@/views/SpeciesView.vue'),
+    },
+    {
       path: '/quellen',
       name: 'Sources',
       component: () => import('@/views/SourcesView.vue'),
