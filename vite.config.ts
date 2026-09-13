@@ -4,13 +4,11 @@ import { VitePWA } from 'vite-plugin-pwa'
 import { fileURLToPath } from 'node:url'
 import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname } from 'node:path'
-import { speciesSlugs } from './src/data/species'
+import { routePaths } from './src/data/routes'
 
 const pkg = JSON.parse(readFileSync('./package.json', 'utf-8')) as { version: string }
 
-/** Every indexable route, so the sitemap can never forget a species page */
 const SITE_URL = 'https://vegan.to'
-const routePaths = ['/', '/tiere', ...speciesSlugs.map((slug) => `/tiere/${slug}`), '/quellen']
 
 /**
  * GitHub Pages serves <path>.html for /<path> with status 200 and 404.html for

@@ -10,7 +10,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 bun run dev       # Vite dev server with HMR
-bun run build     # Type-check + production build → docs/
+bun run build     # Type-check + production build → docs/, then scripts/prerender.ts snapshots every route to static HTML
+bun run indexnow  # After a deploy: ping IndexNow (Bing & Co.) with every route from src/data/routes.ts
 bun run preview   # Preview production build locally
 bun run lint      # ESLint (vue3-recommended + typescript-eslint)
 ```
@@ -21,7 +22,7 @@ Build output goes to `docs/` (configured in `vite.config.ts`) for GitHub Pages d
 
 - **Vue 3.5** + TypeScript + Composition API (`<script setup lang="ts">`)
 - **Vite 6** with `@vitejs/plugin-vue` and `vite-plugin-pwa`
-- **Vue Router 4** (history mode, routes `/`, `/tiere`, `/tiere/:slug` (one page per species from `src/data/species.ts`) and `/quellen`; `docs/404.html` is a copy of index.html so GitHub Pages deep links reach the router). `docs/sitemap.xml` is generated at build time in `vite.config.ts` from the same slug list
+- **Vue Router 4** (history mode, routes `/`, `/tiere`, `/tiere/:slug` (one page per species from `src/data/species.ts`) and `/quellen`; `docs/404.html` is a copy of index.html so GitHub Pages deep links reach the router). `docs/sitemap.xml`, one `<path>.html` copy per route (GitHub Pages then answers 200) and the prerendered snapshots all come from `src/data/routes.ts`
 - **@vueuse/core** — `useTransition` for animated number counters
 - **dayjs** — lightweight date math (replaces moment.js)
 - **humanize-duration** — German-language elapsed time display

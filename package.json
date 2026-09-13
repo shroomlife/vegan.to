@@ -21,7 +21,8 @@
   "author": "shroomlife",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc --noEmit && vite build",
+    "build": "vue-tsc --noEmit && vite build && bun run scripts/prerender.ts",
+    "indexnow": "bun run scripts/indexnow.ts",
     "preview": "vite preview",
     "lint": "eslint src/",
     "test:e2e": "playwright test",
