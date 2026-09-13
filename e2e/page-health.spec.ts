@@ -5,7 +5,7 @@ test.describe('page health', () => {
   test('loads without console or page errors', async ({ page }) => {
     const errors = collectErrors(page)
     await page.goto('/')
-    await expect(page).toHaveTitle(/Echtzeit-Zähler/)
+    await expect(page).toHaveTitle(/Live-Zähler/)
     await scrollThroughPage(page)
     await page.waitForTimeout(1500)
     expect(errors).toEqual([])

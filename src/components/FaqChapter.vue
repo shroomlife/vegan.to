@@ -1,6 +1,16 @@
 <script setup lang="ts">
 import { faqs } from '@/data/facts'
+import { useJsonLd } from '@/composables/useJsonLd'
 import SourceLinks from '@/components/SourceLinks.vue'
+
+useJsonLd('faq-jsonld', {
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((faq) => ({
+    '@type': 'Question',
+    name: faq.question,
+    acceptedAnswer: { '@type': 'Answer', text: faq.answer },
+  })),
+})
 </script>
 
 <template>

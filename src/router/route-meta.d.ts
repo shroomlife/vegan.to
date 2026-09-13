@@ -6,5 +6,7 @@ declare module 'vue-router' {
   interface RouteMeta {
     /** Document title set after each navigation */
     title?: string
+    /** Meta description, also copied into the Open Graph tags */
+    description?: string
   }
 }

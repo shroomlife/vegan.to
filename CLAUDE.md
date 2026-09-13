@@ -35,7 +35,7 @@ Build output goes to `docs/` (configured in `vite.config.ts`) for GitHub Pages d
 2. `src/composables/useTimer.ts` — reactive timer updating every second, provides `secondsSinceStart`, `secondsSinceYearStart`, `secondsSinceDayStart`, `elapsedFormatted`.
 3. `src/composables/useAnimalData.ts` — takes timer, computes all derived values reactively (per-day rates, current year/day totals, killed-since-start counts). Returns `animalData` and `totalDeathCount`.
 4. `src/composables/useLiveState.ts` — `provideLiveState()` in `App.vue` creates one timer, animal data and victim ticker; header, home view and counter pill inject it via `useLiveState()`.
-5. `src/views/HomeView.vue` — main view: hero (`HeroSky` canvas with one light per killed animal, `VictimCard` lanes), sheet with live sentence, species grid, then the editorial chapters (`SpeciesFactsChapter`, `LifeFactsChapter`, `FaqChapter`) fed by `src/data/facts.ts`, growth, impact, CTA.
+5. `src/views/HomeView.vue` — main view: hero (`HeroSky` canvas with one light per killed animal, `VictimCard` lanes), sheet with live sentence, species grid, then the editorial chapters (`SpeciesFactsChapter`, `LifeFactsChapter`, `FaqChapter`) fed by `src/data/facts.ts`, growth, `ImpactChapter` (impact math, personal tracker, dialog), `ActionChapter` (hand-offs from `src/data/actions.ts`).
 
 ### Key files
 
@@ -45,7 +45,9 @@ Build output goes to `docs/` (configured in `vite.config.ts`) for GitHub Pages d
 - `src/components/BrandWordmark.vue`, `PrideFlag.vue`, `SiteHeader.vue`, `SiteFooter.vue` — brand shell; tokens in `src/assets/custom.css` (forest green, cream, accent, Unbounded display font)
 - `src/data/sources.ts` — every external figure's source with category; rendered on `/quellen` (`src/views/SourcesView.vue`). `src/data/facts.ts` and `src/data/lifespans.ts` reference sources by id, `SourceLinks.vue` renders them inline
 - `src/components/CounterPill.vue` — the running total that follows the visitor (header on desktop, bottom pill on mobile) once the hero is out of view
-- `public/` — static assets, CNAME, manifest.json, icons
+- `src/utils/documentMeta.ts` — per-route title, description, canonical and Open Graph tags (`router.afterEach`); `src/composables/useJsonLd.ts` injects schema.org blocks (FAQPage from the FAQ data). Static head tags, WebSite/Organization/WebApplication graph and the OG image (`public/img/og.png`) live in `index.html`
+- `motion-v`: the element is set with `as="h2"`, never `tag` (that would render a div with a stray attribute)
+- `public/` — static assets, CNAME, manifest.json, icons, robots.txt, sitemap.xml
 
 ### Styling
 

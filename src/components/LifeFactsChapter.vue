@@ -17,7 +17,7 @@ import SourceLinks from '@/components/SourceLinks.vue'
         <Motion
           v-for="(fact, index) in lifeFacts"
           :key="fact.figure"
-          tag="article"
+          as="article"
           class="life-fact"
           :initial="{ opacity: 0, y: 24 }"
           :whileInView="{ opacity: 1, y: 0 }"
@@ -45,7 +45,7 @@ import SourceLinks from '@/components/SourceLinks.vue'
   position: relative;
   z-index: 2;
   padding: 3.5rem 0 3rem;
-  background: #0e2114;
+  background: var(--brand-night);
   color: var(--brand-cream);
 }
 .life-facts-title {

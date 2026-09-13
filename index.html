@@ -6,9 +6,8 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
 
   <!-- SEO -->
-  <title>Tiermorde in Deutschland: Echtzeit-Zähler | vegan.to</title>
-  <meta name="description" content="Echtzeit-Zähler: So viele Tiere sterben jede Sekunde durch deutsche Schlachthöfe und Fischerei. Destatis-Zahlen 2025, Fische geschätzt. Informiere dich und werde aktiv. #GoVegan">
-  <meta name="keywords" content="vegan, Tiermorde, Schlachtungen, Deutschland, Echtzeit, Statistik, Destatis, Tierrechte, GoVegan, Tierschutz, Massentierhaltung">
+  <title>Wie viele Tiere sterben in Deutschland? Live-Zähler | vegan.to</title>
+  <meta name="description" content="Jede Sekunde sterben in Deutschland rund 164 Tiere für unser Essen. Der Live-Zähler rechnet die amtlichen Schlachtzahlen (Destatis 2025) auf den Moment herunter, Fische geschätzt. Mit Quellen, Fakten und dem, was deine nächste Mahlzeit ändert.">
   <meta name="author" content="shroomlife">
   <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large">
   <link rel="canonical" href="https://vegan.to/" />
@@ -18,57 +17,77 @@
   <meta property="og:url" content="https://vegan.to/" />
   <meta property="og:type" content="website" />
   <meta property="og:locale" content="de_DE" />
-  <meta property="og:title" content="Tiermorde in Deutschland: Echtzeit-Zähler" />
-  <meta property="og:description" content="Rund 745 Millionen Landtiere und geschätzt 4,4 Milliarden Fische sterben jedes Jahr durch deutsche Schlachthöfe und Fischerei. Sieh die Zahlen in Echtzeit und erfahre, was du tun kannst." />
-  <meta property="og:image" content="https://vegan.to/img/icon.png" />
-  <meta property="og:image:width" content="512" />
-  <meta property="og:image:height" content="512" />
-  <meta property="og:image:alt" content="vegan.to: Echtzeit-Zähler für Tiermorde in Deutschland" />
+  <meta property="og:title" content="Wie viele Tiere sterben in Deutschland? Live-Zähler | vegan.to" />
+  <meta property="og:description" content="Rund 745 Millionen Landtiere und geschätzt 4,4 Milliarden Fische sterben jedes Jahr durch deutsche Schlachthöfe und Fischerei. Sieh die Zahl live und was du bewirken kannst." />
+  <meta property="og:image" content="https://vegan.to/img/og.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="Sie hatten Namen. Live-Zähler der Tiere, die in Deutschland für unser Essen sterben." />
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Tiermorde in Deutschland: Echtzeit-Zähler" />
-  <meta name="twitter:description" content="Über 5 Milliarden Tiere pro Jahr, Fische mitgezählt. Sieh die Zahlen in Echtzeit." />
-  <meta name="twitter:image" content="https://vegan.to/img/icon.png" />
+  <meta name="twitter:title" content="Wie viele Tiere sterben in Deutschland? Live-Zähler | vegan.to" />
+  <meta name="twitter:description" content="Rund 745 Millionen Landtiere und geschätzt 4,4 Milliarden Fische sterben jedes Jahr durch deutsche Schlachthöfe und Fischerei. Sieh die Zahl live und was du bewirken kannst." />
+  <meta name="twitter:image" content="https://vegan.to/img/og.png" />
 
-  <!-- JSON-LD Structured Data -->
+  <!-- JSON-LD Structured Data (the FAQ block is added by the app from the same data it renders) -->
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "WebApplication",
-    "name": "vegan.to",
-    "url": "https://vegan.to",
-    "description": "Echtzeit-Zähler für Tierschlachtungen in Deutschland, basierend auf offiziellen Destatis-Statistiken.",
-    "applicationCategory": "EducationalApplication",
-    "operatingSystem": "All",
-    "inLanguage": "de",
-    "author": {
-      "@type": "Person",
-      "name": "shroomlife"
-    },
-    "about": {
-      "@type": "Thing",
-      "name": "Tierschlachtungen in Deutschland",
-      "description": "Gewerbliche Schlachtungen von Tieren in Deutschland basierend auf Daten des Statistischen Bundesamts (Destatis) 2025."
-    },
-    "isBasedOn": [
+    "@graph": [
       {
-        "@type": "Dataset",
-        "name": "Gewerbliche Schlachtungen 2025",
-        "url": "https://www-genesis.destatis.de/genesis/online?selectionname=41331-0001",
-        "creator": { "@type": "GovernmentOrganization", "name": "Statistisches Bundesamt (Destatis)" }
+        "@type": "WebSite",
+        "@id": "https://vegan.to/#website",
+        "url": "https://vegan.to/",
+        "name": "vegan.to",
+        "inLanguage": "de",
+        "publisher": { "@id": "https://vegan.to/#organization" }
       },
       {
-        "@type": "Dataset",
-        "name": "Geflügelschlachtereien 2025",
-        "url": "https://www-genesis.destatis.de/genesis/online?selectionname=41322-0001",
-        "creator": { "@type": "GovernmentOrganization", "name": "Statistisches Bundesamt (Destatis)" }
+        "@type": "Organization",
+        "@id": "https://vegan.to/#organization",
+        "name": "vegan.to",
+        "url": "https://vegan.to/",
+        "logo": "https://vegan.to/img/icon.png",
+        "sameAs": ["https://warum-vegan.com/", "https://wie-vegan.com/", "https://vegan-community.de/"]
       },
       {
-        "@type": "Dataset",
-        "name": "Estimated numbers of fish caught by Germany, 2003 to 2022",
-        "url": "https://fishcount.org.uk/estimates/wildfishes/data03/fishcount_global_wild_fish_estimate.php?selyear=2003to2022&selcountry=Germany&selspecies=*+All+species+*",
-        "creator": { "@type": "Organization", "name": "fishcount.org.uk" }
+        "@type": "WebApplication",
+        "@id": "https://vegan.to/#app",
+        "name": "vegan.to Live-Zähler",
+        "url": "https://vegan.to/",
+        "description": "Live-Zähler der Tiere, die in Deutschland für unser Essen sterben, heruntergerechnet aus den amtlichen Schlachtzahlen des Statistischen Bundesamts.",
+        "applicationCategory": "EducationalApplication",
+        "operatingSystem": "All",
+        "inLanguage": "de",
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+        "publisher": { "@id": "https://vegan.to/#organization" },
+        "about": {
+          "@type": "Thing",
+          "name": "Tierschlachtungen in Deutschland",
+          "description": "Gewerbliche Schlachtungen und Geflügelschlachtungen in Deutschland 2025 nach Destatis, Fische nach fishcount.org.uk geschätzt."
+        },
+        "isBasedOn": [
+          {
+            "@type": "Dataset",
+            "name": "Gewerbliche Schlachtungen 2025",
+            "url": "https://www-genesis.destatis.de/datenbank/online/table/41331-0001",
+            "creator": { "@type": "GovernmentOrganization", "name": "Statistisches Bundesamt (Destatis)" }
+          },
+          {
+            "@type": "Dataset",
+            "name": "Geflügelschlachtereien 2025",
+            "url": "https://www-genesis.destatis.de/datenbank/online/table/41322-0001",
+            "creator": { "@type": "GovernmentOrganization", "name": "Statistisches Bundesamt (Destatis)" }
+          },
+          {
+            "@type": "Dataset",
+            "name": "Estimated numbers of fish caught by Germany, 2003 to 2022",
+            "url": "https://fishcount.org.uk/estimates/wildfishes/data03/fishcount_global_wild_fish_estimate.php?selyear=2003to2022&selcountry=Germany&selspecies=*+All+species+*",
+            "creator": { "@type": "Organization", "name": "fishcount.org.uk" }
+          }
+        ]
       }
     ]
   }
@@ -90,8 +109,8 @@
   <link rel="icon" type="image/png" sizes="96x96" href="/img/icons/favicon-96x96.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/img/icons/favicon-16x16.png">
   <meta name="msapplication-TileImage" content="/img/icons/ms-icon-144x144.png">
-  <meta name="msapplication-TileColor" content="#1b1b3a">
-  <meta name="theme-color" content="#1b1b3a">
+  <meta name="msapplication-TileColor" content="#0e2114">
+  <meta name="theme-color" content="#0e2114">
 
   <!-- PWA & Manifest -->
   <link rel="manifest" href="/manifest.json">

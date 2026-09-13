@@ -17,7 +17,7 @@ import SourceLinks from '@/components/SourceLinks.vue'
         <Motion
           v-for="(fact, index) in speciesFacts"
           :key="fact.species"
-          tag="article"
+          as="article"
           class="species-fact"
           :initial="{ opacity: 0, y: 24 }"
           :whileInView="{ opacity: 1, y: 0 }"

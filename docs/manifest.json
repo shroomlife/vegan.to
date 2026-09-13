@@ -1,11 +1,11 @@
 {
-  "name": "vegan.to: Echtzeit-Zähler für Tiermorde in Deutschland",
+  "name": "vegan.to: Live-Zähler der Tiere, die in Deutschland sterben",
   "short_name": "vegan.to",
   "description": "Echtzeit-Zähler: So viele Tiere werden in Deutschland jede Sekunde geschlachtet. Basierend auf offiziellen Destatis-Zahlen.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#1b1b3a",
-  "theme_color": "#1b1b3a",
+  "background_color": "#0e2114",
+  "theme_color": "#0e2114",
   "lang": "de",
   "categories": ["education", "social"],
   "icons": [
