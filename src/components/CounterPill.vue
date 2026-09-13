@@ -50,6 +50,6 @@ defineProps<{
   color: var(--brand-accent);
 }
 .counter-pill-label {
-  color: rgba(246, 241, 231, 0.75);
+  opacity: 0.8;
 }
 </style>

@@ -4,6 +4,11 @@
   --brand-green-deep: #0f2a17;
   --brand-green-soft: #1f4a2c;
   --brand-night: #0e2114;
+  --brand-surface: #fbf9f4;
+  --brand-mint: #e9f1ea;
+  --brand-ink: #2f3b33;
+  --brand-muted: #4a5a4f;
+  --brand-faint: #8d8474;
   --brand-cream: #f6f1e7;
   --brand-accent: #ff6a3d;
   --font-display: 'Unbounded', 'Arial Black', sans-serif;
@@ -36,3 +41,36 @@ html {
 }
 .chapter--center { text-align: center; }
 .chapter--on-dark { color: #7fe0a5; }
+
+/* Shared rhythm for every chapter of the start page: air above and below, one title scale */
+.chapter-section {
+  padding: 5.5rem 0;
+}
+.chapter-title {
+  margin: 0 0 0.8rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.7rem, 3.4vw, 2.4rem);
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: var(--brand-green);
+}
+.chapter-lead {
+  max-width: 640px;
+  margin: 0 0 2.25rem;
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: var(--brand-muted);
+}
+.chapter-lead--center {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+@media (max-width: 767px) {
+  .chapter-section {
+    padding: 3.5rem 0;
+  }
+  .chapter-lead {
+    margin-bottom: 1.5rem;
+  }
+}

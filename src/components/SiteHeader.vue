@@ -18,10 +18,12 @@ const route = useRoute()
 
 // The counter moves into the header once the hero has scrolled away (desktop only)
 const showPill = computed(() => !live.isMobile.value && route.name === 'Home' && !live.heroVisible.value)
+// Dark glass over the dark hero, light glass over the light chapters below it
+const light = computed(() => route.name === 'Home' && !live.heroVisible.value)
 </script>
 
 <template>
-  <header class="site-header">
+  <header class="site-header" :class="{ 'site-header--light': light }">
     <div class="site-header-inner">
       <BrandWordmark class="site-header-brand" />
       <Transition name="header-pill">
@@ -69,6 +71,26 @@ const showPill = computed(() => !live.isMobile.value && route.name === 'Home' &&
   -webkit-backdrop-filter: blur(14px) saturate(140%);
   border-bottom: 1px solid rgba(246, 241, 231, 0.12);
   color: var(--brand-cream);
+  transition: background 0.25s, border-color 0.25s, color 0.25s;
+}
+.site-header--light {
+  background: rgba(246, 241, 231, 0.82);
+  border-bottom-color: rgba(20, 54, 31, 0.1);
+  color: var(--brand-green);
+}
+.site-header--light .site-header-link,
+.site-header--light .site-header-link:hover,
+.site-header--light .site-header-link:focus-visible {
+  color: var(--brand-green);
+}
+.site-header--light .site-header-link:focus-visible,
+.site-header--light .site-header-cta:focus-visible {
+  outline-color: var(--brand-green);
+}
+.site-header--light .counter-pill {
+  border-color: rgba(20, 54, 31, 0.15);
+  background: rgba(20, 54, 31, 0.06);
+  color: var(--brand-green);
 }
 .site-header-inner {
   max-width: 1280px;

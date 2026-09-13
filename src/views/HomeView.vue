@@ -211,7 +211,7 @@ const shareText = () =>
     <div class="container">
       <span class="chapter">Kapitel 2 &middot; Wie viele</span>
       <div class="section-head">
-        <h2 class="section-title section-title--left">Heute in Deutschland</h2>
+        <h2 class="chapter-title">Heute in Deutschland</h2>
         <span class="section-note">Jedes Emoji ein Tier, seit du hier bist. Destatis 2025.</span>
       </div>
 
@@ -302,14 +302,14 @@ const shareText = () =>
   <!-- Live Death Counter Summary -->
   <Motion
     as="section"
-    class="emoji-section"
+    class="emoji-section chapter-section"
     :initial="{ opacity: 0 }"
     :whileInView="{ opacity: 1 }"
     :transition="{ duration: 0.8 }"
     :inViewOptions="{ once: true, amount: 0.3 }"
   >
     <div class="container">
-      <h2 class="section-title">Während du hier bist, sterben sie weiter</h2>
+      <h2 class="chapter-title">Während du hier bist, sterben sie weiter</h2>
       <p class="emoji-section-sub">
         In nur {{ timer.elapsedFormatted.value }} seit du da bist:
       </p>
@@ -329,12 +329,12 @@ const shareText = () =>
   </Motion>
 
   <!-- Vegan Growth: Full-Width Progress Bar -->
-  <section class="growth-section">
+  <section class="growth-section chapter-section">
     <div class="growth-inner">
-      <span class="chapter chapter--center chapter--on-dark">Kapitel 5 &middot; Die anderen</span>
+      <span class="chapter chapter--center">Kapitel 5 &middot; Die anderen</span>
       <Motion
         as="h2"
-        class="growth-title"
+        class="chapter-title text-center"
         :initial="{ opacity: 0, y: 20 }"
         :whileInView="{ opacity: 1, y: 0 }"
         :transition="{ duration: 0.5 }"
@@ -404,9 +404,9 @@ const shareText = () =>
   <ActionChapter />
 
   <!-- Share -->
-  <section class="share-section">
+  <section class="share-section chapter-section">
     <div class="container">
-      <h3 class="section-title section-title--sm">Teile diese Seite</h3>
+      <h2 class="chapter-title text-center">Teile diese Seite</h2>
       <div class="text-center shareLinks">
         <a class="resp-sharing-button__link" href="https://facebook.com/sharer/sharer.php?u=https%3A%2F%2Fvegan.to" target="_blank" rel="noopener" aria-label="Auf Facebook teilen"><div class="resp-sharing-button resp-sharing-button--facebook resp-sharing-button--small"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.77 7.46H14.5v-1.9c0-.9.6-1.1 1-1.1h3V.5h-4.33C10.24.5 9.5 3.44 9.5 5.32v2.15h-3v4h3v12h5v-12h3.85l.42-4z" /></svg></div></div></a>
         <a class="resp-sharing-button__link" :href="`https://x.com/intent/tweet?text=${encodeURIComponent(shareText())}&url=${encodeURIComponent('https://vegan.to')}`" target="_blank" rel="noopener" aria-label="Auf X teilen"><div class="resp-sharing-button resp-sharing-button--twitter resp-sharing-button--small"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M23.44 4.83c-.8.37-1.5.38-2.22.02.93-.56.98-.96 1.32-2.02-.88.52-1.86.9-2.9 1.1-.82-.88-2-1.43-3.3-1.43-2.5 0-4.55 2.04-4.55 4.54 0 .36.03.7.1 1.04-3.77-.2-7.12-2-9.36-4.75-.4.67-.6 1.45-.6 2.3 0 1.56.8 2.95 2 3.77-.74-.03-1.44-.23-2.05-.57v.06c0 2.2 1.56 4.03 3.64 4.44-.67.2-1.37.2-2.06.08.58 1.8 2.26 3.12 4.25 3.16C5.78 18.1 3.37 18.74 1 18.46c2 1.3 4.4 2.04 6.97 2.04 8.35 0 12.92-6.92 12.92-12.93 0-.2 0-.4-.02-.6.9-.63 1.96-1.22 2.56-2.14z" /></svg></div></div></a>
@@ -604,7 +604,7 @@ const shareText = () =>
   background: var(--brand-cream);
   border-radius: 36px 36px 0 0;
   box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.35);
-  padding: 2.75rem 0 2.5rem;
+  padding: 3.5rem 0 3.5rem;
 }
 .sheet::before {
   content: '';
@@ -637,13 +637,6 @@ const shareText = () =>
   color: var(--brand-green);
   border-color: rgba(20, 54, 31, 0.3);
 }
-.chapter-lead {
-  margin: 0 0 1.5rem;
-  max-width: 640px;
-  font-size: 1rem;
-  line-height: 1.65;
-  color: #4a5a4f;
-}
 .recent-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -655,18 +648,14 @@ const shareText = () =>
   justify-content: space-between;
   gap: 1rem;
   flex-wrap: wrap;
-  margin-bottom: 1.1rem;
+  margin-bottom: 1.5rem;
 }
-.section-title--left {
-  text-align: left;
+.section-head .chapter-title {
   margin-bottom: 0;
-  font-family: var(--font-display);
-  font-size: 1.5rem;
-  letter-spacing: -0.025em;
 }
 .section-note {
-  font-size: 0.8rem;
-  color: #8d8474;
+  font-size: 0.85rem;
+  color: var(--brand-faint);
 }
 
 /* ── Animals Section ──────────────────────────────── */
@@ -684,7 +673,7 @@ const shareText = () =>
 .animals-section {
   position: relative;
   z-index: 2;
-  padding: 1rem 0 3rem;
+  padding: 0.5rem 0 5.5rem;
   background: var(--brand-cream);
 }
 
@@ -820,16 +809,15 @@ const shareText = () =>
 
 /* ── Live Death Summary ────────────────────────────── */
 .emoji-section {
-  padding: 3rem 1rem;
   text-align: center;
-  background: #fff;
+  background: var(--brand-mint);
 }
 .section-title { font-size: 1.75rem; font-weight: 700; margin-bottom: 1.5rem; text-align: center; }
 .section-title--sm { font-size: 1.25rem; }
 .emoji-section-sub {
-  font-size: 1rem;
-  color: #6c757d;
-  margin-bottom: 1.25rem;
+  font-size: 1.05rem;
+  color: var(--brand-muted);
+  margin-bottom: 1.5rem;
 }
 .emoji-badges {
   display: flex;
@@ -844,8 +832,9 @@ const shareText = () =>
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  background: #1b1b3a;
-  color: #fff;
+  background: #fff;
+  border: 1.5px solid rgba(20, 54, 31, 0.1);
+  color: var(--brand-green);
   padding: 0.45rem 1rem;
   border-radius: 50px;
   font-size: 0.9rem;
@@ -854,27 +843,21 @@ const shareText = () =>
   font-variant-numeric: tabular-nums;
 }
 .emoji-total {
-  margin-top: 1.5rem;
-  font-size: 1.1rem;
-  font-weight: 600;
+  margin-top: 1.75rem;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  letter-spacing: -0.02em;
   color: #e74c3c;
 }
 
 /* ── Vegan Growth — Full Width ─────────────────────── */
 .growth-section {
-  padding: 3rem 0;
-  background: var(--brand-night);
-  color: #fff;
+  background: var(--brand-cream);
+  color: var(--brand-green);
 }
 .growth-inner {
   max-width: 100%;
   padding: 0 1.5rem;
-}
-.growth-title {
-  font-size: clamp(1.5rem, 4vw, 2rem);
-  font-weight: 700;
-  text-align: center;
-  margin-bottom: 1.5rem;
 }
 .growth-stats {
   display: flex;
@@ -890,26 +873,27 @@ const shareText = () =>
   display: block;
   font-size: clamp(1.5rem, 5vw, 2.5rem);
   font-weight: 700;
+  font-family: var(--font-display);
+  letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
   line-height: 1.1;
-  opacity: 0.5;
+  color: var(--brand-faint);
 }
 .growth-stat-number--green {
-  color: #2ecc71;
-  opacity: 1;
+  color: var(--brand-green);
 }
 .growth-stat-label {
   display: block;
-  font-size: 0.8rem;
-  opacity: 0.6;
-  margin-top: 0.25rem;
+  font-size: 0.82rem;
+  color: var(--brand-muted);
+  margin-top: 0.35rem;
 }
 
 /* Progress bar — full viewport width */
 .growth-progress {
   width: 100%;
   height: 48px;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(20, 54, 31, 0.08);
   border-radius: 24px;
   overflow: hidden;
   position: relative;
@@ -917,7 +901,7 @@ const shareText = () =>
 }
 .growth-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #2ecc71, #27ae60, #1abc9c);
+  background: linear-gradient(90deg, var(--brand-green-soft), #2f8f57);
   border-radius: 24px;
   display: flex;
   align-items: center;
@@ -925,7 +909,7 @@ const shareText = () =>
   padding-right: 0.75rem;
   min-width: 60px;
   transition: width 0.5s ease-out;
-  box-shadow: 0 0 20px rgba(46, 204, 113, 0.4);
+  box-shadow: 0 8px 24px rgba(20, 54, 31, 0.25);
   position: relative;
 }
 .growth-progress-fill::after {
@@ -953,25 +937,28 @@ const shareText = () =>
 }
 .growth-message {
   text-align: center;
-  font-size: 1rem;
-  font-weight: 500;
-  opacity: 0.8;
+  font-size: 1.05rem;
+  color: var(--brand-muted);
   max-width: 520px;
   margin: 0 auto 1rem;
-  line-height: 1.6;
+  line-height: 1.65;
 }
 .growth-source {
   text-align: center;
-  font-size: 0.7rem;
-  opacity: 0.3;
+  font-size: 0.75rem;
+  color: var(--brand-faint);
   text-wrap: balance;
+}
+.growth-source a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 /* ── Share ─────────────────────────────────────────── */
 .share-section {
-  padding: 2.5rem 1rem;
   text-align: center;
-  background: var(--brand-cream);
+  background: var(--brand-mint);
 }
 
 
@@ -993,7 +980,7 @@ const shareText = () =>
   }
   /* Animal cards: one column on phones */
   .animals-section {
-    padding: 0.5rem 0 2rem;
+    padding: 0 0 3.5rem;
   }
   .animal-grid {
     grid-template-columns: 1fr;
@@ -1079,18 +1066,12 @@ const shareText = () =>
   }
 
   /* Emoji summary */
-  .emoji-section {
-    padding: 2rem 0.75rem;
-  }
   .emoji-badge {
     font-size: 0.8rem;
     padding: 0.35rem 0.75rem;
   }
 
   /* Growth section */
-  .growth-section {
-    padding: 2rem 0;
-  }
   .growth-inner {
     padding: 0 1rem;
   }
@@ -1112,10 +1093,6 @@ const shareText = () =>
     font-size: 0.7rem;
   }
 
-  /* Share */
-  .share-section {
-    padding: 2rem 0.75rem;
-  }
 
   /* Section titles */
   .section-title {

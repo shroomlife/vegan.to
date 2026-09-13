@@ -14,11 +14,11 @@ useJsonLd('faq-jsonld', {
 </script>
 
 <template>
-  <section id="fragen" class="faq">
+  <section id="fragen" class="faq chapter-section">
     <div class="container">
       <span class="chapter chapter--center">Kapitel 7 &middot; Die Fragen davor</span>
-      <h2 class="faq-title">Was Menschen fragen, bevor sie etwas ändern</h2>
-      <p class="faq-lead">
+      <h2 class="chapter-title text-center">Was Menschen fragen, bevor sie etwas ändern</h2>
+      <p class="chapter-lead chapter-lead--center">
         Kurze Antworten, keine Meinungen. Unter jeder steht, wo sie herkommt.
       </p>
       <div class="faq-list">
@@ -39,24 +39,7 @@ useJsonLd('faq-jsonld', {
 
 <style scoped>
 .faq {
-  padding: 3.5rem 0 3rem;
-  background: var(--brand-cream);
-}
-.faq-title {
-  margin: 0 0 0.6rem;
-  text-align: center;
-  font-family: var(--font-display);
-  font-size: clamp(1.4rem, 3vw, 2rem);
-  letter-spacing: -0.03em;
-  color: var(--brand-green);
-}
-.faq-lead {
-  max-width: 560px;
-  margin: 0 auto 1.75rem;
-  text-align: center;
-  font-size: 1rem;
-  line-height: 1.6;
-  color: #4a5a4f;
+  background: var(--brand-surface);
 }
 .faq-list {
   max-width: 760px;
@@ -124,13 +107,10 @@ useJsonLd('faq-jsonld', {
   margin: 0 0 0.6rem;
   font-size: 0.98rem;
   line-height: 1.65;
-  color: #2f3b33;
+  color: var(--brand-ink);
 }
 
 @media (max-width: 767px) {
-  .faq {
-    padding: 2.5rem 0 2rem;
-  }
   .faq-question {
     font-size: 0.95rem;
     padding: 0.9rem 1rem;

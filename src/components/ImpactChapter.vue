@@ -138,13 +138,13 @@ const metrics = [
 </script>
 
 <template>
-  <section id="impact" class="impact">
+  <section id="impact" class="impact chapter-section">
     <div class="container">
       <span class="chapter">Kapitel 6 &middot; Was du bewirkst</span>
       <div class="impact-head">
         <div>
-          <h2 class="impact-title">Ein Mensch. {{ activeItem.label }}.</h2>
-          <p class="impact-lead">
+          <h2 class="chapter-title impact-title">Ein Mensch. {{ activeItem.label }}.</h2>
+          <p class="chapter-lead impact-lead">
             So viel spart eine einzige Person, die vegan statt mit mittlerem Fleischkonsum isst.
             Wähle den Zeitraum, die Karten rechnen mit.
           </p>
@@ -291,8 +291,7 @@ const metrics = [
 
 <style scoped>
 .impact {
-  padding: 3.5rem 0 3rem;
-  background: var(--brand-cream);
+  background: var(--brand-mint);
 }
 .impact-head {
   display: flex;
@@ -303,19 +302,11 @@ const metrics = [
   margin-bottom: 1.5rem;
 }
 .impact-title {
-  margin: 0 0 0.6rem;
-  font-family: var(--font-display);
-  font-size: clamp(1.5rem, 3vw, 2.1rem);
-  letter-spacing: -0.03em;
-  color: var(--brand-green);
   font-variant-numeric: tabular-nums;
 }
 .impact-lead {
   max-width: 560px;
-  margin: 0;
-  font-size: 1rem;
-  line-height: 1.65;
-  color: #4a5a4f;
+  margin-bottom: 0;
 }
 .impact-tabs {
   display: inline-flex;
@@ -323,7 +314,7 @@ const metrics = [
   gap: 4px;
   padding: 4px;
   border-radius: 999px;
-  background: rgba(20, 54, 31, 0.07);
+  background: rgba(20, 54, 31, 0.08);
 }
 .impact-tab {
   padding: 8px 14px;
@@ -403,7 +394,7 @@ const metrics = [
   padding-left: 1.1rem;
   font-size: 0.85rem;
   line-height: 1.45;
-  color: #4a5a4f;
+  color: var(--brand-muted);
 }
 .impact-card-comparisons li::before {
   content: '≈';
@@ -418,10 +409,10 @@ const metrics = [
 
 /* Personal tracker: a dark card that turns the period numbers into the visitor's own */
 .personal {
-  margin-top: 1.5rem;
+  margin-top: 2rem;
   padding: 1.75rem 2rem;
   border-radius: 24px;
-  background: var(--brand-night);
+  background: var(--brand-green);
   color: var(--brand-cream);
 }
 .personal-intro {
@@ -709,9 +700,6 @@ const metrics = [
   }
 }
 @media (max-width: 767px) {
-  .impact {
-    padding: 2.5rem 0 2rem;
-  }
   .impact-tabs {
     width: 100%;
     justify-content: center;

@@ -7,13 +7,13 @@ const { latest } = useLiveState()
 </script>
 
 <template>
-  <section id="mitmachen" class="action">
+  <section id="mitmachen" class="action chapter-section">
     <div class="container">
-      <span class="chapter chapter--on-dark">Kapitel 8 &middot; Mach mit</span>
+      <span class="chapter">Kapitel 8 &middot; Mach mit</span>
       <div class="action-head">
         <Motion
           as="h2"
-          class="action-title"
+          class="chapter-title action-title"
           :initial="{ opacity: 0, y: 24 }"
           :whileInView="{ opacity: 1, y: 0 }"
           :transition="{ duration: 0.5 }"
@@ -131,30 +131,24 @@ const { latest } = useLiveState()
 
 <style scoped>
 .action {
-  padding: 3.5rem 0 3rem;
-  background: var(--brand-night);
-  color: var(--brand-cream);
+  background: var(--brand-cream);
+  color: var(--brand-ink);
 }
 .action-head {
   display: grid;
   grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-  gap: 2rem;
+  gap: 2.5rem;
   align-items: end;
-  margin-bottom: 2rem;
+  margin-bottom: 2.25rem;
 }
 .action-title {
   margin: 0;
-  font-family: var(--font-display);
-  font-size: clamp(1.6rem, 3.2vw, 2.4rem);
-  letter-spacing: -0.03em;
-  line-height: 1.15;
-  color: var(--brand-cream);
 }
 .action-intro p {
   margin: 0 0 0.6rem;
-  font-size: 0.98rem;
-  line-height: 1.65;
-  color: rgba(246, 241, 231, 0.72);
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--brand-muted);
 }
 .action-intro p:last-child {
   margin-bottom: 0;
@@ -168,21 +162,20 @@ const { latest } = useLiveState()
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-  padding: 1.4rem 1.4rem 1.2rem;
+  padding: 1.5rem 1.5rem 1.3rem;
   border-radius: 20px;
-  border: 1px solid rgba(246, 241, 231, 0.12);
-  border-top-color: rgba(246, 241, 231, 0.22);
-  background: rgba(246, 241, 231, 0.045);
-  color: var(--brand-cream);
+  border: 1.5px solid rgba(20, 54, 31, 0.08);
+  background: #fff;
+  color: var(--brand-ink);
   text-decoration: none;
-  transition: transform 0.2s, border-color 0.2s, background 0.2s;
+  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
 }
 .why-how-card:hover,
 .why-how-card:focus-visible {
   transform: translateY(-3px);
   border-color: var(--brand-accent);
-  background: rgba(246, 241, 231, 0.07);
-  color: var(--brand-cream);
+  box-shadow: 0 16px 40px rgba(20, 54, 31, 0.1);
+  color: var(--brand-ink);
   text-decoration: none;
 }
 .why-how-kicker {
@@ -190,23 +183,24 @@ const { latest } = useLiveState()
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #7fe0a5;
+  color: var(--brand-faint);
 }
 .why-how-title {
   font-family: var(--font-display);
   font-size: 1.35rem;
   letter-spacing: -0.02em;
   line-height: 1.15;
+  color: var(--brand-green);
 }
 .why-how-desc {
-  font-size: 0.9rem;
+  font-size: 0.92rem;
   line-height: 1.55;
-  color: rgba(246, 241, 231, 0.72);
+  color: var(--brand-muted);
 }
 .why-how-domain {
   margin-top: auto;
-  padding-top: 0.7rem;
-  font-size: 0.78rem;
+  padding-top: 0.8rem;
+  font-size: 0.8rem;
   font-weight: 700;
   color: var(--brand-accent);
 }
@@ -216,7 +210,7 @@ const { latest } = useLiveState()
   align-items: center;
   gap: 0.2rem;
   max-width: 520px;
-  margin: 1.5rem auto 0;
+  margin: 2rem auto 0;
   padding: 1.35rem 2rem;
   border-radius: 999px;
   background: var(--brand-accent);
@@ -249,7 +243,7 @@ const { latest } = useLiveState()
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.9rem;
   max-width: 820px;
-  margin: 2rem auto;
+  margin: 2.5rem auto;
 }
 .motivation-fact {
   text-align: center;
@@ -260,14 +254,14 @@ const { latest } = useLiveState()
   font-size: 2.2rem;
   letter-spacing: -0.03em;
   line-height: 1;
-  color: #7fe0a5;
+  color: var(--brand-green);
   margin-bottom: 0.4rem;
 }
 .motivation-label {
   display: block;
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   line-height: 1.45;
-  color: rgba(246, 241, 231, 0.65);
+  color: var(--brand-muted);
 }
 .action-grid {
   display: grid;
@@ -277,23 +271,23 @@ const { latest } = useLiveState()
 .action-category {
   padding: 1.35rem 1.35rem 1.1rem;
   border-radius: 20px;
-  border: 1px solid rgba(246, 241, 231, 0.12);
-  background: rgba(246, 241, 231, 0.045);
+  border: 1.5px solid rgba(20, 54, 31, 0.08);
+  background: #fff;
 }
 .action-category-title {
   margin: 0 0 0.4rem;
   font-family: var(--font-display);
   font-size: 1rem;
   letter-spacing: -0.02em;
-  color: var(--brand-cream);
+  color: var(--brand-green);
 }
 .action-category-desc {
   margin: 0 0 0.9rem;
   padding-bottom: 0.8rem;
-  border-bottom: 1px solid rgba(246, 241, 231, 0.12);
-  font-size: 0.85rem;
+  border-bottom: 1px solid #f1f3f5;
+  font-size: 0.86rem;
   line-height: 1.5;
-  color: rgba(246, 241, 231, 0.62);
+  color: var(--brand-muted);
 }
 .action-links {
   display: flex;
@@ -305,35 +299,36 @@ const { latest } = useLiveState()
   margin: 0 -0.6rem;
   padding: 0.55rem 0.6rem;
   border-radius: 10px;
-  color: var(--brand-cream);
+  color: var(--brand-ink);
   text-decoration: none;
   transition: background 0.15s;
 }
 .action-link:hover,
 .action-link:focus-visible {
-  background: rgba(246, 241, 231, 0.08);
-  color: var(--brand-cream);
+  background: var(--brand-mint);
+  color: var(--brand-ink);
   text-decoration: none;
 }
 .action-link-name {
   display: block;
   font-size: 0.92rem;
   font-weight: 700;
+  color: var(--brand-green);
 }
 .action-link-desc {
   display: block;
   margin-top: 0.1rem;
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   line-height: 1.35;
-  color: rgba(246, 241, 231, 0.6);
+  color: var(--brand-muted);
 }
 .action-closing {
-  margin: 2.5rem auto 0;
+  margin: 3rem auto 0;
   text-align: center;
   font-family: var(--font-display);
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   letter-spacing: -0.02em;
-  color: #7fe0a5;
+  color: var(--brand-green);
 }
 
 @media (max-width: 991px) {
@@ -346,9 +341,6 @@ const { latest } = useLiveState()
   }
 }
 @media (max-width: 767px) {
-  .action {
-    padding: 2.5rem 0 2rem;
-  }
   .why-how,
   .action-grid,
   .motivation {

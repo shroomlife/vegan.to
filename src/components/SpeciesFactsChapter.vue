@@ -5,11 +5,11 @@ import SourceLinks from '@/components/SourceLinks.vue'
 </script>
 
 <template>
-  <section id="wer-sie-sind" class="species-facts">
+  <section id="wer-sie-sind" class="species-facts chapter-section">
     <div class="container">
       <span class="chapter">Kapitel 3 &middot; Wer sie sind</span>
-      <h2 class="species-facts-title">Keine Nummern. Jemand.</h2>
-      <p class="species-facts-lead">
+      <h2 class="chapter-title">Keine Nummern. Jemand.</h2>
+      <p class="chapter-lead">
         Was die Forschung über diese Tiere weiß, passt nicht zu dem, wie wir sie behandeln.
         Jeder Satz hier hat eine Quelle, du kannst sie nachlesen.
       </p>
@@ -40,22 +40,7 @@ import SourceLinks from '@/components/SourceLinks.vue'
 .species-facts {
   position: relative;
   z-index: 2;
-  padding: 3.5rem 0 3rem;
-  background: var(--brand-cream);
-}
-.species-facts-title {
-  margin: 0 0 0.75rem;
-  font-family: var(--font-display);
-  font-size: clamp(1.5rem, 3vw, 2.1rem);
-  letter-spacing: -0.03em;
-  color: var(--brand-green);
-}
-.species-facts-lead {
-  max-width: 640px;
-  margin: 0 0 1.75rem;
-  font-size: 1rem;
-  line-height: 1.65;
-  color: #4a5a4f;
+  background: var(--brand-mint);
 }
 .species-facts-grid {
   display: grid;
@@ -99,7 +84,7 @@ import SourceLinks from '@/components/SourceLinks.vue'
   flex: 1;
   font-size: 0.98rem;
   line-height: 1.6;
-  color: #2f3b33;
+  color: var(--brand-ink);
 }
 
 @media (max-width: 991px) {
@@ -108,9 +93,6 @@ import SourceLinks from '@/components/SourceLinks.vue'
   }
 }
 @media (max-width: 767px) {
-  .species-facts {
-    padding: 2.5rem 0 2rem;
-  }
   .species-facts-grid {
     grid-template-columns: 1fr;
   }
