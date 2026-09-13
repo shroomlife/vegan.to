@@ -56,6 +56,14 @@ test.describe('species pages', () => {
     expect(sitemap.match(/<url>/g)).toHaveLength(13)
   })
 
+  test('every route has its own html copy so the host answers with 200', async ({ request }) => {
+    for (const path of ['/tiere.html', '/tiere/schweine.html', '/quellen.html']) {
+      const res = await request.get(path)
+      expect(res.status(), path).toBe(200)
+      expect(await res.text()).toContain('id="app"')
+    }
+  })
+
   test('start page cards and the footer link to the species pages', async ({ page }) => {
     await page.goto('/')
     await expect(page.locator('.animal-card a.animal-label')).toHaveCount(10)

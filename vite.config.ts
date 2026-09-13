@@ -2,25 +2,36 @@ import { defineConfig, type Plugin } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
 import { fileURLToPath } from 'node:url'
-import { copyFileSync, readFileSync, writeFileSync } from 'node:fs'
+import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { dirname } from 'node:path'
 import { speciesSlugs } from './src/data/species'
 
 const pkg = JSON.parse(readFileSync('./package.json', 'utf-8')) as { version: string }
 
-/** GitHub Pages serves 404.html for unknown paths; a copy of index.html lets the router handle /quellen */
-function spaFallback(outDir: string): Plugin {
+/** Every indexable route, so the sitemap can never forget a species page */
+const SITE_URL = 'https://vegan.to'
+const routePaths = ['/', '/tiere', ...speciesSlugs.map((slug) => `/tiere/${slug}`), '/quellen']
+
+/**
+ * GitHub Pages serves <path>.html for /<path> with status 200 and 404.html for
+ * everything else. A copy of index.html per route gives every page a real 200
+ * (search engines skip pages served as 404), the 404 copy keeps deep links
+ * to anything else inside the router.
+ */
+function spaFallback(outDir: string, paths: readonly string[]): Plugin {
   return {
-    name: 'spa-fallback-404',
+    name: 'spa-fallback',
     apply: 'build',
     closeBundle() {
       copyFileSync(`${outDir}/index.html`, `${outDir}/404.html`)
+      for (const path of paths) {
+        if (path === '/') continue
+        mkdirSync(dirname(`${outDir}${path}.html`), { recursive: true })
+        copyFileSync(`${outDir}/index.html`, `${outDir}${path}.html`)
+      }
     },
   }
 }
-
-/** Every indexable route, so the sitemap can never forget a species page */
-const SITE_URL = 'https://vegan.to'
-const sitemapPaths = ['/', '/tiere', ...speciesSlugs.map((slug) => `/tiere/${slug}`), '/quellen']
 
 function sitemap(outDir: string, paths: readonly string[]): Plugin {
   return {
@@ -53,8 +64,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       manifest: false,
     }),
-    spaFallback('docs'),
-    sitemap('docs', sitemapPaths),
+    spaFallback('docs', routePaths),
+    sitemap('docs', routePaths),
   ],
   resolve: {
     alias: {

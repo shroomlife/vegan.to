@@ -78,13 +78,49 @@ define(['./workbox-5a5d9309'], (function (workbox) { 'use strict';
    * See https://goo.gl/S9QRab
    */
   workbox.precacheAndRoute([{
+    "url": "tiere.html",
+    "revision": "73469ff5e93ea5d47b6f4edb80fc4553"
+  }, {
     "url": "registerSW.js",
     "revision": "1872c500de691dce40960bb85481de07"
+  }, {
+    "url": "quellen.html",
+    "revision": "73469ff5e93ea5d47b6f4edb80fc4553"
   }, {
     "url": "index.html",
     "revision": "73469ff5e93ea5d47b6f4edb80fc4553"
   }, {
     "url": "404.html",
+    "revision": "73469ff5e93ea5d47b6f4edb80fc4553"
+  }, {
+    "url": "tiere/ziegen.html",
+    "revision": "73469ff5e93ea5d47b6f4edb80fc4553"
+  }, {
+    "url": "tiere/truthuehner.html",
+    "revision": "73469ff5e93ea5d47b6f4edb80fc4553"
+  }, {
+    "url": "tiere/schweine.html",
+    "revision": "73469ff5e93ea5d47b6f4edb80fc4553"
+  }, {
+    "url": "tiere/schafe.html",
+    "revision": "73469ff5e93ea5d47b6f4edb80fc4553"
+  }, {
+    "url": "tiere/rinder.html",
+    "revision": "73469ff5e93ea5d47b6f4edb80fc4553"
+  }, {
+    "url": "tiere/pferde.html",
+    "revision": "73469ff5e93ea5d47b6f4edb80fc4553"
+  }, {
+    "url": "tiere/huehner.html",
+    "revision": "73469ff5e93ea5d47b6f4edb80fc4553"
+  }, {
+    "url": "tiere/gaense.html",
+    "revision": "73469ff5e93ea5d47b6f4edb80fc4553"
+  }, {
+    "url": "tiere/fische.html",
+    "revision": "73469ff5e93ea5d47b6f4edb80fc4553"
+  }, {
+    "url": "tiere/enten.html",
     "revision": "73469ff5e93ea5d47b6f4edb80fc4553"
   }, {
     "url": "assets/SpeciesView-C1ru0ml2.css",
