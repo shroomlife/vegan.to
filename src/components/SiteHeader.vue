@@ -63,9 +63,10 @@ const showPill = computed(() => !live.isMobile.value && route.name === 'Home' &&
   top: 0;
   z-index: 100;
   height: var(--header-height);
-  background: rgba(15, 42, 23, 0.55);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  /* Opaque enough that headlines scrolling underneath do not bloom through the blur */
+  background: rgba(15, 42, 23, 0.88);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
   border-bottom: 1px solid rgba(246, 241, 231, 0.12);
   color: var(--brand-cream);
 }
