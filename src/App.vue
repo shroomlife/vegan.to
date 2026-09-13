@@ -1,7 +1,18 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
 import SiteHeader from '@/components/SiteHeader.vue'
 import SiteFooter from '@/components/SiteFooter.vue'
 import BackToTop from '@/components/BackToTop.vue'
+import CounterPill from '@/components/CounterPill.vue'
+import { provideLiveState } from '@/composables/useLiveState'
+
+// One clock and one ticker for header, home view and the floating pill
+const live = provideLiveState()
+const route = useRoute()
+
+// On phones the counter follows along the bottom edge once the hero is gone
+const showMobilePill = computed(() => live.isMobile.value && route.name === 'Home' && !live.heroVisible.value)
 </script>
 
 <template>
@@ -12,6 +23,11 @@ import BackToTop from '@/components/BackToTop.vue'
     <RouterView />
   </div>
   <SiteFooter />
+  <Transition name="mobile-pill">
+    <div v-if="showMobilePill" class="mobile-pill">
+      <CounterPill :count="live.totalDeathCount.value" />
+    </div>
+  </Transition>
   <BackToTop />
 </template>
 
@@ -42,5 +58,29 @@ import BackToTop from '@/components/BackToTop.vue'
   transform: translateY(0);
   color: var(--brand-green);
   text-decoration: none;
+}
+/* Left of the back-to-top button, never under it */
+.mobile-pill {
+  position: fixed;
+  left: 14px;
+  right: 72px;
+  bottom: 14px;
+  display: flex;
+  z-index: 95;
+}
+.mobile-pill .counter-pill {
+  background: var(--brand-green);
+  border-color: rgba(246, 241, 231, 0.25);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+  padding: 10px 16px;
+}
+.mobile-pill-enter-active,
+.mobile-pill-leave-active {
+  transition: opacity 0.2s, transform 0.2s;
+}
+.mobile-pill-enter-from,
+.mobile-pill-leave-to {
+  opacity: 0;
+  transform: translateY(12px);
 }
 </style>

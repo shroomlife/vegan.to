@@ -34,7 +34,8 @@ Build output goes to `docs/` (configured in `vite.config.ts`) for GitHub Pages d
 1. `src/data/animals.ts` — typed array of animal species with yearly kill counts from Destatis (2025 data). Exports raw numbers only, no rate calculations.
 2. `src/composables/useTimer.ts` — reactive timer updating every second, provides `secondsSinceStart`, `secondsSinceYearStart`, `secondsSinceDayStart`, `elapsedFormatted`.
 3. `src/composables/useAnimalData.ts` — takes timer, computes all derived values reactively (per-day rates, current year/day totals, killed-since-start counts). Returns `animalData` and `totalDeathCount`.
-4. `src/views/HomeView.vue` — main view consuming both composables, renders counters with `useTransition` for smooth animation.
+4. `src/composables/useLiveState.ts` — `provideLiveState()` in `App.vue` creates one timer, animal data and victim ticker; header, home view and counter pill inject it via `useLiveState()`.
+5. `src/views/HomeView.vue` — main view: hero (`HeroSky` canvas with one light per killed animal, `VictimCard` lanes), sheet with live sentence, species grid, then the editorial chapters (`SpeciesFactsChapter`, `LifeFactsChapter`, `FaqChapter`) fed by `src/data/facts.ts`, growth, impact, CTA.
 
 ### Key files
 
@@ -42,7 +43,8 @@ Build output goes to `docs/` (configured in `vite.config.ts`) for GitHub Pages d
 - `src/utils/scroll.ts` — smooth scrolling that respects `prefers-reduced-motion`; `src/composables/useAnchorNavigation.ts` handles same-location clicks (logo, anchors)
 - `src/App.vue` — `SiteHeader` (sticky glass header) + `<RouterView />` + `SiteFooter`
 - `src/components/BrandWordmark.vue`, `PrideFlag.vue`, `SiteHeader.vue`, `SiteFooter.vue` — brand shell; tokens in `src/assets/custom.css` (forest green, cream, accent, Unbounded display font)
-- `src/data/sources.ts` — every external figure's source with category; rendered on `/quellen` (`src/views/SourcesView.vue`)
+- `src/data/sources.ts` — every external figure's source with category; rendered on `/quellen` (`src/views/SourcesView.vue`). `src/data/facts.ts` and `src/data/lifespans.ts` reference sources by id, `SourceLinks.vue` renders them inline
+- `src/components/CounterPill.vue` — the running total that follows the visitor (header on desktop, bottom pill on mobile) once the hero is out of view
 - `public/` — static assets, CNAME, manifest.json, icons
 
 ### Styling

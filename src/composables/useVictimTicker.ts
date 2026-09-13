@@ -1,5 +1,6 @@
 import { shallowRef, triggerRef, onUnmounted } from 'vue'
 import { animals } from '@/data/animals'
+import { lifespanYearsBySpecies } from '@/data/lifespans'
 
 /** 130+ verifizierte Schlachthof-Standorte in Deutschland */
 const slaughterhouseLocations = [
@@ -96,21 +97,33 @@ const slaughterAges: Record<string, { min: number; max: number; unit: string }> 
   Gans: { min: 112, max: 210, unit: 'Tage' },
 }
 
+export type Lane = 'left' | 'right'
+
 export interface Victim {
   id: number
   name: string
   emoji: string
   species: string
+  /** Age at death as shown, e.g. "38 Tage" */
   age: string
+  /** Age at death in days, for the lived-versus-possible bar */
+  livedDays: number
+  /** Natural life expectancy in years, when a sourced value exists */
+  lifespanYears?: number
   location: string
+  /** Cards rise in two lanes so the middle stays free for text and counter */
+  lane: Lane
+  /** Horizontal position inside the lane as a CSS percentage */
   left: string
   /** CSS animation duration in seconds */
   duration: number
-  /** When this bubble expires (ms since epoch) */
+  /** When this card expires (ms since epoch) */
   expiresAt: number
-  /** Negative animation-delay in seconds for seed bubbles (0 for new ones) */
+  /** Negative animation-delay in seconds for seed cards (0 for new ones) */
   startOffset: number
 }
+
+const DAYS_PER_UNIT: Record<string, number> = { Tage: 1, Wochen: 7, Monate: 30.4, Jahre: 365 }
 
 /**
  * Species are picked by their share of deaths, dampened with a cube root so the
@@ -141,16 +154,21 @@ function randomInt(min: number, max: number): number {
 }
 
 let idCounter = 0
+let lastLane: Lane = 'right'
 
 function generateVictim(): Victim {
   const species = pickRandomSpecies()
   const names = namesBySpecies[species.single] ?? ['Unbekannt']
   const name = names[randomInt(0, names.length - 1)]!
   const ageData = slaughterAges[species.single] ?? { min: 1, max: 12, unit: 'Monate' }
-  const age = `${randomInt(ageData.min, ageData.max)} ${ageData.unit}`
-  const duration = randomInt(6, 11)
+  const ageValue = randomInt(ageData.min, ageData.max)
+  const age = `${ageValue} ${ageData.unit}`
+  const livedDays = Math.round(ageValue * (DAYS_PER_UNIT[ageData.unit] ?? 1))
+  // Slow enough to read a name and a life; the cards are a vigil, not confetti
+  const duration = randomInt(14, 18)
   const locations = species.single === 'Fisch' ? fishingLocations : slaughterhouseLocations
   const location = locations[randomInt(0, locations.length - 1)]!
+  lastLane = lastLane === 'left' ? 'right' : 'left'
 
   return {
     id: idCounter++,
@@ -158,8 +176,11 @@ function generateVictim(): Victim {
     emoji: species.emoji,
     species: species.single,
     age,
+    livedDays,
+    lifespanYears: lifespanYearsBySpecies[species.single],
     location,
-    left: `${randomInt(2, 88)}%`,
+    lane: lastLane,
+    left: `${randomInt(0, 70)}%`,
     duration,
     // +1s buffer so CSS animation is fully done before GC removes the node
     expiresAt: Date.now() + (duration + 1) * 1000,
@@ -168,11 +189,11 @@ function generateVictim(): Victim {
 }
 
 /**
- * Spawns floating victim bubbles. Each bubble has a CSS animation duration,
+ * Spawns floating victim cards. Each card has a CSS animation duration,
  * and gets garbage-collected from the array once that time has elapsed.
  * This keeps DOM node count stable even over long sessions.
  */
-export function useVictimTicker(spawnIntervalMs = 250, seedCount = 12) {
+export function useVictimTicker(spawnIntervalMs = 2300, seedCount = 5) {
   // shallowRef + manual trigger for performance — avoids deep reactivity on the array
   const victims = shallowRef<Victim[]>([])
 
@@ -188,14 +209,18 @@ export function useVictimTicker(spawnIntervalMs = 250, seedCount = 12) {
     seed.push(v)
   }
   victims.value = seed
+  /** The most recently spawned card; the live sentence names it */
+  const latest = shallowRef<Victim>(seed[seed.length - 1]!)
 
-  // Spawn new bubbles
+  // Spawn new cards
   const spawnId = setInterval(() => {
     const arr = victims.value
-    // GC expired bubbles in the same pass
+    // GC expired cards in the same pass
     const alive = arr.filter((v) => Date.now() < v.expiresAt)
-    alive.push(generateVictim())
+    const next = generateVictim()
+    alive.push(next)
     victims.value = alive
+    latest.value = next
     triggerRef(victims)
   }, spawnIntervalMs)
 
@@ -203,5 +228,5 @@ export function useVictimTicker(spawnIntervalMs = 250, seedCount = 12) {
     clearInterval(spawnId)
   })
 
-  return { victims }
+  return { victims, latest }
 }

@@ -1,55 +1,47 @@
 <script setup lang="ts">
-import { ref, computed, useTemplateRef } from 'vue'
+import { ref, computed, useTemplateRef, watch } from 'vue'
 import dayjs from 'dayjs'
-import { useTransition, TransitionPresets, useMediaQuery } from '@vueuse/core'
+import { useTransition, TransitionPresets, useElementVisibility } from '@vueuse/core'
 import { Motion } from 'motion-v'
-import { useTimer } from '@/composables/useTimer'
-import { useAnimalData, type ComputedAnimal } from '@/composables/useAnimalData'
+import { type ComputedAnimal } from '@/composables/useAnimalData'
+import { useLiveState } from '@/composables/useLiveState'
 import { animals } from '@/data/animals'
 import { sources } from '@/data/sources'
-import { useVictimTicker } from '@/composables/useVictimTicker'
 import { usePersonalTracker } from '@/composables/usePersonalTracker'
+import { useAnchorNavigation } from '@/composables/useAnchorNavigation'
 import { formatNumber } from '@/utils/formatNumber'
 import AnimatedNumber from '@/components/AnimatedNumber.vue'
 import OdometerNumber from '@/components/OdometerNumber.vue'
 import GrowthTimeline from '@/components/GrowthTimeline.vue'
+import HeroSky from '@/components/HeroSky.vue'
+import VictimCard from '@/components/VictimCard.vue'
+import SpeciesFactsChapter from '@/components/SpeciesFactsChapter.vue'
+import LifeFactsChapter from '@/components/LifeFactsChapter.vue'
+import FaqChapter from '@/components/FaqChapter.vue'
 
-const timer = useTimer()
-const isMobile = useMediaQuery('(max-width: 767px)')
-/**
- * The emoji wall is a fixed two-row strip, so the page never shifts while it fills.
- * Caps roughly match what two rows hold; the rest is counted as "+ N weitere".
- * Species below WALL_MIN_PER_DAY get no strip, their first emoji would take hours.
- */
-const WALL_CAP_DESKTOP = 140
-const WALL_CAP_MOBILE = 42
-const WALL_MIN_PER_DAY = 500
-// Smaller screens get a shorter emoji wall and fewer bubbles over the hero text
-const { animalData, totalDeathCount } = useAnimalData(timer, {
-  emojiRenderCap: () => (isMobile.value ? WALL_CAP_MOBILE : WALL_CAP_DESKTOP),
+const { timer, animalData, totalDeathCount, victims, latest, heroVisible } = useLiveState()
+const { onNavClick } = useAnchorNavigation()
+
+/** All species together, per second of the current year (rounded for the caption) */
+const deathsPerSecond = computed(() => {
+  const perYear = animals.reduce((sum, a) => sum + a.deaths.year, 0)
+  return Math.round(perYear / timer.secondsInCurrentYear.value)
 })
-const { victims } = useVictimTicker(isMobile.value ? 600 : 250, isMobile.value ? 6 : 12)
 
-// Seeded random for deterministic but natural-looking emoji positions
-function seededRandom(seed: number): () => number {
-  let s = seed
-  return () => {
-    s = (s * 16807 + 0) % 2147483647
-    return s / 2147483647
-  }
-}
+/** Species below this daily figure get no emoji strip, their first emoji would take hours */
+const WALL_MIN_PER_DAY = 500
+/** Species above this daily figure get a double-width card in the grid */
+const WIDE_MIN_PER_DAY = 50_000
 
-const floatingEmojis = (() => {
-  const emojis = ['🐷', '🐄', '🐔', '🐑', '🐐', '🦆', '🦃', '🐴', '🪿']
-  const rand = seededRandom(42)
-  return Array.from({ length: 25 }, () => ({
-    emoji: emojis[Math.floor(rand() * emojis.length)]!,
-    left: `${(rand() * 90 + 5).toFixed(1)}%`,
-    delay: `${(rand() * 15).toFixed(1)}s`,
-    duration: `${(14 + rand() * 16).toFixed(1)}s`,
-    size: `${(1 + rand() * 1.5).toFixed(2)}rem`,
-  }))
-})()
+// The header pill and the mobile pill appear once the hero has scrolled away
+const heroRef = useTemplateRef<HTMLElement>('hero')
+const heroInView = useElementVisibility(heroRef)
+watch(heroInView, (visible) => { heroVisible.value = visible }, { immediate: true })
+
+const leftLane = computed(() => victims.value.filter((v) => v.lane === 'left'))
+const rightLane = computed(() => victims.value.filter((v) => v.lane === 'right'))
+/** The three most recent cards, newest first, for the "Wer sie waren" chapter */
+const recentVictims = computed(() => [...victims.value].slice(-3).reverse())
 
 /**
  * Impact-Daten: Was eine Person pro Tag spart, wenn sie vegan statt mit
@@ -218,42 +210,39 @@ const shareText = () =>
 </script>
 
 <template>
-  <!-- Hero Section -->
-  <section class="hero">
-    <!-- Floating Emoji Background -->
-    <div class="hero-emojis" aria-hidden="true">
-      <span
-        v-for="(fe, i) in floatingEmojis"
-        :key="'emoji-' + i"
-        class="floating-emoji"
-        :style="{
-          left: fe.left,
-          animationDelay: fe.delay,
-          animationDuration: fe.duration,
-          fontSize: fe.size,
-        }"
-      >{{ fe.emoji }}</span>
-    </div>
+  <!-- Hero: a sky of lights, one per animal, and cards with names in two lanes -->
+  <section ref="hero" class="hero">
+    <div class="hero-grid" aria-hidden="true"></div>
+    <HeroSky :count="totalDeathCount" />
+    <div class="hero-vignette" aria-hidden="true"></div>
 
-    <!-- Floating Victim Bubbles -->
-    <div class="victim-layer" aria-hidden="true">
-      <div
-        v-for="victim in victims"
+    <div class="victim-lane victim-lane--left" aria-hidden="true">
+      <VictimCard
+        v-for="victim in leftLane"
         :key="victim.id"
-        class="victim-bubble"
+        :victim="victim"
+        :hot="victim.id === latest.id"
+        class="victim-rise"
         :style="{
           left: victim.left,
           animationDuration: victim.duration + 's',
           animationDelay: victim.startOffset ? victim.startOffset + 's' : '0s',
         }"
-      >
-        <span class="victim-emoji">{{ victim.emoji }}</span>
-        <span class="victim-name">{{ victim.name }}</span>
-        <span class="victim-divider">·</span>
-        <span class="victim-meta">{{ victim.age }}</span>
-        <span class="victim-divider">·</span>
-        <span class="victim-location">{{ victim.location }}</span>
-      </div>
+      />
+    </div>
+    <div class="victim-lane victim-lane--right" aria-hidden="true">
+      <VictimCard
+        v-for="victim in rightLane"
+        :key="victim.id"
+        :victim="victim"
+        :hot="victim.id === latest.id"
+        class="victim-rise"
+        :style="{
+          left: victim.left,
+          animationDuration: victim.duration + 's',
+          animationDelay: victim.startOffset ? victim.startOffset + 's' : '0s',
+        }"
+      />
     </div>
 
     <div class="hero-inner">
@@ -261,10 +250,10 @@ const shareText = () =>
         tag="p"
         class="hero-label"
         :initial="{ opacity: 0, y: -20 }"
-        :animate="{ opacity: 0.6, y: 0 }"
+        :animate="{ opacity: 1, y: 0 }"
         :transition="{ duration: 0.6 }"
       >
-        Echtzeit-Zähler
+        Echtzeit-Zähler &middot; Deutschland
       </Motion>
 
       <Motion
@@ -274,18 +263,17 @@ const shareText = () =>
         :animate="{ opacity: 1, y: 0 }"
         :transition="{ duration: 0.8, delay: 0.1 }"
       >
-        Tiermorde in Deutschland
+        Sie hatten Namen.
       </Motion>
 
       <Motion
         tag="p"
         class="hero-subtitle"
         :initial="{ opacity: 0, y: 20 }"
-        :animate="{ opacity: 0.8, y: 0 }"
+        :animate="{ opacity: 1, y: 0 }"
         :transition="{ duration: 0.8, delay: 0.3 }"
       >
-        Jeden Tag sterben in Deutschland Tiere, damit sie auf Tellern landen.
-        Jedes von ihnen hatte einen Namen und ein Alter. Keins hatte eine Wahl.
+        Jedes Licht ist ein Tier, das gestorben ist, seit du hier bist. Der Himmel füllt sich, solange du bleibst.
       </Motion>
 
       <!-- Live Counter -->
@@ -295,104 +283,138 @@ const shareText = () =>
         :animate="{ opacity: 1, scale: 1 }"
         :transition="{ duration: 0.6, delay: 0.5, type: 'spring', stiffness: 200 }"
       >
+        <span class="hero-counter-ring" aria-hidden="true"></span>
         <span class="hero-counter-number">{{ formatNumber(animatedTotalDeaths) }}</span>
-        <span class="hero-counter-label">Tiere getötet seit du hier bist</span>
-        <RouterLink to="/quellen#methodik" class="hero-counter-note">Fische als Schätzung mitgezählt</RouterLink>
+        <span class="hero-counter-label">Tiere getötet, seit du hier bist</span>
+        <RouterLink to="/quellen#methodik" class="hero-counter-note">{{ deathsPerSecond }} in jeder Sekunde &middot; Fische geschätzt</RouterLink>
         <span class="hero-counter-time">🕰 {{ timer.elapsedFormatted.value }}</span>
       </Motion>
+    </div>
+
+    <a href="#wer" class="hero-scroll" @click.prevent="onNavClick('/#wer')">
+      <span>Wer sie waren</span>
+      <span class="hero-scroll-line" aria-hidden="true"></span>
+    </a>
+  </section>
+
+  <!-- Sheet: light surface sliding over the hero -->
+  <section id="wer" class="sheet">
+    <div class="container">
+      <span class="chapter">Kapitel 1 &middot; Wer sie waren</span>
+      <p class="live-sentence">
+        Während du diesen Satz liest, sind
+        <span class="live-number"><AnimatedNumber :value="totalDeathCount" /></span>
+        Tiere gestorben. Eins davon hieß
+        <span class="live-name">{{ latest.name }}</span>.
+      </p>
+      <p class="chapter-lead">
+        Die Zahlen im Text laufen live, sie sind keine Beispiele. Die Namen stehen stellvertretend,
+        das Alter entspricht der üblichen Schlachtreife, die Lebenserwartung dem, was diese Tiere ohne uns hätten.
+      </p>
+      <div class="recent-grid">
+        <VictimCard
+          v-for="(victim, index) in recentVictims"
+          :key="victim.id"
+          :victim="victim"
+          variant="light"
+          :hot="index === 0"
+        />
+      </div>
     </div>
   </section>
 
   <!-- Animal Data -->
   <section id="zahlen" class="animals-section">
     <div class="container">
-      <!-- Desktop Header -->
-      <Motion
-        class="animal-header d-none d-md-flex"
-        :initial="{ opacity: 0 }"
-        :whileInView="{ opacity: 1 }"
-        :transition="{ duration: 0.4 }"
-      >
-        <div class="animal-header-name">Tier</div>
-        <div class="animal-header-stat">heute</div>
-        <div class="animal-header-stat">pro Tag</div>
-        <div class="animal-header-stat animal-header-stat--wide">dieses Jahr</div>
-      </Motion>
+      <span class="chapter">Kapitel 2 &middot; Wie viele</span>
+      <div class="section-head">
+        <h2 class="section-title section-title--left">Heute in Deutschland</h2>
+        <span class="section-note">Jedes Emoji ein Tier, seit du hier bist. Destatis 2025.</span>
+      </div>
 
-      <!-- Animal Cards with stagger -->
-      <Motion
-        v-for="(animal, index) in animalData"
-        :key="animal.names.single"
-        class="animal-card"
-        :initial="{ opacity: 0, y: 40 }"
-        :whileInView="{ opacity: 1, y: 0 }"
-        :transition="{ duration: 0.5, delay: index * 0.06 }"
-        :inViewOptions="{ once: true, amount: 0.2 }"
-      >
-        <div class="animal-card-main">
-          <div class="animal-card-name">
-            <span class="animal-emoji">{{ animal.names.emoji }}</span>
-            <span class="animal-label">{{ animal.names.plural }}</span>
-            <RouterLink
-              v-if="animal.estimate"
-              to="/quellen#methodik"
-              class="animal-estimate"
-              :title="animal.estimate.note"
-            >Schätzung</RouterLink>
-          </div>
-          <div class="animal-card-stats">
-            <div class="animal-stat">
-              <span class="animal-stat-label d-md-none">heute</span>
-              <span class="animal-stat-value animal-stat-value--danger"><template v-if="animal.estimate">≈ </template><AnimatedNumber :value="animal.currentDay" /></span>
+      <div class="animal-grid">
+        <Motion
+          v-for="(animal, index) in animalData"
+          :key="animal.names.single"
+          class="animal-card"
+          :class="{
+            'animal-card--wide': animal.perDay >= WIDE_MIN_PER_DAY,
+            'animal-card--estimate': animal.estimate,
+            'animal-card--small': animal.perDay < WALL_MIN_PER_DAY,
+          }"
+          :initial="{ opacity: 0, y: 40 }"
+          :whileInView="{ opacity: 1, y: 0 }"
+          :transition="{ duration: 0.5, delay: index * 0.05 }"
+          :inViewOptions="{ once: true, amount: 0.2 }"
+        >
+          <div class="animal-card-main">
+            <div class="animal-card-name">
+              <span class="animal-emoji">{{ animal.names.emoji }}</span>
+              <span class="animal-label">{{ animal.names.plural }}</span>
+              <RouterLink
+                v-if="animal.estimate"
+                to="/quellen#methodik"
+                class="animal-estimate"
+                :title="animal.estimate.note"
+              >Schätzung</RouterLink>
             </div>
-            <div class="animal-stat">
-              <span class="animal-stat-label d-md-none">pro Tag</span>
-              <span class="animal-stat-value">{{ animal.estimate ? '≈ ' : '' }}{{ formatNumber(animal.perDay) }}</span>
+            <div class="animal-card-stats">
+              <div class="animal-stat">
+                <span class="animal-stat-label">heute</span>
+                <span class="animal-stat-value animal-stat-value--danger"><template v-if="animal.estimate">≈ </template><AnimatedNumber :value="animal.currentDay" /></span>
+              </div>
+              <div class="animal-stat">
+                <span class="animal-stat-label">pro Tag</span>
+                <span class="animal-stat-value">{{ animal.estimate ? '≈ ' : '' }}{{ formatNumber(animal.perDay) }}</span>
+              </div>
+              <div class="animal-stat">
+                <span class="animal-stat-label">dieses Jahr</span>
+                <span class="animal-stat-value animal-stat-value--danger"><template v-if="animal.estimate">≈ </template><AnimatedNumber :value="animal.currentYear" /></span>
+              </div>
             </div>
-            <div class="animal-stat animal-stat--wide">
-              <span class="animal-stat-label d-md-none">dieses Jahr</span>
-              <span class="animal-stat-value animal-stat-value--danger"><template v-if="animal.estimate">≈ </template><AnimatedNumber :value="animal.currentYear" /></span>
+          </div>
+
+          <div class="animal-card-footer">
+            <div class="animal-card-since">
+              <small v-if="animal.killedSinceStart > 0">
+                Seit du da bist {{ animal.killedSinceStart > 1 ? 'wurden' : 'wurde' }}
+                <span class="text-killed">{{ animal.killedSinceStart }} {{ animal.getNameByCount(animal.killedSinceStart) }}</span>
+                getötet...
+              </small>
+              <small v-else>Seit du da bist: noch keins.</small>
+            </div>
+            <button
+              v-if="animal.children.length > 0"
+              class="btn-children"
+              :aria-expanded="isChildViewOpen(animal)"
+              @click="toggleChildView(animal)"
+            >
+              {{ isChildViewOpen(animal) ? 'ausblenden' : 'Untergruppen' }}
+            </button>
+          </div>
+
+          <div v-if="animal.perDay >= WALL_MIN_PER_DAY" class="animal-card-emojis">
+            <div class="animal-card-emojis-wall" aria-hidden="true">{{ animal.killedSinceStartEmojis }}</div>
+            <span class="animal-card-emojis-more">
+              <template v-if="animal.killedSinceStartHidden > 0">+ {{ formatNumber(animal.killedSinceStartHidden) }} weitere</template>
+            </span>
+          </div>
+
+          <div v-if="isChildViewOpen(animal)" class="animal-children">
+            <div v-for="child in animal.children" :key="child.name" class="animal-child">
+              <span class="animal-child-name">davon {{ child.name }}</span>
+              <span class="animal-child-stat" data-label="heute">{{ child.currentDayFormatted }}</span>
+              <span class="animal-child-stat" data-label="pro Tag">{{ child.perDayFormatted }}</span>
+              <span class="animal-child-stat animal-child-stat--wide" data-label="dieses Jahr">{{ child.currentYearFormatted }}</span>
             </div>
           </div>
-        </div>
-
-        <div class="animal-card-footer">
-          <div class="animal-card-since">
-            <small v-if="animal.killedSinceStart > 0">
-              Seit du da bist {{ animal.killedSinceStart > 1 ? 'wurden' : 'wurde' }}
-              <span class="text-killed">{{ animal.killedSinceStart }} {{ animal.getNameByCount(animal.killedSinceStart) }}</span>
-              getötet...
-            </small>
-            <small v-else>Seit du da bist: noch keins.</small>
-          </div>
-          <button
-            v-if="animal.children.length > 0"
-            class="btn-children"
-            :aria-expanded="isChildViewOpen(animal)"
-            @click="toggleChildView(animal)"
-          >
-            {{ isChildViewOpen(animal) ? 'ausblenden' : 'Untergruppen' }}
-          </button>
-        </div>
-
-        <div v-if="animal.perDay >= WALL_MIN_PER_DAY" class="animal-card-emojis">
-          <div class="animal-card-emojis-wall" aria-hidden="true">{{ animal.killedSinceStartEmojis }}</div>
-          <span class="animal-card-emojis-more">
-            <template v-if="animal.killedSinceStartHidden > 0">+ {{ formatNumber(animal.killedSinceStartHidden) }} weitere</template>
-          </span>
-        </div>
-
-        <div v-if="isChildViewOpen(animal)" class="animal-children">
-          <div v-for="child in animal.children" :key="child.name" class="animal-child">
-            <span class="animal-child-name">davon {{ child.name }}</span>
-            <span class="animal-child-stat" data-label="heute">{{ child.currentDayFormatted }}</span>
-            <span class="animal-child-stat" data-label="pro Tag">{{ child.perDayFormatted }}</span>
-            <span class="animal-child-stat animal-child-stat--wide" data-label="dieses Jahr">{{ child.currentYearFormatted }}</span>
-          </div>
-        </div>
-      </Motion>
+        </Motion>
+      </div>
     </div>
   </section>
+
+  <SpeciesFactsChapter />
+  <LifeFactsChapter />
 
   <!-- Live Death Counter Summary -->
   <Motion
@@ -426,6 +448,7 @@ const shareText = () =>
   <!-- Vegan Growth: Full-Width Progress Bar -->
   <section class="growth-section">
     <div class="growth-inner">
+      <span class="chapter chapter--center chapter--on-dark">Kapitel 5 &middot; Die anderen</span>
       <Motion
         tag="h2"
         class="growth-title"
@@ -494,6 +517,7 @@ const shareText = () =>
   <!-- Impact Timeline -->
   <section id="impact" class="impact-section">
     <div class="container">
+      <span class="chapter chapter--center">Kapitel 6 &middot; Was du bewirkst</span>
       <Motion
         tag="h2"
         class="section-title"
@@ -720,9 +744,12 @@ const shareText = () =>
     </div>
   </section>
 
+  <FaqChapter />
+
   <!-- CTA -->
   <section id="mitmachen" class="cta-section">
     <div class="container">
+      <span class="chapter chapter--center">Kapitel 8 &middot; Mach mit</span>
       <Motion
         tag="h2"
         class="section-title"
@@ -731,7 +758,7 @@ const shareText = () =>
         :transition="{ duration: 0.6, type: 'spring' }"
         :inViewOptions="{ once: true }"
       >
-        Du kannst etwas verändern.
+        Deine nächste Mahlzeit entscheidet, ob es {{ latest.name }} trifft.
       </Motion>
 
       <Motion
@@ -1003,11 +1030,9 @@ const shareText = () =>
 <style scoped>
 /* ── Hero ─────────────────────────────────────────── */
 .hero {
-  background: linear-gradient(160deg, var(--brand-green-deep), var(--brand-green), var(--brand-green-soft), #2f5f3a);
-  background-size: 400% 400%;
-  animation: heroGradient 20s ease infinite;
+  background: #0e2114;
   color: var(--brand-cream);
-  padding: 3rem 1.5rem 2rem;
+  padding: 3rem 1.5rem 6rem;
   text-align: center;
   min-height: calc(100svh - var(--header-height));
   display: flex;
@@ -1016,53 +1041,69 @@ const shareText = () =>
   position: relative;
   overflow: hidden;
 }
-@keyframes heroGradient {
-  0%   { background-position: 0% 50%; }
-  50%  { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
-
-/* ── Floating Emoji Background ────────────────────── */
-.hero-emojis {
+/* One tone of dark green: a fine dot grid for depth, a vignette at the edges */
+.hero-grid {
   position: absolute;
   inset: 0;
+  background-image: radial-gradient(rgba(246, 241, 231, 0.06) 1px, transparent 1.2px);
+  background-size: 26px 26px;
+  background-position: 13px 13px;
   pointer-events: none;
-  overflow: hidden;
 }
-/* Soft bleed into the light stats section; bubbles rise out of the haze */
-.hero::after {
-  content: '';
+.hero-vignette {
   position: absolute;
-  left: 0;
-  right: 0;
+  inset: 0;
+  background:
+    radial-gradient(720px 420px at 50% 40%, rgba(63, 120, 82, 0.26) 0%, rgba(63, 120, 82, 0) 70%),
+    radial-gradient(1100px 760px at 50% 50%, rgba(14, 33, 20, 0) 55%, rgba(6, 15, 9, 0.75) 100%);
+  pointer-events: none;
+}
+/* Two lanes for the cards, the middle stays free for text and counter */
+.victim-lane {
+  position: absolute;
+  top: 0;
   bottom: 0;
-  height: clamp(80px, 14vh, 160px);
-  background: linear-gradient(to bottom, rgba(248, 249, 250, 0) 0%, rgba(248, 249, 250, 0.55) 55%, #f8f9fa 100%);
+  width: 26%;
   pointer-events: none;
-  z-index: 0;
 }
-.floating-emoji {
+.victim-lane--left { left: 2%; }
+.victim-lane--right { right: 2%; }
+.victim-rise {
   position: absolute;
-  bottom: -3rem;
-  opacity: 0;
-  animation: floatUp linear infinite;
-  filter: grayscale(1);
+  bottom: -160px;
+  animation: cardRise linear forwards;
 }
-@keyframes floatUp {
-  0% {
-    transform: translateY(0) rotate(0deg);
-    opacity: 0;
-  }
-  5% {
-    opacity: 0.12;
-  }
-  80% {
-    opacity: 0.08;
-  }
-  100% {
-    transform: translateY(-110svh) rotate(20deg);
-    opacity: 0;
-  }
+@keyframes cardRise {
+  0%   { transform: translateY(0); opacity: 0; }
+  8%   { opacity: 1; }
+  85%  { opacity: 1; }
+  100% { transform: translateY(calc(-100vh - 200px)); opacity: 0; }
+}
+.hero-scroll {
+  position: absolute;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(246, 241, 231, 0.45);
+  text-decoration: none;
+  z-index: 1;
+}
+.hero-scroll:hover,
+.hero-scroll:focus-visible {
+  color: var(--brand-cream);
+  text-decoration: none;
+}
+.hero-scroll-line {
+  width: 1px;
+  height: 26px;
+  background: rgba(246, 241, 231, 0.3);
 }
 
 .hero-inner {
@@ -1075,12 +1116,14 @@ const shareText = () =>
 .hero-label {
   text-transform: uppercase;
   letter-spacing: 0.2em;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 700;
   color: var(--brand-accent);
   margin-bottom: 0.75rem;
 }
 .hero-title {
+  font-family: var(--font-display);
+  letter-spacing: -0.03em;
   font-size: clamp(2rem, 6vw, 3.5rem);
   font-weight: 700;
   line-height: 1.1;
@@ -1093,11 +1136,30 @@ const shareText = () =>
   margin: 0 auto 2rem;
 }
 .hero-counter {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
   margin-bottom: 2rem;
+}
+.hero-counter > * { position: relative; }
+.hero-counter-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 300px;
+  height: 300px;
+  transform: translate(-50%, -56%);
+  border-radius: 50%;
+  border: 1px solid rgba(255, 106, 61, 0.18);
+  box-shadow: 0 0 0 28px rgba(255, 106, 61, 0.04), 0 0 0 56px rgba(255, 106, 61, 0.02);
+  animation: heartbeat 1s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes heartbeat {
+  0%, 100% { transform: translate(-50%, -56%) scale(1); }
+  50% { transform: translate(-50%, -56%) scale(1.03); }
 }
 .hero-counter-number {
   font-size: clamp(2.5rem, 10vw, 5rem);
@@ -1136,80 +1198,102 @@ const shareText = () =>
   opacity: 0.9;
 }
 
-/* ── Floating Victim Bubbles ───────────────────────── */
-.victim-layer {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  overflow: hidden;
-  z-index: 0;
+/* ── Sheet & chapters ─────────────────────────────── */
+.sheet {
+  position: relative;
+  z-index: 1;
+  margin-top: -56px;
+  background: var(--brand-cream);
+  border-radius: 36px 36px 0 0;
+  box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.35);
+  padding: 2.75rem 0 2.5rem;
 }
-.victim-bubble {
-  position: absolute;
-  bottom: -4rem;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.4rem 1rem;
-  background: rgba(255, 255, 255, 0.09);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 50px;
-  font-size: clamp(0.8rem, 1.8vw, 0.95rem);
-  white-space: nowrap;
-  color: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(6px);
-  animation: bubbleRise linear forwards;
+.sheet::before {
+  content: '';
+  display: block;
+  width: 44px;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(20, 54, 31, 0.15);
+  margin: -1.25rem auto 1.5rem;
 }
-.victim-bubble .victim-emoji { font-size: 1.15em; }
-.victim-bubble .victim-name { font-weight: 600; color: rgba(255, 255, 255, 0.92); }
-.victim-bubble .victim-divider { opacity: 0.25; }
-.victim-bubble .victim-meta { opacity: 0.5; font-size: 0.9em; }
-.victim-bubble .victim-location { opacity: 0.45; font-size: 0.9em; }
-
-@keyframes bubbleRise {
-  0% {
-    transform: translateY(0) scale(0.8);
-    opacity: 0;
-  }
-  8% {
-    opacity: 0.85;
-    transform: translateY(-8svh) scale(1);
-  }
-  60% {
-    opacity: 0.6;
-  }
-  100% {
-    transform: translateY(-115svh) scale(0.9);
-    opacity: 0;
-  }
+.live-sentence {
+  margin: 0 0 0.9rem;
+  max-width: 820px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(1.25rem, 2.6vw, 1.9rem);
+  letter-spacing: -0.025em;
+  line-height: 1.3;
+  color: var(--brand-green);
+}
+.live-number,
+.live-name {
+  display: inline-block;
+  padding: 0 0.15em;
+  border-bottom: 2px solid rgba(231, 76, 60, 0.35);
+  color: #e74c3c;
+  font-variant-numeric: tabular-nums;
+}
+.live-name {
+  color: var(--brand-green);
+  border-color: rgba(20, 54, 31, 0.3);
+}
+.chapter-lead {
+  margin: 0 0 1.5rem;
+  max-width: 640px;
+  font-size: 1rem;
+  line-height: 1.65;
+  color: #4a5a4f;
+}
+.recent-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+.section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.1rem;
+}
+.section-title--left {
+  text-align: left;
+  margin-bottom: 0;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  letter-spacing: -0.025em;
+}
+.section-note {
+  font-size: 0.8rem;
+  color: #8d8474;
 }
 
 /* ── Animals Section ──────────────────────────────── */
+.animal-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+.animal-card--wide { grid-column: span 2; }
+.animal-card--estimate {
+  grid-column: 1 / -1;
+  border: 1.5px dashed rgba(133, 100, 4, 0.35);
+}
+/* Sits above the sheet's shadow so the two cream surfaces read as one */
 .animals-section {
-  padding: 2rem 0 3rem;
-  background: #f8f9fa;
+  position: relative;
+  z-index: 2;
+  padding: 1rem 0 3rem;
+  background: var(--brand-cream);
 }
-.animal-header {
-  display: flex;
-  align-items: center;
-  padding: 0.75rem 1.25rem;
-  font-weight: 700;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #6c757d;
-  border-bottom: 2px solid #dee2e6;
-  margin-bottom: 0.5rem;
-}
-.animal-header-name { flex: 2; }
-.animal-header-stat { flex: 1; text-align: right; }
-.animal-header-stat--wide { flex: 1.3; }
 
 .animal-card {
   background: #fff;
-  border-radius: 12px;
-  margin-bottom: 0.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  border-radius: 20px;
+  border: 1.5px solid rgba(20, 54, 31, 0.08);
   overflow: hidden;
   transition: box-shadow 0.2s;
 }
@@ -1218,9 +1302,10 @@ const shareText = () =>
 }
 .animal-card-main {
   display: flex;
-  align-items: center;
-  padding: 1rem 1.25rem;
-  gap: 1rem;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 1.1rem 1.25rem 0.25rem;
+  gap: 0.5rem;
 }
 .animal-card-name {
   flex: 2;
@@ -1251,19 +1336,18 @@ const shareText = () =>
   text-decoration: none;
 }
 .animal-card-stats {
-  flex: 3;
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  flex-direction: column;
+  align-items: stretch;
 }
 .animal-stat {
-  flex: 1;
-  text-align: right;
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.45rem 0;
+  border-top: 1px solid #f1f3f5;
 }
-.animal-stat--wide { flex: 1.3; }
 .animal-stat-label {
   font-size: 0.7rem;
   color: #6c757d;
@@ -1271,15 +1355,16 @@ const shareText = () =>
   letter-spacing: 0.05em;
 }
 .animal-stat-value {
+  font-family: var(--font-display);
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 0.9rem;
+  letter-spacing: -0.01em;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 .animal-stat-value--danger { color: #e74c3c; }
 
-@media (min-width: 768px) {
-  .animal-stat { justify-content: flex-end; }
-}
+
 
 .animal-card-footer {
   display: flex;
@@ -2155,45 +2240,45 @@ const shareText = () =>
   .hero-counter {
     text-shadow: 0 2px 14px rgba(0, 0, 0, 0.45);
   }
-  .victim-ticker {
-    height: 100px;
-  }
-  .victim-bubble {
-    font-size: 0.7rem;
-    padding: 0.3rem 0.65rem;
-  }
-
-  /* Animal cards: name on top, then a key/value list instead of three columns */
+  /* Animal cards: one column on phones */
   .animals-section {
-    padding: 1.25rem 0 2rem;
+    padding: 0.5rem 0 2rem;
+  }
+  .animal-grid {
+    grid-template-columns: 1fr;
+  }
+  .animal-card--wide,
+  .animal-card--estimate {
+    grid-column: auto;
   }
   .animal-card {
-    border-radius: 10px;
-    margin-bottom: 0.5rem;
+    border-radius: 16px;
   }
   .animal-card-main {
-    flex-direction: column;
-    align-items: stretch;
     padding: 0.85rem 1rem 0.25rem;
-    gap: 0.5rem;
+  }
+  .recent-grid {
+    grid-template-columns: 1fr;
+  }
+  .sheet {
+    margin-top: -40px;
+    border-radius: 28px 28px 0 0;
+    padding-top: 2.25rem;
+  }
+  .victim-lane {
+    width: 48%;
+  }
+  .victim-lane .victim-card {
+    width: 176px;
+  }
+  .hero-scroll {
+    display: none;
   }
   .animal-emoji {
     font-size: 1.6rem;
   }
   .animal-label {
     font-size: 1.05rem;
-  }
-  .animal-card-stats {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0;
-  }
-  .animal-stat,
-  .animal-stat--wide {
-    flex: none;
-    justify-content: space-between;
-    padding: 0.45rem 0;
-    border-top: 1px solid #f1f3f5;
   }
   .animal-stat-label {
     font-size: 0.68rem;

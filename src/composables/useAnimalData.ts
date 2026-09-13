@@ -77,8 +77,14 @@ function computeChild(child: AnimalChild, clock: Clock): ComputedChild {
   }
 }
 
-// Sort by yearly deaths descending
-const sortedAnimals = [...rawAnimals].sort((a, b) => b.deaths.year - a.deaths.year)
+/**
+ * Counted species first, sorted by yearly deaths; estimates (fish) last, because
+ * a derived figure should not lead a list of official counts.
+ */
+const sortedAnimals = [...rawAnimals].sort((a, b) => {
+  if (Boolean(a.estimate) !== Boolean(b.estimate)) return a.estimate ? 1 : -1
+  return b.deaths.year - a.deaths.year
+})
 
 export function useAnimalData(timer: Timer, options: AnimalDataOptions = {}) {
   const animalData = computed<ComputedAnimal[]>(() => {

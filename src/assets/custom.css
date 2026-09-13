@@ -22,3 +22,16 @@ html, body {
 html {
   scroll-padding-top: calc(var(--header-height) + 16px);
 }
+
+/* Chapter kicker above every section of the start page */
+.chapter {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--brand-accent);
+  margin-bottom: 0.9rem;
+}
+.chapter--center { text-align: center; }
+.chapter--on-dark { color: #7fe0a5; }

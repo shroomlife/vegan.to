@@ -1,6 +1,10 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
 import BrandWordmark from '@/components/BrandWordmark.vue'
+import CounterPill from '@/components/CounterPill.vue'
 import { useAnchorNavigation } from '@/composables/useAnchorNavigation'
+import { useLiveState } from '@/composables/useLiveState'
 
 const navLinks = [
   { label: 'Zahlen', to: '/#zahlen', mobile: false },
@@ -9,12 +13,20 @@ const navLinks = [
 ]
 
 const { onNavClick, isPageLink } = useAnchorNavigation()
+const live = useLiveState()
+const route = useRoute()
+
+// The counter moves into the header once the hero has scrolled away (desktop only)
+const showPill = computed(() => !live.isMobile.value && route.name === 'Home' && !live.heroVisible.value)
 </script>
 
 <template>
   <header class="site-header">
     <div class="site-header-inner">
       <BrandWordmark class="site-header-brand" />
+      <Transition name="header-pill">
+        <CounterPill v-if="showPill" :count="live.totalDeathCount.value" class="site-header-pill" />
+      </Transition>
       <nav class="site-header-nav" aria-label="Hauptnavigation">
         <!-- custom links: anchors on the start page must not claim aria-current="page" -->
         <RouterLink
@@ -69,6 +81,19 @@ const { onNavClick, isPageLink } = useAnchorNavigation()
 }
 .site-header-brand {
   font-size: 20px;
+}
+.site-header-pill {
+  margin-left: auto;
+  margin-right: 8px;
+}
+.header-pill-enter-active,
+.header-pill-leave-active {
+  transition: opacity 0.2s, transform 0.2s;
+}
+.header-pill-enter-from,
+.header-pill-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
 }
 .site-header-nav {
   display: flex;
