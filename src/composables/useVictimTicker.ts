@@ -1,4 +1,4 @@
-import { shallowRef, triggerRef, onUnmounted } from 'vue'
+import { shallowRef, triggerRef, onUnmounted, toValue, type MaybeRefOrGetter } from 'vue'
 import { animals } from '@/data/animals'
 import { lifespanYearsBySpecies, slaughterAgeBySpecies, DAYS_PER_UNIT } from '@/data/lifespans'
 
@@ -171,14 +171,17 @@ function generateVictim(): Victim {
  * Spawns floating victim cards. Each card has a CSS animation duration,
  * and gets garbage-collected from the array once that time has elapsed.
  * This keeps DOM node count stable even over long sessions.
+ *
+ * The interval may be reactive (bigger screens hold more cards); it is read
+ * anew before every spawn, so a resize changes the pace without a restart.
  */
-export function useVictimTicker(spawnIntervalMs = 2300, seedCount = 5) {
+export function useVictimTicker(spawnIntervalMs: MaybeRefOrGetter<number> = 2300, seedCount: MaybeRefOrGetter<number> = 5) {
   // shallowRef + manual trigger for performance — avoids deep reactivity on the array
   const victims = shallowRef<Victim[]>([])
 
   // Seed immediately — use negative animation-delay to place them mid-flight
   const seed: Victim[] = []
-  for (let i = 0; i < seedCount; i++) {
+  for (let i = 0; i < toValue(seedCount); i++) {
     const v = generateVictim()
     // Negative offset makes CSS animation start partway through
     const offset = randomInt(1, v.duration - 1)
@@ -191,20 +194,25 @@ export function useVictimTicker(spawnIntervalMs = 2300, seedCount = 5) {
   /** The most recently spawned card; the live sentence names it */
   const latest = shallowRef<Victim>(seed[seed.length - 1]!)
 
-  // Spawn new cards
-  const spawnId = setInterval(() => {
-    const arr = victims.value
-    // GC expired cards in the same pass
-    const alive = arr.filter((v) => Date.now() < v.expiresAt)
-    const next = generateVictim()
-    alive.push(next)
-    victims.value = alive
-    latest.value = next
-    triggerRef(victims)
-  }, spawnIntervalMs)
+  // Spawn new cards, one timeout at a time so the pace can follow the viewport
+  let spawnId: ReturnType<typeof setTimeout> | undefined
+  function scheduleSpawn() {
+    spawnId = setTimeout(() => {
+      const arr = victims.value
+      // GC expired cards in the same pass
+      const alive = arr.filter((v) => Date.now() < v.expiresAt)
+      const next = generateVictim()
+      alive.push(next)
+      victims.value = alive
+      latest.value = next
+      triggerRef(victims)
+      scheduleSpawn()
+    }, toValue(spawnIntervalMs))
+  }
+  scheduleSpawn()
 
   onUnmounted(() => {
-    clearInterval(spawnId)
+    clearTimeout(spawnId)
   })
 
   return { victims, latest }

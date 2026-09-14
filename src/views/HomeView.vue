@@ -462,6 +462,10 @@ const shareText = () =>
 }
 .victim-lane--left { left: 2%; }
 .victim-lane--right { right: 2%; }
+/* Wide monitors hold more cards, so the lanes get wider too */
+@media (min-width: 1600px) {
+  .victim-lane { width: 30%; }
+}
 .victim-rise {
   position: absolute;
   bottom: -160px;

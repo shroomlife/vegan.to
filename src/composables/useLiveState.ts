@@ -1,5 +1,5 @@
-import { inject, provide, ref, type InjectionKey, type Ref } from 'vue'
-import { useMediaQuery } from '@vueuse/core'
+import { computed, inject, provide, ref, type InjectionKey, type Ref } from 'vue'
+import { useMediaQuery, useWindowSize } from '@vueuse/core'
 import { useTimer } from '@/composables/useTimer'
 import { useAnimalData } from '@/composables/useAnimalData'
 import { useVictimTicker } from '@/composables/useVictimTicker'
@@ -21,8 +21,16 @@ function createLiveState() {
   const { animalData, totalDeathCount } = useAnimalData(timer, {
     emojiRenderCap: () => (isMobile.value ? WALL_CAP_MOBILE : WALL_CAP_DESKTOP),
   })
-  // Few cards at a time, slowly: the hero should feel like a vigil, not a swarm
-  const { victims, latest } = useVictimTicker(isMobile.value ? 4200 : 2300, isMobile.value ? 2 : 5)
+  /**
+   * Cards on screen at once scale with the viewport: about one per 200k px²,
+   * two on a phone, up to fourteen on a large monitor. Each card rises for
+   * roughly 16 s, so the spawn interval follows from the target count.
+   * Still slow on purpose: the hero should feel like a vigil, not a swarm.
+   */
+  const { width, height } = useWindowSize()
+  const targetCards = computed(() => Math.min(14, Math.max(2, Math.round((width.value * height.value) / 200_000))))
+  const spawnIntervalMs = computed(() => Math.round(16_000 / targetCards.value))
+  const { victims, latest } = useVictimTicker(spawnIntervalMs, targetCards)
   /** Set by the home view; the header shows the counter pill while the hero is off screen */
   const heroVisible: Ref<boolean> = ref(true)
 
