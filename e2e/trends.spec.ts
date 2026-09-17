@@ -54,6 +54,12 @@ test.describe('slaughter trends', () => {
     const section = page.locator('.species-trend')
     await expect(section).toHaveCount(1)
     await expect(section.locator('.gap-chart svg')).toHaveCount(1)
+    // The viewBox has to match the rendered box, or the chart is scaled and inset
+    const svg = section.locator('.gap-chart svg')
+    const box = await svg.boundingBox()
+    const viewBox = (await svg.getAttribute('viewBox'))?.split(' ').map(Number) ?? []
+    expect(Math.round(box?.width ?? 0)).toBe(viewBox[2])
+    expect(Math.round(box?.height ?? 0)).toBe(viewBox[3])
     await expect(section.locator('.species-trend-figure')).toHaveText('1.885.216')
     // Three, not four: 1993 is also the peak, so the window card would repeat it
     await expect(section.locator('.species-trend-stat')).toHaveCount(3)

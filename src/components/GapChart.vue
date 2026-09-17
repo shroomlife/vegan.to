@@ -28,12 +28,15 @@ const FALLBACK_W = 1000
 const FALLBACK_H = 300
 
 /**
- * Drawn in real pixels instead of a stretched viewBox. preserveAspectRatio
- * "none" squashed the marker into an ellipse and smeared the hatch, worst on
- * a phone where the box is widest relative to its height.
+ * Drawn in real pixels instead of a stretched viewBox: preserveAspectRatio
+ * "none" squashed the marker into an ellipse and smeared the hatch.
+ *
+ * Measured on the plot box, not the figure. The figure also holds the axis
+ * row, so measuring it made the viewBox taller than the svg, and the chart
+ * came out scaled down and centred instead of filling the width.
  */
-const root = useTemplateRef<HTMLElement>('root')
-const { width: boxWidth, height: boxHeight } = useElementSize(root)
+const plot = useTemplateRef<HTMLElement>('plot')
+const { width: boxWidth, height: boxHeight } = useElementSize(plot)
 
 /** No non-null assertions: an unusable series yields undefined and draws nothing */
 const series = computed(() => {
@@ -86,9 +89,10 @@ const hatchId = `gap-hatch-${useId()}`
 </script>
 
 <template>
-  <figure ref="root" class="gap-chart">
-    <template v-if="geometry">
+  <figure class="gap-chart">
+    <div ref="plot" class="gap-chart-plot">
       <svg
+        v-if="geometry"
         class="gap-chart-svg"
         :viewBox="`0 0 ${geometry.w} ${geometry.h}`"
         role="img"
@@ -114,13 +118,13 @@ const hatchId = `gap-hatch-${useId()}`
         </g>
         <circle class="gap-chart-now" :cx="geometry.nowX" :cy="geometry.nowY" r="6" />
       </svg>
+    </div>
 
-      <figcaption class="gap-chart-axis">
-        <span>{{ geometry.firstYear }}</span>
-        <span class="gap-chart-peak-label">gestrichelt: Höchststand {{ geometry.peakYear }}</span>
-        <span>{{ geometry.lastYear }}</span>
-      </figcaption>
-    </template>
+    <figcaption v-if="geometry" class="gap-chart-axis">
+      <span>{{ geometry.firstYear }}</span>
+      <span class="gap-chart-peak-label">gestrichelt: Höchststand {{ geometry.peakYear }}</span>
+      <span>{{ geometry.lastYear }}</span>
+    </figcaption>
   </figure>
 </template>
 
@@ -128,10 +132,13 @@ const hatchId = `gap-hatch-${useId()}`
 .gap-chart {
   margin: 0;
 }
+.gap-chart-plot {
+  height: var(--gap-chart-height, 300px);
+}
 .gap-chart-svg {
   display: block;
   width: 100%;
-  height: var(--gap-chart-height, 300px);
+  height: 100%;
 }
 /* The gap carries the statement, so it gets the texture and the mass steps
    back. Solid red at full strength read as the whole chart and buried it. */
@@ -183,7 +190,7 @@ const hatchId = `gap-hatch-${useId()}`
   color: var(--brand-faint);
 }
 @media (max-width: 767px) {
-  .gap-chart-svg {
+  .gap-chart-plot {
     height: var(--gap-chart-height-mobile, 190px);
   }
   .gap-chart-peak-label {
