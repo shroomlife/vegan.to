@@ -1,4 +1,4 @@
-import type { SourceId } from './sources'
+import type { SourceId } from './sources.ts'
 
 /**
  * One page per species under /tiere/<slug>. Keyed by the singular name used in

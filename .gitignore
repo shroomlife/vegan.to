@@ -20,3 +20,6 @@ node_modules
 # Playwright
 test-results/
 playwright-report/
+
+# Build output, produced and deployed by the CI/CD workflow
+docs/

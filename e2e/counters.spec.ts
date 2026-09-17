@@ -1,16 +1,28 @@
 import { test, expect } from '@playwright/test'
+import dayjs from 'dayjs'
+// Explicit .js: playwright resolves these through node esm, not through vite
+import utc from 'dayjs/plugin/utc.js'
+import timezone from 'dayjs/plugin/timezone.js'
 import { parseDeNumber } from './helpers'
 import { animals } from '../src/data/animals'
 
-/** Same definition as the app: the yearly figure is spread over the current year in Berlin time */
-function berlinNow(): Date {
-  return new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Berlin' }))
+dayjs.extend(utc)
+dayjs.extend(timezone)
+
+/**
+ * Same definition as useTimer.ts: the yearly figure is spread over the current
+ * year in Berlin time. Built on dayjs like the app, so the expectation holds
+ * whatever the runner's own clock is set to. Reading a Berlin wall clock back
+ * into a plain Date would silently shift by the offset on a UTC machine.
+ */
+function berlinNow() {
+  return dayjs().tz('Europe/Berlin')
 }
 function daysInYear(year: number): number {
   return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0 ? 366 : 365
 }
 function secondsPerYearNow(): number {
-  return daysInYear(berlinNow().getFullYear()) * 86_400
+  return daysInYear(berlinNow().year()) * 86_400
 }
 
 function findAnimal(plural: string) {
@@ -55,12 +67,10 @@ test.describe('live counters', () => {
 
     const yearly = findAnimal('Hühner').deaths.year
     const now = berlinNow()
-    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-    const startOfYear = new Date(now.getFullYear(), 0, 1)
     const rate = yearly / secondsPerYearNow()
-    const expectedToday = rate * ((now.getTime() - startOfDay.getTime()) / 1000)
-    const expectedYear = rate * ((now.getTime() - startOfYear.getTime()) / 1000)
-    const expectedPerDay = yearly / daysInYear(now.getFullYear())
+    const expectedToday = rate * now.diff(now.startOf('day'), 'second', true)
+    const expectedYear = rate * now.diff(now.startOf('year'), 'second', true)
+    const expectedPerDay = yearly / daysInYear(now.year())
 
     const values = await card.locator('.animal-stat-value').allInnerTexts()
     const [today, perDay, thisYear] = values.map(parseDeNumber)

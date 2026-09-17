@@ -13,11 +13,14 @@
   --brand-accent: #ff6a3d;
   --font-display: 'Unbounded', 'Arial Black', sans-serif;
   --header-height: 68px;
+  /* How far the light sheet slides over the hero, so the hero can keep its own content clear of it */
+  --sheet-overlap: 56px;
 }
 
 @media (max-width: 767px) {
   :root {
     --header-height: 60px;
+    --sheet-overlap: 40px;
   }
 }
 

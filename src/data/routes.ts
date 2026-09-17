@@ -1,4 +1,4 @@
-import { speciesSlugs } from './species'
+import { speciesSlugs } from './species.ts'
 
 /**
  * Every indexable path, in one place: the sitemap, the per-route HTML copies
