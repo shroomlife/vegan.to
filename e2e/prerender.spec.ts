@@ -20,6 +20,17 @@ test.describe('prerendered html', () => {
     expect(html).toContain('id="species-breadcrumb"')
   })
 
+  test('the 404 copy is prerendered as the not found page, not as the start page', async ({ request }) => {
+    const html = await (await request.get('/404.html')).text()
+    expect(html).toContain('Seite nicht gefunden | vegan.to')
+    expect(html).toContain('noindex, follow')
+    // GitHub Pages serves this file for every unknown url, so it must claim no address
+    expect(html).not.toContain('rel="canonical"')
+    expect(html).not.toContain('og:url')
+    // still the spa fallback: deep links have to boot the router from here
+    expect(html).toContain('id="app"')
+  })
+
   test('the app still mounts on top of the prerendered page without duplicate structured data', async ({ page }) => {
     await page.goto('/tiere/schweine')
     await expect(page.locator('h1')).toHaveCount(1)
