@@ -175,10 +175,16 @@ const shareText = () =>
       </Motion>
     </div>
 
-    <a href="#wer" class="hero-scroll" @click.prevent="onNavClick('/#wer')">
-      <span>Wer sie waren</span>
-      <span class="hero-scroll-line" aria-hidden="true"></span>
-    </a>
+    <RouterLink to="/#wer" custom v-slot="{ href, navigate }">
+      <a :href="href" class="hero-scroll" @click="navigate($event); onNavClick('/#wer')">
+        <span class="hero-scroll-label">Wer sie waren</span>
+        <span class="hero-scroll-badge" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="20" height="20" focusable="false">
+            <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14m7-7l-7 7l-7-7" />
+          </svg>
+        </span>
+      </a>
+    </RouterLink>
   </section>
 
   <!-- Sheet: light surface sliding over the hero -->
@@ -480,28 +486,61 @@ const shareText = () =>
 .hero-scroll {
   position: absolute;
   left: 50%;
-  bottom: 28px;
+  bottom: calc(var(--sheet-overlap) + 24px);
   transform: translateX(-50%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: rgba(246, 241, 231, 0.45);
+  gap: 10px;
+  color: rgba(246, 241, 231, 0.6);
   text-decoration: none;
   z-index: 1;
+}
+.hero-scroll-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  transition: color 0.25s ease;
+}
+/* Round badge with the arrow, nudging downwards to invite the scroll */
+.hero-scroll-badge {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 1px solid rgba(246, 241, 231, 0.18);
+  background: rgba(246, 241, 231, 0.05);
+  backdrop-filter: blur(6px);
+  animation: heroScrollNudge 2.6s ease-in-out infinite;
+  transition: border-color 0.25s ease, background-color 0.25s ease, color 0.25s ease, transform 0.25s ease;
+}
+@keyframes heroScrollNudge {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(5px); }
 }
 .hero-scroll:hover,
 .hero-scroll:focus-visible {
   color: var(--brand-cream);
   text-decoration: none;
 }
-.hero-scroll-line {
-  width: 1px;
-  height: 26px;
-  background: rgba(246, 241, 231, 0.3);
+.hero-scroll:hover .hero-scroll-badge,
+.hero-scroll:focus-visible .hero-scroll-badge {
+  border-color: var(--brand-accent);
+  background: rgba(255, 106, 61, 0.16);
+  color: var(--brand-accent);
+  animation-play-state: paused;
+  transform: translateY(4px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-scroll-badge {
+    animation: none;
+  }
+  .hero-scroll:hover .hero-scroll-badge,
+  .hero-scroll:focus-visible .hero-scroll-badge {
+    transform: none;
+  }
 }
 
 .hero-inner {
@@ -605,7 +644,7 @@ const shareText = () =>
 .sheet {
   position: relative;
   z-index: 1;
-  margin-top: -56px;
+  margin-top: calc(-1 * var(--sheet-overlap));
   background: var(--brand-cream);
   border-radius: 36px 36px 0 0;
   box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.35);
@@ -1004,7 +1043,6 @@ const shareText = () =>
     grid-template-columns: 1fr;
   }
   .sheet {
-    margin-top: -40px;
     border-radius: 28px 28px 0 0;
     padding-top: 2.25rem;
   }

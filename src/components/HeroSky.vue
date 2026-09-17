@@ -40,8 +40,8 @@ let frame = 0
 function makeLight(now: number): Light {
   return {
     x: Math.random(),
-    // Lights gather in the upper two thirds, denser towards the top
-    y: 0.06 + Math.pow(Math.random(), 1.6) * 0.62,
+    // The sky reaches every edge of the hero, only a little denser towards the top
+    y: Math.pow(Math.random(), 1.4),
     r: Math.random() < 0.85 ? 1 : 1.8,
     color: COLORS[Math.floor(Math.random() * COLORS.length)] ?? COLORS[0]!,
     alpha: 0.35 + Math.random() * 0.55,
