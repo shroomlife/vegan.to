@@ -34,12 +34,6 @@ export const sources = {
     usedFor: 'Rinder, Schweine, Schafe, Ziegen, Pferde (inländische Herkunft), Jahreswert und Zeitreihe',
     category: 'Schlachtzahlen',
   },
-  destatisPressMeat2025: {
-    label: 'Destatis, Pressemitteilung PD26_049_413: Fleischproduktion 2025',
-    url: 'https://www.destatis.de/DE/Presse/Pressemitteilungen/2026/02/PD26_049_413.html',
-    usedFor: 'Einordnung: alle Schlachtungsarten zusammen, Fleischmenge und Vergleich zum Spitzenjahr 2016',
-    category: 'Schlachtzahlen',
-  },
   destatisPoultry: {
     label: 'Destatis, GENESIS 41322-0001: Geflügelschlachtereien 2010 bis 2025',
     url: 'https://www-genesis.destatis.de/datenbank/online/table/41322-0001',

@@ -13,8 +13,12 @@ test.describe('page health', () => {
 
   // The start page loads its view eagerly, every other route is a lazy chunk, so
   // only these caught the prerendered preload urls that pointed at 127.0.0.1
-  test('no route asks the visitor for a resource that cannot exist', async ({ page }) => {
+  test('no route asks the visitor for a resource that cannot exist', async ({ browser }) => {
     for (const path of ['/', '/tiere', '/tiere/rinder', '/quellen', '/gibt-es-nicht']) {
+      // A fresh context per path: on a shared page the next goto aborts the
+      // previous page's in-flight requests and those land in the wrong array
+      const context = await browser.newContext()
+      const page = await context.newPage()
       const errors = collectErrors(page)
       const failed: string[] = []
       page.on('requestfailed', (request) => failed.push(request.url()))
@@ -22,6 +26,7 @@ test.describe('page health', () => {
       await page.waitForTimeout(1200)
       expect(errors, path).toEqual([])
       expect(failed, path).toEqual([])
+      await context.close()
     }
   })
 

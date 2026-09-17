@@ -1,4 +1,5 @@
 import type { TrendPoint } from '@/data/trends'
+import { formatNumber } from '@/utils/formatNumber'
 
 export interface TrendSummary {
   first: TrendPoint
@@ -39,35 +40,13 @@ export function trendSummary(points: readonly TrendPoint[]): TrendSummary | unde
 }
 
 /**
- * Adds several series year by year, keeping only the years present in every
- * one of them. Summing a year that one species is missing would draw a cliff
- * that never happened: poultry starts in 2010, the land animals in 1993.
+ * "−40,5 %" or "+7,0 %", with a real minus sign. Rounds through the project's
+ * one de-DE formatter rather than toFixed, which rounds half away from zero.
+ * A value that rounds to zero gets no sign, so nothing reads as a change.
  */
-export function sumSeries(seriesList: readonly (readonly TrendPoint[])[]): TrendPoint[] {
-  const [head, ...rest] = seriesList
-  if (!head) return []
-
-  const shared = new Set(head.map((point) => point.year))
-  for (const series of rest) {
-    const years = new Set(series.map((point) => point.year))
-    for (const year of [...shared]) {
-      if (!years.has(year)) shared.delete(year)
-    }
-  }
-
-  return [...shared]
-    .sort((a, b) => a - b)
-    .map((year) => ({
-      year,
-      count: seriesList.reduce(
-        (total, series) => total + (series.find((point) => point.year === year)?.count ?? 0),
-        0,
-      ),
-    }))
-}
-
-/** "−40,5 %" or "+7,0 %", with a real minus sign and a German decimal comma */
 export function formatPercent(value: number): string {
+  const rounded = formatNumber(Math.abs(value), 1)
+  if (rounded === '0') return '0 %'
   const sign = value < 0 ? '−' : '+'
-  return `${sign}${Math.abs(value).toFixed(1).replace('.', ',')} %`
+  return `${sign}${rounded} %`
 }

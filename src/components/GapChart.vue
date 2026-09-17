@@ -1,115 +1,126 @@
 <script setup lang="ts">
-import { computed, useId } from 'vue'
+import { computed, useId, useTemplateRef } from 'vue'
+import { useElementSize } from '@vueuse/core'
 import { area, line, curveMonotoneX } from 'd3-shape'
 import type { TrendPoint } from '@/data/trends'
 
 /**
  * Not a line chart: the subject is the distance to the worst year.
  *
- * A dashed rule sits at the peak, the band between it and the curve is what is
- * no longer killed, the solid mass below the curve is what remains. A species
- * whose numbers barely moved shows almost no band, which says more than any
+ * A dashed rule sits at the peak, the hatched band below it is what is no
+ * longer killed, the mass under the curve is what remains. A species whose
+ * numbers barely moved shows almost no band, which says more than any single
  * headline could for all nine of them at once.
  */
-const props = withDefaults(defineProps<{
+const props = defineProps<{
   points: readonly TrendPoint[]
   /** Accessible summary; the visible caption lives next to the chart */
   label: string
-  height?: number
-}>(), { height: 320 })
+}>()
 
-/** Plot in its own pixel space and let the viewBox scale it */
-const W = 1000
+/** Room above the peak rule and to the right of the measure line, in px */
 const PAD_TOP = 14
-/** Room on the right so the measure line and its caps are not flush to the edge */
 const PAD_RIGHT = 26
-
-const H = computed(() => props.height)
-
-const peak = computed(() => props.points.reduce((a, p) => (p.count > a.count ? p : a), props.points[0]!))
-const first = computed(() => props.points[0]!)
-const last = computed(() => props.points[props.points.length - 1]!)
-
-const scaleX = computed(() => {
-  const span = last.value.year - first.value.year
-  return (year: number) => (span === 0 ? 0 : ((year - first.value.year) / span) * (W - PAD_RIGHT))
-})
-const scaleY = computed(() => {
-  const top = peak.value.count
-  return (count: number) => PAD_TOP + (1 - count / top) * (H.value - PAD_TOP)
-})
-
-const peakY = computed(() => scaleY.value(peak.value.count))
-
-const linePath = computed(() =>
-  line<TrendPoint>()
-    .x((p) => scaleX.value(p.year))
-    .y((p) => scaleY.value(p.count))
-    .curve(curveMonotoneX)(props.points) ?? '',
-)
-
-/** What is still killed: from the curve down to the baseline */
-const massPath = computed(() =>
-  area<TrendPoint>()
-    .x((p) => scaleX.value(p.year))
-    .y0(H.value)
-    .y1((p) => scaleY.value(p.count))
-    .curve(curveMonotoneX)(props.points) ?? '',
-)
-
-/** The gap: from the peak rule down to the curve */
-const gapPath = computed(() =>
-  area<TrendPoint>()
-    .x((p) => scaleX.value(p.year))
-    .y0(peakY.value)
-    .y1((p) => scaleY.value(p.count))
-    .curve(curveMonotoneX)(props.points) ?? '',
-)
-
-const nowX = computed(() => scaleX.value(last.value.year))
-const nowY = computed(() => scaleY.value(last.value.count))
-/** Half the cap width, in user units, for the measure line's end ticks */
+/** Half the width of the measure line's end ticks, in px */
 const CAP = 9
+/** Only used until the element has been measured */
+const FALLBACK_W = 1000
+const FALLBACK_H = 300
 
-/** The hub page draws nine of these, so the pattern id has to be per instance */
+/**
+ * Drawn in real pixels instead of a stretched viewBox. preserveAspectRatio
+ * "none" squashed the marker into an ellipse and smeared the hatch, worst on
+ * a phone where the box is widest relative to its height.
+ */
+const root = useTemplateRef<HTMLElement>('root')
+const { width: boxWidth, height: boxHeight } = useElementSize(root)
+
+/** No non-null assertions: an unusable series yields undefined and draws nothing */
+const series = computed(() => {
+  const points = props.points
+  const first = points[0]
+  const last = points[points.length - 1]
+  if (!first || !last || points.length < 2) return undefined
+
+  let peak = first
+  for (const point of points) {
+    if (point.count > peak.count) peak = point
+  }
+  if (peak.count <= 0) return undefined
+
+  return { points, first, last, peak }
+})
+
+const geometry = computed(() => {
+  const s = series.value
+  if (!s) return undefined
+
+  const w = Math.round(boxWidth.value) || FALLBACK_W
+  const h = Math.round(boxHeight.value) || FALLBACK_H
+  const span = s.last.year - s.first.year
+  const x = (year: number) => (span === 0 ? 0 : ((year - s.first.year) / span) * (w - PAD_RIGHT))
+  // The peak lands on PAD_TOP by definition, which is why the rule never moves
+  const y = (count: number) => PAD_TOP + (1 - count / s.peak.count) * (h - PAD_TOP)
+
+  const stroke = line<TrendPoint>().x((p) => x(p.year)).y((p) => y(p.count)).curve(curveMonotoneX)
+  const mass = area<TrendPoint>().x((p) => x(p.year)).y0(h).y1((p) => y(p.count)).curve(curveMonotoneX)
+  const gap = area<TrendPoint>().x((p) => x(p.year)).y0(PAD_TOP).y1((p) => y(p.count)).curve(curveMonotoneX)
+
+  return {
+    w,
+    h,
+    peakY: PAD_TOP,
+    linePath: stroke(s.points) ?? '',
+    massPath: mass(s.points) ?? '',
+    gapPath: gap(s.points) ?? '',
+    nowX: x(s.last.year),
+    nowY: y(s.last.count),
+    firstYear: s.first.year,
+    lastYear: s.last.year,
+    peakYear: s.peak.year,
+  }
+})
+
+/** Several of these can share one page, so the pattern id has to be per instance */
 const hatchId = `gap-hatch-${useId()}`
 </script>
 
 <template>
-  <figure class="gap-chart">
-    <svg
-      class="gap-chart-svg"
-      :viewBox="`0 0 ${W} ${H}`"
-      preserveAspectRatio="none"
-      role="img"
-      :aria-label="label"
-    >
-      <defs>
-        <pattern :id="hatchId" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
-          <line x1="0" y1="0" x2="0" y2="7" class="gap-chart-hatch-line" />
-        </pattern>
-      </defs>
+  <figure ref="root" class="gap-chart">
+    <template v-if="geometry">
+      <svg
+        class="gap-chart-svg"
+        :viewBox="`0 0 ${geometry.w} ${geometry.h}`"
+        role="img"
+        :aria-label="label"
+      >
+        <defs>
+          <pattern :id="hatchId" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <line x1="0" y1="0" x2="0" y2="7" class="gap-chart-hatch-line" />
+          </pattern>
+        </defs>
 
-      <path class="gap-chart-gap" :d="gapPath" />
-      <path class="gap-chart-gap-hatch" :d="gapPath" :fill="`url(#${hatchId})`" />
-      <path class="gap-chart-mass" :d="massPath" />
-      <line class="gap-chart-peak" x1="0" :y1="peakY" :x2="W" :y2="peakY" />
-      <path class="gap-chart-line" :d="linePath" />
+        <path class="gap-chart-gap" :d="geometry.gapPath" />
+        <path :d="geometry.gapPath" :fill="`url(#${hatchId})`" />
+        <path class="gap-chart-mass" :d="geometry.massPath" />
+        <line class="gap-chart-peak" x1="0" :y1="geometry.peakY" :x2="geometry.w" :y2="geometry.peakY" />
+        <path class="gap-chart-line" :d="geometry.linePath" />
 
-      <!-- The distance, drawn as a distance: a measured line at the last year -->
-      <g class="gap-chart-measure">
-        <line :x1="nowX" :y1="peakY" :x2="nowX" :y2="nowY" />
-        <line :x1="nowX - CAP" :y1="peakY" :x2="nowX + CAP" :y2="peakY" />
-        <line :x1="nowX - CAP" :y1="nowY" :x2="nowX + CAP" :y2="nowY" />
-      </g>
-      <circle class="gap-chart-now" :cx="nowX" :cy="nowY" r="6" />
-    </svg>
+        <!-- The distance, drawn as a distance: a measured line at the last year -->
+        <g class="gap-chart-measure">
+          <line :x1="geometry.nowX" :y1="geometry.peakY" :x2="geometry.nowX" :y2="geometry.nowY" />
+          <line :x1="geometry.nowX - CAP" :y1="geometry.peakY" :x2="geometry.nowX + CAP" :y2="geometry.peakY" />
+          <line :x1="geometry.nowX - CAP" :y1="geometry.nowY" :x2="geometry.nowX + CAP" :y2="geometry.nowY" />
+        </g>
+        <circle class="gap-chart-now" :cx="geometry.nowX" :cy="geometry.nowY" r="6" />
+      </svg>
 
-    <div class="gap-chart-axis" aria-hidden="true">
-      <span>{{ first.year }}</span>
-      <span class="gap-chart-peak-label">gestrichelt: Höchststand {{ peak.year }}</span>
-      <span>{{ last.year }}</span>
-    </div>
+      <figcaption class="gap-chart-axis">
+        <span>{{ geometry.firstYear }}</span>
+        <span class="gap-chart-peak-label">gestrichelt: Höchststand {{ geometry.peakYear }}</span>
+        <span>{{ geometry.lastYear }}</span>
+      </figcaption>
+    </template>
   </figure>
 </template>
 
@@ -120,8 +131,7 @@ const hatchId = `gap-hatch-${useId()}`
 .gap-chart-svg {
   display: block;
   width: 100%;
-  height: var(--gap-chart-height, 320px);
-  overflow: visible;
+  height: var(--gap-chart-height, 300px);
 }
 /* The gap carries the statement, so it gets the texture and the mass steps
    back. Solid red at full strength read as the whole chart and buried it. */
@@ -135,19 +145,17 @@ const hatchId = `gap-hatch-${useId()}`
   stroke-opacity: 0.45;
 }
 .gap-chart-mass {
-  fill: #e74c3c;
+  fill: var(--brand-death);
   fill-opacity: 0.5;
 }
 .gap-chart-measure line {
   stroke: var(--brand-green);
   stroke-width: 1.5;
-  vector-effect: non-scaling-stroke;
 }
 .gap-chart-peak {
   stroke: rgba(20, 54, 31, 0.45);
   stroke-width: 1.5;
   stroke-dasharray: 2 6;
-  vector-effect: non-scaling-stroke;
 }
 .gap-chart-line {
   fill: none;
@@ -155,13 +163,11 @@ const hatchId = `gap-hatch-${useId()}`
   stroke-width: 2;
   stroke-linejoin: round;
   stroke-linecap: round;
-  vector-effect: non-scaling-stroke;
 }
 .gap-chart-now {
   fill: var(--brand-accent);
-  stroke: var(--brand-cream);
+  stroke: var(--brand-mint);
   stroke-width: 2;
-  vector-effect: non-scaling-stroke;
 }
 .gap-chart-axis {
   display: flex;
@@ -178,7 +184,7 @@ const hatchId = `gap-hatch-${useId()}`
 }
 @media (max-width: 767px) {
   .gap-chart-svg {
-    height: var(--gap-chart-height-mobile, 210px);
+    height: var(--gap-chart-height-mobile, 190px);
   }
   .gap-chart-peak-label {
     display: none;

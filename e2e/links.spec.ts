@@ -13,17 +13,24 @@ test.describe('outbound links and sources', () => {
 
   // Nothing checked internal targets before, so a link to a route that was
   // still only planned shipped all the way into the built html
-  test('every internal link points at a route that exists', async ({ page }) => {
-    const known = new Set<string>(routePaths)
-    for (const path of ['/', '/tiere', '/tiere/rinder', '/quellen']) {
+  test('every internal link reaches a real page, not the 404 route', async ({ page }) => {
+    const seen = new Set<string>()
+    for (const path of routePaths) {
       await page.goto(path)
       const targets = await page.locator('a[href^="/"]').evaluateAll((nodes) =>
         nodes.map((node) => node.getAttribute('href') ?? ''),
       )
       for (const href of targets) {
-        const target = (href.split('#')[0] ?? '') || '/'
-        expect(known.has(target), `${path} verlinkt auf ${href}`).toBe(true)
+        const target = (href.split('#')[0]?.split('?')[0] ?? '') || '/'
+        seen.add(target.length > 1 ? target.replace(/\/$/, '') : target)
       }
+    }
+    expect(seen.size).toBeGreaterThan(3)
+    // Asking the router itself rather than a path list: routes.ts also feeds the
+    // sitemap, so a path can be listed there while no route renders it
+    for (const target of seen) {
+      await page.goto(target)
+      await expect(page.locator('meta[name="robots"]'), target).toHaveAttribute('content', /^index/)
     }
   })
 

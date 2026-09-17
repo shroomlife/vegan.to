@@ -36,12 +36,30 @@ async function snapshot(path: string, file: string, stripCanonical = false): Pro
       document.head.querySelector('meta[property="og:url"]')?.remove()
     })
   }
-  const rendered = await page.evaluate(() => '<!doctype html>\n' + document.documentElement.outerHTML)
-
   // Vite injects absolute preload urls for the lazy route chunks while the page
-  // runs on the preview server. Serialised as is they would point every visitor
-  // at 127.0.0.1, so they go back to being root relative.
-  const html = rendered.replaceAll(`http://127.0.0.1:${PORT}`, '')
+  // runs on the preview server. Rewritten in the dom rather than by replacing a
+  // literal origin in the html, which only ever matched one exact spelling.
+  const rewritten = await page.evaluate(() => {
+    let count = 0
+    for (const el of document.querySelectorAll('[href], [src]')) {
+      for (const attr of ['href', 'src']) {
+        const value = el.getAttribute(attr)
+        if (!value || value.startsWith('/')) continue
+        let url: URL
+        try {
+          url = new URL(value, document.baseURI)
+        } catch {
+          continue
+        }
+        if (url.origin !== location.origin) continue
+        el.setAttribute(attr, url.pathname + url.search)
+        count++
+      }
+    }
+    return count
+  })
+  if (rewritten > 0) console.log(`  ${rewritten} absolute URL(s) auf den Pfad gesetzt`)
+  const html = await page.evaluate(() => '<!doctype html>\n' + document.documentElement.outerHTML)
   mkdirSync(dirname(file), { recursive: true })
   writeFileSync(file, html)
   const title = await page.title()

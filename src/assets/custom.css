@@ -11,6 +11,10 @@
   --brand-faint: #8d8474;
   --brand-cream: #f6f1e7;
   --brand-accent: #ff6a3d;
+  /* The red of the lived-versus-possible bars and of the slaughter charts */
+  --brand-death: #e74c3c;
+  /* Used where a fall in the numbers is stated as such */
+  --brand-fall: #1f7a45;
   --font-display: 'Unbounded', 'Arial Black', sans-serif;
   --header-height: 68px;
   /* How far the light sheet slides over the hero, so the hero can keep its own content clear of it */

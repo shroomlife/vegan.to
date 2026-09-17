@@ -61,6 +61,16 @@ const trendFacts = computed(() => (trend.value ? trendSummary(trend.value) : und
  * small leads with the absolute number instead.
  */
 const NEARLY_UNCHANGED = 0.05
+/**
+ * 41331-0001 splits by Schlachtungsart and we take only domestic origin;
+ * 41322-0001 has no such dimension, so that wording must not appear on the
+ * four poultry pages.
+ */
+const trendScope = computed(() =>
+  profile.value?.countSources.includes('destatisPoultry')
+    ? 'In Geflügelschlachtereien geschlachtete Tiere'
+    : 'Gewerbliche Schlachtungen von Tieren inländischer Herkunft',
+)
 const trendLead = computed(() => {
   const facts = trendFacts.value
   if (!facts) return undefined
@@ -179,16 +189,23 @@ useJsonLd('species-breadcrumb', {
             <dt>heute, {{ trendFacts.last.year }}</dt>
             <dd>{{ formatNumber(trendFacts.last.count) }}</dd>
           </div>
+          <!-- Only when the first year is not the peak, or both cards say the same -->
+          <div v-if="trendFacts.peak.year !== trendFacts.first.year" class="species-trend-stat">
+            <dt>seit {{ trendFacts.first.year }}</dt>
+            <dd :class="{ 'species-trend-down': trendFacts.changeFromFirstPercent <= -1 }">
+              {{ formatPercent(trendFacts.changeFromFirstPercent) }}
+            </dd>
+          </div>
           <div class="species-trend-stat">
             <dt>seit dem Höchststand</dt>
-            <dd :class="{ 'species-trend-down': trendFacts.changeFromPeakPercent < 0 }">
+            <dd :class="{ 'species-trend-down': trendFacts.changeFromPeakPercent <= -1 }">
               {{ formatPercent(trendFacts.changeFromPeakPercent) }}
             </dd>
           </div>
         </dl>
 
         <p class="species-trend-note">
-          Gewerbliche Schlachtungen von Tieren inländischer Herkunft, {{ trendFacts.first.year }} bis {{ trendFacts.last.year }}.
+          {{ trendScope }}, {{ trendFacts.first.year }} bis {{ trendFacts.last.year }}.
           Weniger Schlachtungen heißt nicht weniger Leid: die Tiere werden schwerer, und lebend exportierte Tiere
           tauchen in dieser Reihe nicht auf.
         </p>
@@ -341,7 +358,7 @@ useJsonLd('species-breadcrumb', {
   font-size: clamp(1.2rem, 2.4vw, 1.7rem);
   letter-spacing: -0.03em;
   line-height: 1.1;
-  color: #e74c3c;
+  color: var(--brand-death);
   font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
 }
@@ -448,7 +465,7 @@ useJsonLd('species-breadcrumb', {
   height: 100%;
   min-width: 4px;
   border-radius: inherit;
-  background: #e74c3c;
+  background: var(--brand-death);
 }
 .species-bar-note {
   display: flex;
@@ -459,7 +476,7 @@ useJsonLd('species-breadcrumb', {
 }
 .species-bar-lived {
   font-weight: 700;
-  color: #e74c3c;
+  color: var(--brand-death);
 }
 .species-conditions {
   display: grid;
@@ -533,7 +550,7 @@ useJsonLd('species-breadcrumb', {
   font-variant-numeric: tabular-nums;
 }
 .species-trend-down {
-  color: #1f7a45;
+  color: var(--brand-fall);
 }
 .species-trend-note {
   max-width: 640px;
