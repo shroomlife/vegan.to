@@ -11,6 +11,25 @@ test.describe('page health', () => {
     expect(errors).toEqual([])
   })
 
+  // The start page loads its view eagerly, every other route is a lazy chunk, so
+  // only these caught the prerendered preload urls that pointed at 127.0.0.1
+  test('no route asks the visitor for a resource that cannot exist', async ({ browser }) => {
+    for (const path of ['/', '/tiere', '/tiere/rinder', '/quellen', '/gibt-es-nicht']) {
+      // A fresh context per path: on a shared page the next goto aborts the
+      // previous page's in-flight requests and those land in the wrong array
+      const context = await browser.newContext()
+      const page = await context.newPage()
+      const errors = collectErrors(page)
+      const failed: string[] = []
+      page.on('requestfailed', (request) => failed.push(request.url()))
+      await page.goto(path)
+      await page.waitForTimeout(1200)
+      expect(errors, path).toEqual([])
+      expect(failed, path).toEqual([])
+      await context.close()
+    }
+  })
+
   test('every image is loaded and has alt text', async ({ page }) => {
     await page.goto('/')
     const images = await page.locator('img').evaluateAll((imgs) =>

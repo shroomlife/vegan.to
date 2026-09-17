@@ -29,15 +29,15 @@ export interface Source {
 
 export const sources = {
   destatisSlaughter: {
-    label: 'Destatis, GENESIS 41331-0001: Gewerbliche Schlachtungen 2025',
+    label: 'Destatis, GENESIS 41331-0001: Gewerbliche Schlachtungen 1993 bis 2025',
     url: 'https://www-genesis.destatis.de/datenbank/online/table/41331-0001',
-    usedFor: 'Rinder, Schweine, Schafe, Ziegen, Pferde (inländische Herkunft)',
+    usedFor: 'Rinder, Schweine, Schafe, Ziegen, Pferde (inländische Herkunft), Jahreswert und Zeitreihe',
     category: 'Schlachtzahlen',
   },
   destatisPoultry: {
-    label: 'Destatis, GENESIS 41322-0001: Geflügelschlachtereien 2025',
+    label: 'Destatis, GENESIS 41322-0001: Geflügelschlachtereien 2010 bis 2025',
     url: 'https://www-genesis.destatis.de/datenbank/online/table/41322-0001',
-    usedFor: 'Hühner, Truthühner, Enten, Gänse',
+    usedFor: 'Hühner, Truthühner, Enten, Gänse, Jahreswert und Zeitreihe',
     category: 'Schlachtzahlen',
   },
   fishcount: {
