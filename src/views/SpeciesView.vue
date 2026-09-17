@@ -142,14 +142,14 @@ useJsonLd('species-breadcrumb', {
       </div>
     </section>
 
-    <section class="species-section species-section--mint">
+    <div class="species-section species-section--mint">
       <div class="species-inner species-two">
-        <article v-if="fact" class="species-card">
+        <div v-if="fact" class="species-card">
           <span class="chapter">Wer sie sind</span>
           <p class="species-card-text">{{ fact.text }}</p>
           <SourceLinks :ids="fact.sources" />
-        </article>
-        <article v-if="slaughterAge" class="species-card">
+        </div>
+        <div v-if="slaughterAge" class="species-card">
           <span class="chapter">Ein Leben</span>
           <p class="species-card-text">
             Geschlachtet mit {{ slaughterAge.min }} bis {{ slaughterAge.max }} {{ slaughterAge.unit }}.
@@ -163,21 +163,21 @@ useJsonLd('species-breadcrumb', {
             <span>möglich: {{ lifespanYears }} Jahre</span>
           </p>
           <SourceLinks :ids="profile.lifeSources" />
-        </article>
+        </div>
       </div>
-    </section>
+    </div>
 
     <section v-if="conditions.length" class="species-section species-section--cream">
       <div class="species-inner">
         <span class="chapter">Wie sie lebten</span>
         <h2 class="chapter-title">Das steht so im Gesetz.</h2>
         <div class="species-conditions">
-          <article v-for="condition in conditions" :key="condition.figure" class="species-condition">
+          <div v-for="condition in conditions" :key="condition.figure" class="species-condition">
             <span class="species-condition-figure">{{ condition.figure }}</span>
             <span class="species-condition-unit">{{ condition.unit }}</span>
             <p class="species-condition-text">{{ condition.text }}</p>
             <SourceLinks :ids="condition.sources" />
-          </article>
+          </div>
         </div>
       </div>
     </section>

@@ -29,7 +29,7 @@ const rows = computed(() =>
       </div>
     </section>
 
-    <section class="species-index-list">
+    <div class="species-index-list">
       <div class="species-index-inner">
         <div class="species-index-grid">
           <RouterLink
@@ -52,7 +52,7 @@ const rows = computed(() =>
           </RouterLink>
         </div>
       </div>
-    </section>
+    </div>
   </main>
 </template>
 

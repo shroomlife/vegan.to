@@ -35,6 +35,9 @@ html {
 /* Chapter kicker above every section of the start page */
 .chapter {
   display: block;
+  /* Pinned so the class renders identically on a span and on a heading element */
+  margin-top: 0;
+  line-height: 1.5;
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.2em;

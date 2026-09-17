@@ -22,7 +22,7 @@ const livedPercent = computed(() => {
 </script>
 
 <template>
-  <article
+  <div
     class="victim-card"
     :class="[`victim-card--${variant}`, { 'victim-card--hot': hot }]"
   >
@@ -45,7 +45,7 @@ const livedPercent = computed(() => {
     <div v-else class="victim-card-note">
       <span class="victim-card-lived">{{ victim.age }} gelebt</span>
     </div>
-  </article>
+  </div>
 </template>
 
 <style scoped>
