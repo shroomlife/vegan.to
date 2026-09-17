@@ -19,6 +19,7 @@
   },
   "license": "ISC",
   "author": "shroomlife",
+  "packageManager": "bun@1.4.0",
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc --noEmit && vite build && bun run scripts/prerender.ts",
