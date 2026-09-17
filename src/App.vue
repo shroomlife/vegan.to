@@ -20,7 +20,12 @@ const showMobilePill = computed(() => live.isMobile.value && route.name === 'Hom
   <SiteHeader />
   <!-- tabindex -1 so the skip link really moves focus into the content -->
   <div id="main" tabindex="-1">
-    <RouterView />
+    <!--
+      Keyed by path, not fullPath: a species to species change must remount so the
+      breadcrumb json-ld is rebuilt, while a hash link like /#wer must not, or the
+      home view would restart and the live counter would fall back to zero.
+    -->
+    <RouterView :key="$route.path" />
   </div>
   <SiteFooter />
   <Transition name="mobile-pill">

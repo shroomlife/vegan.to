@@ -64,6 +64,25 @@ test.describe('species pages', () => {
     }
   })
 
+  test('switching species rebuilds the breadcrumb, it does not keep the first one', async ({ page }) => {
+    await page.goto('/tiere/schweine')
+    await expect(page.locator('script#species-breadcrumb')).toHaveCount(1)
+
+    await page.locator('.species-others a[href="/tiere/rinder"]').click()
+    await expect(page).toHaveURL(/\/tiere\/rinder$/)
+    await expect(page.locator('h1')).toHaveCount(1)
+
+    const blocks = page.locator('script#species-breadcrumb')
+    await expect(blocks).toHaveCount(1)
+    const crumb = JSON.parse((await blocks.innerText()).trim()) as {
+      itemListElement: { name: string, item: string }[]
+    }
+    const last = crumb.itemListElement[crumb.itemListElement.length - 1]
+    expect(last?.name).toBe('Rinder')
+    expect(last?.item).toContain('/tiere/rinder')
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://vegan.to/tiere/rinder')
+  })
+
   test('start page cards and the footer link to the species pages', async ({ page }) => {
     await page.goto('/')
     await expect(page.locator('.animal-card a.animal-label')).toHaveCount(10)
