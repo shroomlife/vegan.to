@@ -17,7 +17,7 @@ import SourceLinks from '@/components/SourceLinks.vue'
         <Motion
           v-for="(fact, index) in lifeFacts"
           :key="fact.figure"
-          as="article"
+          as="div"
           class="life-fact"
           :initial="{ opacity: 0, y: 24 }"
           :whileInView="{ opacity: 1, y: 0 }"

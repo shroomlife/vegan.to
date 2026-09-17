@@ -168,7 +168,7 @@ const metrics = [
         <Motion
           v-for="(metric, index) in metrics"
           :key="metric.key"
-          as="article"
+          as="div"
           class="impact-card"
           :class="`impact-card--${metric.key}`"
           :initial="{ opacity: 0, y: 24 }"

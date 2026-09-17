@@ -190,7 +190,7 @@ const shareText = () =>
   <!-- Sheet: light surface sliding over the hero -->
   <section id="wer" class="sheet">
     <div class="container">
-      <span class="chapter">Kapitel 1 &middot; Wer sie waren</span>
+      <h2 class="chapter">Kapitel 1 &middot; Wer sie waren</h2>
       <p class="live-sentence">
         Während du diesen Satz liest, sind
         <span class="live-number"><AnimatedNumber :value="totalDeathCount" /></span>

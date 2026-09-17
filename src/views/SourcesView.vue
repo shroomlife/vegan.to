@@ -23,7 +23,7 @@ const grouped = sourceCategories.map((category: SourceCategory) => ({
       </div>
     </section>
 
-    <section class="sources-body">
+    <div class="sources-body">
       <div class="sources-inner">
         <section v-for="group in grouped" :key="group.category" class="sources-group">
           <h2 class="sources-group-title">{{ group.category }}</h2>
@@ -85,7 +85,7 @@ const grouped = sourceCategories.map((category: SourceCategory) => ({
           </p>
         </section>
       </div>
-    </section>
+    </div>
   </main>
 </template>
 
