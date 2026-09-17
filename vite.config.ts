@@ -4,7 +4,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 import { fileURLToPath } from 'node:url'
 import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname } from 'node:path'
-import { routePaths } from './src/data/routes'
+import { routePaths } from './src/data/routes.ts'
 
 const pkg = JSON.parse(readFileSync('./package.json', 'utf-8')) as { version: string }
 

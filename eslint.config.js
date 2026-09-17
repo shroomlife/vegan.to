@@ -5,7 +5,7 @@ import vueParser from 'vue-eslint-parser'
 
 export default [
   {
-    ignores: ['docs/**', 'node_modules/**'],
+    ignores: ['docs/**', 'node_modules/**', 'test-results/**', 'playwright-report/**'],
   },
   {
     files: ['src/**/*.ts'],
@@ -22,6 +22,25 @@ export default [
     rules: {
       ...tseslint.configs.recommended.rules,
       'no-console': 'warn',
+    },
+  },
+  {
+    // Tests and build scripts run on the production path as well, so they get linted too
+    files: ['e2e/**/*.ts', 'scripts/**/*.ts', 'vite.config.ts'],
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': tseslint,
+    },
+    rules: {
+      ...tseslint.configs.recommended.rules,
+      // These are command line tools, their output is the point
+      'no-console': 'off',
     },
   },
   {

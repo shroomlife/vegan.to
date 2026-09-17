@@ -31,9 +31,10 @@ jobs:
       - name: Lint
         run: bun run lint
 
-      # bun run build type-checks as well, this step only makes a type error fail on its own line
+      # Covers the app and, through tsconfig.node.json, the scripts, the e2e suite
+      # and the vite config. bun run build repeats it, this step just fails on its own line
       - name: Type check
-        run: bunx vue-tsc --noEmit
+        run: bun run typecheck
 
       # Both Playwright projects are chromium, Desktop Chrome and Pixel 7
       - name: Install Playwright browser
