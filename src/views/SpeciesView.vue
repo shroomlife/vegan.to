@@ -191,7 +191,6 @@ useJsonLd('species-breadcrumb', {
           Gewerbliche Schlachtungen von Tieren inländischer Herkunft, {{ trendFacts.first.year }} bis {{ trendFacts.last.year }}.
           Weniger Schlachtungen heißt nicht weniger Leid: die Tiere werden schwerer, und lebend exportierte Tiere
           tauchen in dieser Reihe nicht auf.
-          <RouterLink to="/entwicklung">Alle Arten im Zeitverlauf</RouterLink>
         </p>
         <SourceLinks :ids="profile.countSources" />
       </div>

@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { routePaths } from '../src/data/routes'
 
 test.describe('outbound links and sources', () => {
   test('the three core question cards link to the partner domains', async ({ page }) => {
@@ -8,6 +9,22 @@ test.describe('outbound links and sources', () => {
     await expect(cards.nth(0)).toHaveAttribute('href', 'https://warum-vegan.com/')
     await expect(cards.nth(1)).toHaveAttribute('href', 'https://wie-vegan.com/')
     await expect(cards.nth(2)).toHaveAttribute('href', 'https://vegan-community.de/')
+  })
+
+  // Nothing checked internal targets before, so a link to a route that was
+  // still only planned shipped all the way into the built html
+  test('every internal link points at a route that exists', async ({ page }) => {
+    const known = new Set<string>(routePaths)
+    for (const path of ['/', '/tiere', '/tiere/rinder', '/quellen']) {
+      await page.goto(path)
+      const targets = await page.locator('a[href^="/"]').evaluateAll((nodes) =>
+        nodes.map((node) => node.getAttribute('href') ?? ''),
+      )
+      for (const href of targets) {
+        const target = (href.split('#')[0] ?? '') || '/'
+        expect(known.has(target), `${path} verlinkt auf ${href}`).toBe(true)
+      }
+    }
   })
 
   test('every external link opens safely in a new tab', async ({ page }) => {
