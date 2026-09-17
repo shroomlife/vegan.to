@@ -9,7 +9,10 @@ import { speciesFacts, lifeFacts } from '@/data/facts'
 import { lifespanYearsBySpecies, slaughterAgeBySpecies, DAYS_PER_UNIT } from '@/data/lifespans'
 import { formatNumber } from '@/utils/formatNumber'
 import { applyDocumentMeta, SITE_URL } from '@/utils/documentMeta'
+import { slaughterTrendBySpecies } from '@/data/trends'
+import { trendSummary, formatPercent } from '@/utils/trend'
 import AnimatedNumber from '@/components/AnimatedNumber.vue'
+import GapChart from '@/components/GapChart.vue'
 import SourceLinks from '@/components/SourceLinks.vue'
 
 const route = useRoute()
@@ -47,6 +50,36 @@ const rhythm = computed(() => {
   return `eins alle ${formatNumber(seconds / 3600, 1)} Stunden`
 })
 
+const trend = computed(() => (profile.value ? slaughterTrendBySpecies[profile.value.single] : undefined))
+/** Undefined for fish and for any series too short to draw */
+const trendFacts = computed(() => (trend.value ? trendSummary(trend.value) : undefined))
+/**
+ * How the section leads, per species.
+ *
+ * "X weniger als 2014" would read as progress for chickens, where the gap is
+ * 0,9 percent and the figure is still seven percent above 2010. So a gap that
+ * small leads with the absolute number instead.
+ */
+const NEARLY_UNCHANGED = 0.05
+const trendLead = computed(() => {
+  const facts = trendFacts.value
+  if (!facts) return undefined
+  const gap = facts.peak.count - facts.last.count
+  if (gap > facts.peak.count * NEARLY_UNCHANGED) {
+    return {
+      figure: gap,
+      unit: `${raw.value?.names.plural} weniger als ${facts.peak.year}`,
+      but: `und immer noch ${formatNumber(facts.last.count)} im Jahr.`,
+    }
+  }
+  return {
+    figure: facts.last.count,
+    unit: `${raw.value?.names.plural} im Jahr`,
+    but: gap > 0
+      ? `fast genauso viele wie im Höchstjahr ${facts.peak.year}.`
+      : 'so viele wie noch nie in dieser Reihe.',
+  }
+})
 const others = computed(() =>
   speciesProfiles
     .filter((p) => p.slug !== slug.value)
@@ -117,6 +150,52 @@ useJsonLd('species-breadcrumb', {
         <SourceLinks :ids="profile.countSources" />
       </div>
     </section>
+
+    <div v-if="trendFacts" class="species-section species-section--mint species-trend">
+      <div class="species-inner">
+        <span class="chapter">Wie es sich entwickelt</span>
+        <h2 class="chapter-title species-trend-title">Der Abstand zum schlimmsten Jahr</h2>
+
+        <GapChart
+          class="species-trend-chart"
+          :points="trend ?? []"
+          :label="`Von ${formatNumber(trendFacts.peak.count)} im Jahr ${trendFacts.peak.year} auf ${formatNumber(trendFacts.last.count)} im Jahr ${trendFacts.last.year}.`"
+        />
+
+        <!-- The sentence is built from the gap, so it reads true whether the
+             species fell by three quarters or never fell at all -->
+        <p v-if="trendLead" class="species-trend-lead">
+          <span class="species-trend-figure">{{ formatNumber(trendLead.figure) }}</span>
+          <span class="species-trend-unit">{{ trendLead.unit }}</span>
+          <span class="species-trend-but">{{ trendLead.but }}</span>
+        </p>
+
+        <dl class="species-trend-stats">
+          <div class="species-trend-stat">
+            <dt>Höchststand {{ trendFacts.peak.year }}</dt>
+            <dd>{{ formatNumber(trendFacts.peak.count) }}</dd>
+          </div>
+          <div class="species-trend-stat">
+            <dt>heute, {{ trendFacts.last.year }}</dt>
+            <dd>{{ formatNumber(trendFacts.last.count) }}</dd>
+          </div>
+          <div class="species-trend-stat">
+            <dt>seit dem Höchststand</dt>
+            <dd :class="{ 'species-trend-down': trendFacts.changeFromPeakPercent < 0 }">
+              {{ formatPercent(trendFacts.changeFromPeakPercent) }}
+            </dd>
+          </div>
+        </dl>
+
+        <p class="species-trend-note">
+          Gewerbliche Schlachtungen von Tieren inländischer Herkunft, {{ trendFacts.first.year }} bis {{ trendFacts.last.year }}.
+          Weniger Schlachtungen heißt nicht weniger Leid: die Tiere werden schwerer, und lebend exportierte Tiere
+          tauchen in dieser Reihe nicht auf.
+          <RouterLink to="/entwicklung">Alle Arten im Zeitverlauf</RouterLink>
+        </p>
+        <SourceLinks :ids="profile.countSources" />
+      </div>
+    </div>
 
     <section v-if="live.children.length" class="species-section species-section--cream">
       <div class="species-inner">
@@ -387,6 +466,93 @@ useJsonLd('species-breadcrumb', {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.9rem;
+}
+/* ── Zeitverlauf ───────────────────────────────────
+   Class prefix species-trend-* on purpose: species-card, species-condition
+   and species-table are counted by e2e/species.spec.ts. */
+.species-trend-title {
+  max-width: 18ch;
+}
+.species-trend-chart {
+  --gap-chart-height: 300px;
+  --gap-chart-height-mobile: 190px;
+  margin-bottom: 1.6rem;
+}
+/* The gap is the point of the section, so it gets the largest type on the page
+   after the hero, and the qualifier sits right under it rather than in a note */
+.species-trend-lead {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  margin: 0 0 1.75rem;
+  max-width: 34ch;
+}
+.species-trend-figure {
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 6vw, 3.6rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--brand-accent);
+  font-variant-numeric: tabular-nums;
+}
+.species-trend-unit {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--brand-green);
+}
+.species-trend-but {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--brand-muted);
+}
+.species-trend-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.9rem;
+  margin: 0 0 1.25rem;
+}
+.species-trend-stat {
+  padding: 1.1rem 1.25rem;
+  border-radius: 20px;
+  border: 1.5px solid rgba(20, 54, 31, 0.08);
+  background: #fff;
+}
+.species-trend-stat dt {
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: var(--brand-faint);
+  margin-bottom: 0.3rem;
+}
+.species-trend-stat dd {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  color: var(--brand-green);
+  font-variant-numeric: tabular-nums;
+}
+.species-trend-down {
+  color: #1f7a45;
+}
+.species-trend-note {
+  max-width: 640px;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  color: var(--brand-muted);
+  margin: 0 0 0.6rem;
+}
+@media (max-width: 767px) {
+  .species-trend-stats {
+    grid-template-columns: 1fr;
+  }
+  .species-trend-stat {
+    border-radius: 16px;
+  }
+  .species-trend-stat dd {
+    font-size: 1.35rem;
+  }
 }
 .species-condition {
   display: flex;

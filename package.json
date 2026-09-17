@@ -32,6 +32,7 @@
   },
   "dependencies": {
     "@vueuse/core": "^13.1.0",
+    "d3-shape": "^3.2.0",
     "dayjs": "^1.11.13",
     "humanize-duration": "^3.32.1",
     "motion-v": "^2.2.0",
@@ -40,6 +41,7 @@
   },
   "devDependencies": {
     "@playwright/test": "1.62.0",
+    "@types/d3-shape": "^3.2.0",
     "@types/node": "^22.14.1",
     "@typescript-eslint/eslint-plugin": "^8.29.1",
     "@typescript-eslint/parser": "^8.29.1",

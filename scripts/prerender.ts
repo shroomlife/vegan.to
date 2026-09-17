@@ -36,7 +36,12 @@ async function snapshot(path: string, file: string, stripCanonical = false): Pro
       document.head.querySelector('meta[property="og:url"]')?.remove()
     })
   }
-  const html = await page.evaluate(() => '<!doctype html>\n' + document.documentElement.outerHTML)
+  const rendered = await page.evaluate(() => '<!doctype html>\n' + document.documentElement.outerHTML)
+
+  // Vite injects absolute preload urls for the lazy route chunks while the page
+  // runs on the preview server. Serialised as is they would point every visitor
+  // at 127.0.0.1, so they go back to being root relative.
+  const html = rendered.replaceAll(`http://127.0.0.1:${PORT}`, '')
   mkdirSync(dirname(file), { recursive: true })
   writeFileSync(file, html)
   const title = await page.title()
