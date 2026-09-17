@@ -11,6 +11,15 @@ test.describe('prerendered html', () => {
     expect(html).toContain('<link rel="canonical" href="https://vegan.to/"')
   })
 
+  test('no route ships content that is invisible without javascript', async ({ request }) => {
+    for (const path of ['/index.html', '/tiere.html', '/tiere/schweine.html', '/quellen.html', '/404.html']) {
+      const html = await (await request.get(path)).text()
+      // motion-v writes its initial state inline; whileInView never fires in a
+      // headless snapshot, so anything left at zero stays invisible for good
+      expect(html, path).not.toMatch(/style="[^"]*opacity:\s*0[;"]/)
+    }
+  })
+
   test('a species page ships its own title, description and canonical', async ({ request }) => {
     const html = await (await request.get('/tiere/schweine.html')).text()
     expect(html).toContain('<title>Wie viele Schweine werden in Deutschland geschlachtet? | vegan.to</title>')

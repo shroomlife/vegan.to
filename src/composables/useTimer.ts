@@ -37,17 +37,26 @@ export function useTimer() {
     }),
   )
 
+  /**
+   * startOf() on a .tz() instance re-derives the calendar through the HOST's
+   * timezone, so a visitor in New York got a Berlin midnight that was an hour
+   * out on the days either zone switches to or from summer time. dayjs.tz()
+   * parses the string AS Berlin wall time, which is host independent.
+   */
+  const berlinStartOf = (unit: 'year' | 'day') =>
+    dayjs.tz(nowBerlin.value.format(unit === 'year' ? 'YYYY-01-01' : 'YYYY-MM-DD'), TIME_ZONE)
+
   const secondsSinceYearStart = computed(() =>
-    nowBerlin.value.diff(nowBerlin.value.startOf('year'), 'second', true),
+    now.value.diff(berlinStartOf('year'), 'second', true),
   )
 
   const secondsSinceDayStart = computed(() =>
-    nowBerlin.value.diff(nowBerlin.value.startOf('day'), 'second', true),
+    now.value.diff(berlinStartOf('day'), 'second', true),
   )
 
   /** 365 or 366, so a yearly figure spread over the year lands exactly on Dec 31 */
   const daysInCurrentYear = computed(() =>
-    nowBerlin.value.endOf('year').diff(nowBerlin.value.startOf('year'), 'day') + 1,
+    dayjs.tz(nowBerlin.value.format('YYYY-12-31'), TIME_ZONE).diff(berlinStartOf('year'), 'day') + 1,
   )
 
   const secondsInCurrentYear = computed(() => daysInCurrentYear.value * SECONDS_PER_DAY)

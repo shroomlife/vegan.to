@@ -36,6 +36,22 @@ async function snapshot(path: string, file: string, stripCanonical = false): Pro
       document.head.querySelector('meta[property="og:url"]')?.remove()
     })
   }
+  // motion-v writes its `initial` state as an inline style at once and only
+  // clears it when the animation runs. Elements below the fold use whileInView,
+  // which never fires in a headless snapshot, so 50 of them froze at opacity 0
+  // and the prerendered start page was blank for anyone without javascript.
+  const revealed = await page.evaluate(() => {
+    let count = 0
+    for (const el of document.querySelectorAll<HTMLElement>('[data-ap]')) {
+      if (!el.style.opacity && !el.style.transform) continue
+      el.style.removeProperty('opacity')
+      el.style.removeProperty('transform')
+      if (!el.getAttribute('style')) el.removeAttribute('style')
+      count++
+    }
+    return count
+  })
+
   // Vite injects absolute preload urls for the lazy route chunks while the page
   // runs on the preview server. Rewritten in the dom rather than by replacing a
   // literal origin in the html, which only ever matched one exact spelling.
@@ -58,6 +74,7 @@ async function snapshot(path: string, file: string, stripCanonical = false): Pro
     }
     return count
   })
+  if (revealed > 0) console.log(`  ${revealed} element(s) unhidden that motion-v had left at opacity 0`)
   if (rewritten > 0) console.log(`  ${rewritten} absolute URL(s) auf den Pfad gesetzt`)
   const html = await page.evaluate(() => '<!doctype html>\n' + document.documentElement.outerHTML)
   mkdirSync(dirname(file), { recursive: true })
