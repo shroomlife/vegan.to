@@ -115,15 +115,29 @@ const activePoint = computed(() =>
 </template>
 
 <style scoped>
+/*
+ * The defaults target a light surface, which is where the chart actually sits
+ * (.growth-section is --brand-cream). Every value is consumed as
+ * var(--token, fallback) and never declared on .timeline itself, so an
+ * ancestor that defines a token always wins, whatever the style order is.
+ */
+.timeline--on-dark {
+  --timeline-axis-line: rgba(255, 255, 255, 0.15);
+  --timeline-axis-text: rgba(255, 255, 255, 0.5);
+  --timeline-marker-core: #1b2a1b;
+  --timeline-focus-ring: rgba(255, 255, 255, 0.6);
+  --timeline-tooltip-bg: rgba(255, 255, 255, 0.95);
+  --timeline-tooltip-text: #1b2a1b;
+}
 .timeline {
-  max-width: 720px;
+  max-width: var(--timeline-max-width, 720px);
   margin: 0 auto 1.5rem;
   padding: 0 0.5rem;
 }
 .timeline-plot {
   position: relative;
-  height: 96px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  height: var(--timeline-plot-height, 96px);
+  border-bottom: 1px solid var(--timeline-axis-line, rgba(20, 54, 31, 0.15));
 }
 .timeline-svg {
   position: absolute;
@@ -133,11 +147,11 @@ const activePoint = computed(() =>
   overflow: visible;
 }
 .timeline-area {
-  fill: rgba(46, 204, 113, 0.14);
+  fill: var(--timeline-area, rgba(46, 204, 113, 0.14));
 }
 .timeline-line {
   fill: none;
-  stroke: #2ecc71;
+  stroke: var(--timeline-line, #2ecc71);
   stroke-width: 2px;
   stroke-linejoin: round;
   stroke-linecap: round;
@@ -160,17 +174,17 @@ const activePoint = computed(() =>
   position: absolute;
   inset: 8px;
   border-radius: 50%;
-  background: #1b2a1b;
-  border: 2px solid #2ecc71;
+  background: var(--timeline-marker-core, #fff);
+  border: 2px solid var(--timeline-marker-ring, var(--timeline-line, #2ecc71));
   transition: inset 0.15s, background 0.15s;
 }
 .timeline-marker--active::after,
 .timeline-marker:focus-visible::after {
   inset: 6px;
-  background: #2ecc71;
+  background: var(--timeline-marker-ring, var(--timeline-line, #2ecc71));
 }
 .timeline-marker:focus-visible {
-  outline: 2px solid rgba(255, 255, 255, 0.6);
+  outline: 2px solid var(--timeline-focus-ring, rgba(20, 54, 31, 0.55));
   outline-offset: 2px;
 }
 .timeline-tooltip {
@@ -178,8 +192,8 @@ const activePoint = computed(() =>
   transform: translate(-50%, calc(-100% - 14px));
   padding: 0.25rem 0.6rem;
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.95);
-  color: #1b2a1b;
+  background: var(--timeline-tooltip-bg, #14361f);
+  color: var(--timeline-tooltip-text, #f6f1e7);
   font-size: 0.75rem;
   font-weight: 600;
   white-space: nowrap;
@@ -197,7 +211,8 @@ const activePoint = computed(() =>
   top: 0.35rem;
   transform: translateX(-50%);
   font-size: 0.7rem;
-  color: rgba(255, 255, 255, 0.5);
+  /* --brand-muted, not --brand-faint: at 0.7rem these are small text and carry data, 6.5:1 vs 3.3:1 */
+  color: var(--timeline-axis-text, #4a5a4f);
   font-variant-numeric: tabular-nums;
 }
 .timeline-axis-label--start {
@@ -208,7 +223,7 @@ const activePoint = computed(() =>
 }
 @media (max-width: 767px) {
   .timeline-plot {
-    height: 72px;
+    height: var(--timeline-plot-height, 72px);
   }
 }
 </style>

@@ -40,6 +40,31 @@ test.describe('page health', () => {
     }
   })
 
+  test('chart axis labels are readable against their section', async ({ page }) => {
+    await page.goto('/')
+    await page.locator('.timeline').scrollIntoViewIfNeeded()
+    const ratio = await page.evaluate(() => {
+      const label = document.querySelector('.timeline-axis-label')
+      const section = document.querySelector('.growth-section')
+      if (!label || !section) return 0
+      const channels = (colour: string): number[] =>
+        (colour.match(/[\d.]+/g) ?? []).slice(0, 3).map(Number)
+      const luminance = (colour: string): number => {
+        const [r = 0, g = 0, b = 0] = channels(colour)
+        const lin = (v: number): number => {
+          const c = v / 255
+          return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)
+        }
+        return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b)
+      }
+      const a = luminance(getComputedStyle(label).color)
+      const b = luminance(getComputedStyle(section).backgroundColor)
+      return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05)
+    })
+    // WCAG AA for small text. The labels were white on cream once, at 1.13
+    expect(ratio).toBeGreaterThanOrEqual(4.5)
+  })
+
   test('has no horizontal overflow', async ({ page }) => {
     await page.goto('/')
     await scrollThroughPage(page)
