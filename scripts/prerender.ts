@@ -28,19 +28,39 @@ const page = await browser.newPage({ viewport: { width: 1280, height: 900 } })
  */
 async function snapshot(path: string, file: string, stripCanonical = false): Promise<void> {
   await page.goto(`http://127.0.0.1:${PORT}${path}`, { waitUntil: 'networkidle' })
-  // one tick for the in-view animations and the meta hooks to settle
-  await page.waitForTimeout(400)
-  if (stripCanonical) {
-    await page.evaluate(() => {
+  // Past the longest entrance animation (0.5 s delay plus 0.6 s duration) so the
+  // ones that do run have finished writing frames
+  await page.waitForTimeout(1400)
+
+  /*
+   * Tidy and serialise in ONE evaluate. Done in two, a still-running animation
+   * could write opacity back between the two calls, which is exactly what made
+   * this pass locally and fail on the runner.
+   *
+   * motion-v writes its `initial` state as an inline style at once and clears
+   * it only when the animation runs. Elements below the fold animate on
+   * whileInView, which never fires in a headless snapshot, so 51 of them froze
+   * at opacity 0 and the start page was blank without javascript.
+   *
+   * The absolute urls are the preload links vite injects for the lazy route
+   * chunks; left as they are, every visitor would be pointed at 127.0.0.1.
+   */
+  const { html, revealed, rewritten } = await page.evaluate((dropCanonical) => {
+    if (dropCanonical) {
       document.head.querySelector('link[rel="canonical"]')?.remove()
       document.head.querySelector('meta[property="og:url"]')?.remove()
-    })
-  }
-  // Vite injects absolute preload urls for the lazy route chunks while the page
-  // runs on the preview server. Rewritten in the dom rather than by replacing a
-  // literal origin in the html, which only ever matched one exact spelling.
-  const rewritten = await page.evaluate(() => {
-    let count = 0
+    }
+
+    let revealed = 0
+    for (const el of document.querySelectorAll<HTMLElement>('[data-ap]')) {
+      if (!el.style.opacity && !el.style.transform) continue
+      el.style.removeProperty('opacity')
+      el.style.removeProperty('transform')
+      if (!el.getAttribute('style')) el.removeAttribute('style')
+      revealed++
+    }
+
+    let rewritten = 0
     for (const el of document.querySelectorAll('[href], [src]')) {
       for (const attr of ['href', 'src']) {
         const value = el.getAttribute(attr)
@@ -53,17 +73,21 @@ async function snapshot(path: string, file: string, stripCanonical = false): Pro
         }
         if (url.origin !== location.origin) continue
         el.setAttribute(attr, url.pathname + url.search)
-        count++
+        rewritten++
       }
     }
-    return count
-  })
-  if (rewritten > 0) console.log(`  ${rewritten} absolute URL(s) auf den Pfad gesetzt`)
-  const html = await page.evaluate(() => '<!doctype html>\n' + document.documentElement.outerHTML)
+
+    return { html: '<!doctype html>\n' + document.documentElement.outerHTML, revealed, rewritten }
+  }, stripCanonical)
+
+  // A blank #app means a view threw; writing it would ship an empty page
+  if (!html.includes('<h1')) throw new Error(`prerender: ${path} rendered without an h1`)
+  if (/style="[^"]*opacity:\s*0[;"]/.test(html)) throw new Error(`prerender: ${path} still hides content`)
+
   mkdirSync(dirname(file), { recursive: true })
   writeFileSync(file, html)
   const title = await page.title()
-  console.log(`prerendered ${path} → ${file} (${title})`)
+  console.log(`prerendered ${path} → ${file} (${title}, ${revealed} unhidden, ${rewritten} urls)`)
 }
 
 try {

@@ -110,7 +110,10 @@ function waterComparisons(liters: number): string[] {
 
 function co2Comparisons(kg: number): string[] {
   const r: string[] = []
-  const flights = kg / 494 // myclimate: Frankfurt nach Mallorca und zurück, Economy, ca. 494 kg CO2
+  // myclimate, re-run 17.09.2026: Frankfurt to Palma de Mallorca, return,
+  // economy, one traveller, ca. 2.500 km -> 0,618 t. The old 494 predates their
+  // methodology update and understated the flight by a fifth.
+  const flights = kg / 618
   const carKm = kg / 0.23 // UBA TREMOD 2024: Pkw inkl. Vorkette, ca. 230 g CO2e pro Fahrzeug-km
   if (flights >= 1) r.push(`${formatNumber(flights)}× nach Mallorca und zurück fliegen`)
   if (carKm >= 1) r.push(`${formatNumber(carKm)} km Autofahren`)
