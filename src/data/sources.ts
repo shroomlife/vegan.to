@@ -79,7 +79,7 @@ export const sources = {
   myclimate: {
     label: 'myclimate Flugrechner',
     url: 'https://co2.myclimate.org/de/flight_calculators/new',
-    usedFor: 'Frankfurt nach Mallorca und zurück, Economy, rund 494 kg CO2',
+    usedFor: 'Frankfurt nach Mallorca und zurück, Economy, rund 618 kg CO2',
     category: 'Dein Impact',
   },
   bzlAges: {
@@ -299,9 +299,11 @@ export const sources = {
     category: 'Ernährung und Umwelt',
   },
   academyNutrition: {
-    label: 'Academy of Nutrition and Dietetics 2016: Position on vegetarian diets',
-    url: 'https://higherlogicdownload.s3.amazonaws.com/THEACADEMY/859dd171-3982-43db-8535-56c4fdc42b51/UploadedImages/VN/Documents/Position-of-the-Academy-of-Nutrition-and-Dietetics-Vegetarian-Diets.pdf',
-    usedFor: 'Gut geplant für alle Lebensphasen geeignet',
+    // The 2016 position ("all stages of the life cycle") expired on 2021-12-31
+    // and the 2025 replacement is deliberately limited to adults.
+    label: 'Academy of Nutrition and Dietetics 2025: Vegetarian Dietary Patterns for Adults',
+    url: 'https://www.andeal.org/files/files/Vegetarian/VegetarianPP_2025.pdf',
+    usedFor: 'Bei Erwachsenen nährstoffdeckend und mit langfristigem Nutzen, gut geplant',
     category: 'Ernährung und Umwelt',
   },
   bzlFeedArea: {

@@ -166,7 +166,7 @@ export const faqs: readonly Faq[] = [
   {
     question: 'Ist vegan überhaupt gesund?',
     answer:
-      'Die Deutsche Gesellschaft für Ernährung sagt seit 2024: Für gesunde Erwachsene kann eine vegane Ernährung gesundheitsfördernd sein, wenn Vitamin B12 ergänzt wird und die Lebensmittelauswahl gut geplant ist. Für Kinder, Schwangere, Stillende und Senior*innen gibt sie wegen der Datenlage keine Empfehlung für oder gegen. Die Academy of Nutrition and Dietetics geht weiter und hält gut geplante vegane Ernährung für alle Lebensphasen geeignet.',
+      'Die Deutsche Gesellschaft für Ernährung sagt seit 2024: Für gesunde Erwachsene kann eine vegane Ernährung gesundheitsfördernd sein, wenn Vitamin B12 ergänzt wird und die Lebensmittelauswahl gut geplant ist. Für Kinder, Schwangere, Stillende und Senior*innen gibt sie wegen der Datenlage keine Empfehlung für oder gegen. Die Academy of Nutrition and Dietetics hat ihre Position 2025 erneuert und beschränkt sie ausdrücklich auf Erwachsene: gut geplant kann vegetarische und vegane Ernährung nährstoffdeckend sein und langfristig der Gesundheit nützen. Beide Fachgesellschaften sagen für Kinder und Schwangere also dasselbe, nämlich dass die Datenlage für eine Empfehlung nicht reicht.',
     sources: ['dge2024', 'academyNutrition'],
   },
   {
