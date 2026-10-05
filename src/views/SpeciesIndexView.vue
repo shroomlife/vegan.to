@@ -78,7 +78,7 @@ const rows = computed(() =>
   line-height: 1.05;
 }
 .species-index-live {
-  color: #e74c3c;
+  color: var(--brand-death-text);
   font-variant-numeric: tabular-nums;
 }
 .species-index-list {
@@ -144,7 +144,7 @@ const rows = computed(() =>
 }
 .species-index-card-today {
   font-size: 0.85rem;
-  color: #e74c3c;
+  color: var(--brand-death-text);
   font-variant-numeric: tabular-nums;
 }
 .species-index-card-badge {
