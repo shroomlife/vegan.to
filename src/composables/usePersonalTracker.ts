@@ -1,10 +1,11 @@
 import { ref, computed, watch } from 'vue'
 
-const STORAGE_KEY = 'vegan-to-since'
+/** Read by the Datenschutzerklärung, which names every key the site stores */
+export const TRACKER_STORAGE_KEY = 'vegan-to-since'
 
 function loadDate(): string | null {
   try {
-    return localStorage.getItem(STORAGE_KEY)
+    return localStorage.getItem(TRACKER_STORAGE_KEY)
   } catch {
     return null
   }
@@ -13,9 +14,9 @@ function loadDate(): string | null {
 function saveDate(date: string | null) {
   try {
     if (date) {
-      localStorage.setItem(STORAGE_KEY, date)
+      localStorage.setItem(TRACKER_STORAGE_KEY, date)
     } else {
-      localStorage.removeItem(STORAGE_KEY)
+      localStorage.removeItem(TRACKER_STORAGE_KEY)
     }
   } catch {
     // LocalStorage not available (private mode, etc.)

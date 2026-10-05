@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { sourceCategories, sourceList, type SourceCategory } from '@/data/sources'
+import { POPULATION_DE } from '@/data/population'
+import { formatNumber } from '@/utils/formatNumber'
+import { LAND_ANIMALS_PER_PERSON_YEAR, FISH_PER_PERSON_YEAR } from '@/utils/perCapita'
 
 const grouped = sourceCategories.map((category: SourceCategory) => ({
   category,
@@ -49,7 +52,7 @@ const grouped = sourceCategories.map((category: SourceCategory) => ({
               <strong>Heute, dieses Jahr, seit du hier bist.</strong>
               Die Rate mal die Sekunden seit Mitternacht, seit dem 1. Januar oder seit dem Aufruf der Seite.
               Gerechnet wird in deutscher Zeit, egal von wo du die Seite öffnest. Am 31. Dezember um 24 Uhr
-              landet "dieses Jahr" damit genau auf dem Jahreswert.
+              landet „dieses Jahr“ damit genau auf dem Jahreswert.
             </li>
             <li>
               <strong>Fische sind eine Schätzung.</strong>
@@ -62,26 +65,34 @@ const grouped = sourceCategories.map((category: SourceCategory) => ({
               <strong>Dein Impact.</strong>
               CO2, Land und Wasser pro Tag sind die Differenz zwischen veganer Ernährung und mittlerem
               Fleischkonsum nach Scarborough et al. 2023: 4,57 kg CO2, 6,91 m² und 370 Liter. Die Tierleben
-              ergeben sich aus allen Tieren pro Jahr geteilt durch 83,5 Millionen Menschen, rund 62 pro
-              Person und Jahr.
+              sind die Schlachtzahlen pro Jahr geteilt durch {{ formatNumber(POPULATION_DE / 1e6, 1) }} Millionen Menschen:
+              Auf eine Person entfallen rechnerisch rund {{ formatNumber(LAND_ANIMALS_PER_PERSON_YEAR) }} Landtiere im Jahr,
+              dazu rund {{ formatNumber(FISH_PER_PERSON_YEAR) }} Fische aus deutschem Fang (geschätzt). Landtiere und Fische
+              stehen getrennt, weil die Fische eine Schätzung aus Tonnen sind.
             </li>
             <li>
               <strong>Veganer*innen in Deutschland.</strong>
-              Der letzte Wert der Allensbacher Markt- und Werbeträgeranalyse, 1,68 Millionen für 2025, wird
-              ab Jahresmitte 2025 mit dem Trend der Erhebungen 2022 bis 2025 fortgeschrieben, rund 33.000
-              pro Jahr. Eine Hochrechnung, kein Messwert.
+              Gezeigt wird der letzte Wert der Allensbacher Markt- und Werbeträgeranalyse, 1,68 Millionen für 2025.
+              Die Punkte vor 2018 stammen aus anderen Erhebungen (NVS II, VEBU, SKOPOS) und sind mit den
+              Allensbach-Werten nicht direkt vergleichbar.
             </li>
             <li>
               <strong>Der Ticker.</strong>
               Namen, Alter und Orte der vorbeiziehenden Tiere sind erfunden, damit aus Zahlen wieder Einzelne
-              werden. Das Alter folgt den üblichen Schlachtaltern nach BZL, die Orte sind reale Schlachthof-
-              und Fischereistandorte. Die Häufigkeit je Tierart ist gedämpft, sonst wären fast nur Fische
+              werden. Das Alter folgt den üblichen Schlachtaltern nach BZL; für Pferde und Fische wird kein
+              Alter angezeigt. Die Orte sind reale Schlachthof- und Fischereistandorte. Die Häufigkeit je Tierart ist gedämpft, sonst wären fast nur Fische
               zu sehen.
             </li>
           </ol>
           <p id="datenstand" class="sources-status">
-            Datenstand: Destatis Jahresdaten 2025, GENESIS-Stand 21. August 2026. Alle Quellen zuletzt am
-            12. September 2026 geprüft.
+            Datenstand: Destatis Jahresdaten 2025. Schlachtzahlen und Zeitreihen mit GENESIS-Stand 21. August 2026,
+            Tierbestand, Brütereien und Schlachtzahlen nach Monat und Bundesland mit GENESIS-Stand 21. September 2026.
+            Alle Quellen zwischen dem 12. September und dem 5. Oktober 2026 geprüft.
+          </p>
+          <p class="sources-status">
+            Daten des Statistischen Bundesamts (Destatis), GENESIS-Online, werden unter der
+            <a href="https://www.govdata.de/dl-de/by-2-0" target="_blank" rel="noopener">Datenlizenz Deutschland, Namensnennung, Version 2.0</a>
+            verwendet und von vegan.to umgerechnet (eigene Berechnungen).
           </p>
         </section>
       </div>
@@ -95,9 +106,9 @@ const grouped = sourceCategories.map((category: SourceCategory) => ({
   color: var(--brand-green);
 }
 .sources-inner {
-  max-width: 880px;
+  max-width: var(--page-width);
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 var(--page-gutter);
 }
 .sources-hero {
   padding: 4.5rem 0 3rem;
@@ -122,7 +133,6 @@ const grouped = sourceCategories.map((category: SourceCategory) => ({
 }
 .sources-lead {
   margin: 0;
-  max-width: 620px;
   font-size: 1.05rem;
   line-height: 1.6;
   color: var(--brand-muted);
@@ -176,7 +186,7 @@ const grouped = sourceCategories.map((category: SourceCategory) => ({
 }
 .sources-item-host {
   font-size: 0.75rem;
-  color: #8d8474;
+  color: var(--brand-faint);
 }
 .sources-method {
   margin-top: 1rem;

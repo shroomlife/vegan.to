@@ -1,12 +1,21 @@
 import { test, expect } from '@playwright/test'
 
 test.describe('editorial chapters', () => {
-  test('chapters are numbered in reading order', async ({ page }) => {
+  test('the chapters follow the story in reading order', async ({ page }) => {
     await page.goto('/')
-    const kickers = await page.locator('.chapter').allInnerTexts()
-    // innerText is upper-cased by CSS, so match case-insensitively
-    const numbers = kickers.map((text) => Number(/kapitel (\d+)/i.exec(text)?.[1]))
-    expect(numbers).toEqual([1, 2, 3, 4, 5, 6, 7, 8])
+    // textContent, not innerText: chapters below the fold use content-visibility and are not rendered yet
+    const kickers = (await page.locator('.chapter').allTextContents()).map((text) => text.trim())
+    expect(kickers).toEqual([
+      'Wer sie waren',
+      'Wie viele',
+      'Wer sie sind',
+      'Wie sie lebten',
+      'Wie es dazu kam',
+      'Die anderen',
+      'Was du bewirkst',
+      'Die Fragen davor',
+      'Mach mit',
+    ])
   })
 
   test('every species fact and every condition names a linked source', async ({ page }) => {

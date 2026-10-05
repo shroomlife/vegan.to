@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { routePaths } from '../src/data/routes'
 
 test.describe('species pages', () => {
   test('the index lists every species and links to its page', async ({ page }) => {
@@ -48,12 +49,12 @@ test.describe('species pages', () => {
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', /^noindex/)
   })
 
-  test('the sitemap lists the start page, every species and the sources', async ({ request }) => {
+  test('the sitemap lists every route exactly once', async ({ request }) => {
     const sitemap = await (await request.get('/sitemap.xml')).text()
-    for (const path of ['/', '/tiere', '/tiere/huehner', '/tiere/fische', '/quellen']) {
+    for (const path of routePaths) {
       expect(sitemap).toContain(`<loc>https://vegan.to${path}</loc>`)
     }
-    expect(sitemap.match(/<url>/g)).toHaveLength(13)
+    expect(sitemap.match(/<url>/g)).toHaveLength(routePaths.length)
   })
 
   test('every route has its own html copy so the host answers with 200', async ({ request }) => {

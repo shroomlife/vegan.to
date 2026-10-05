@@ -25,7 +25,7 @@ export const speciesProfiles: readonly SpeciesProfile[] = [
   { slug: 'gaense', single: 'Gans', countSources: ['destatisPoultry'], lifeSources: ['bzlAges', 'vierPfotenGaense'] },
   { slug: 'ziegen', single: 'Ziege', countSources: ['destatisSlaughter'], lifeSources: ['bzlAges'] },
   { slug: 'pferde', single: 'Pferd', countSources: ['destatisSlaughter'], lifeSources: ['allianzPferde'] },
-  { slug: 'fische', single: 'Fisch', countSources: ['fishcount', 'destatisAquaculture', 'bleLandings'], lifeSources: ['bzlAges', 'lflCarp', 'fishbaseSprotte'] },
+  { slug: 'fische', single: 'Fisch', countSources: ['fishcount', 'destatisAquaculture', 'bleLandings'], lifeSources: ['fishbaseSprotte'] },
 ]
 
 export const speciesSlugs: readonly string[] = speciesProfiles.map((profile) => profile.slug)

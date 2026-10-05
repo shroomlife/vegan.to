@@ -15,8 +15,9 @@ const props = withDefaults(defineProps<{
 
 /** Share of the possible life that was lived; a sliver at most for farmed animals */
 const livedPercent = computed(() => {
-  if (!props.victim.lifespanYears) return null
-  const share = props.victim.livedDays / (props.victim.lifespanYears * 365)
+  const { livedDays, lifespanYears } = props.victim
+  if (livedDays === undefined || !lifespanYears) return null
+  const share = livedDays / (lifespanYears * 365)
   return Math.min(100, Math.max(0.6, share * 100))
 })
 </script>
@@ -42,8 +43,12 @@ const livedPercent = computed(() => {
         <span>bis zu {{ victim.lifespanYears }} Jahre möglich</span>
       </div>
     </template>
-    <div v-else class="victim-card-note">
+    <div v-else-if="victim.age" class="victim-card-note">
       <span class="victim-card-lived">{{ victim.age }} gelebt</span>
+    </div>
+    <!-- No sourced slaughter age (horse, fish): only what would have been possible -->
+    <div v-else-if="victim.lifespanYears" class="victim-card-note">
+      <span>bis zu {{ victim.lifespanYears }} Jahre möglich</span>
     </div>
   </div>
 </template>
@@ -173,6 +178,6 @@ const livedPercent = computed(() => {
   color: var(--brand-accent);
 }
 .victim-card--light .victim-card-lived {
-  color: #e74c3c;
+  color: var(--brand-death-text);
 }
 </style>

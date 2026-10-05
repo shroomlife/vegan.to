@@ -1,4 +1,4 @@
-import type { SourceId } from '@/data/sources'
+import type { SourceId } from './sources'
 
 /**
  * Editorial content for the start page. Every entry names its sources by id,
@@ -36,8 +36,8 @@ export const speciesFacts: readonly SpeciesFact[] = [
   {
     emoji: '🦃',
     species: 'Truthühner',
-    text: 'Für Puten gibt es in Deutschland keine artspezifischen gesetzlichen Tierschutzvorgaben. Freiwillige Eckwerte erlauben bis zu 52 bis 58 kg Tier pro Quadratmeter.',
-    sources: ['assPuten'],
+    text: 'Für Puten gibt es in Deutschland keine artspezifischen gesetzlichen Tierschutzvorgaben. Freiwillige Eckwerte der Branche von 2013 (kein Gesetz) erlauben 52 bis 58 kg Tier pro Quadratmeter.',
+    sources: ['assPuten', 'vdpEckwerte'],
   },
   {
     emoji: '🦆',
@@ -166,8 +166,14 @@ export const faqs: readonly Faq[] = [
   {
     question: 'Ist vegan überhaupt gesund?',
     answer:
-      'Die Deutsche Gesellschaft für Ernährung sagt seit 2024: Für gesunde Erwachsene kann eine vegane Ernährung gesundheitsfördernd sein, wenn Vitamin B12 ergänzt wird und die Lebensmittelauswahl gut geplant ist. Für Kinder, Schwangere, Stillende und Senior*innen gibt sie wegen der Datenlage keine Empfehlung für oder gegen. Die Academy of Nutrition and Dietetics hat ihre Position 2025 erneuert und beschränkt sie ausdrücklich auf Erwachsene: gut geplant kann vegetarische und vegane Ernährung nährstoffdeckend sein und langfristig der Gesundheit nützen. Beide Fachgesellschaften sagen für Kinder und Schwangere also dasselbe, nämlich dass die Datenlage für eine Empfehlung nicht reicht.',
+      'Die Deutsche Gesellschaft für Ernährung sagt seit 2024: Für gesunde Erwachsene kann eine vegane Ernährung gesundheitsfördernd sein, wenn Vitamin B12 ergänzt wird und die Lebensmittelauswahl gut geplant ist. Die Academy of Nutrition and Dietetics hat ihre Position 2025 erneuert und beschränkt sie ausdrücklich auf Erwachsene: gut geplant kann vegetarische und vegane Ernährung nährstoffdeckend sein und langfristig der Gesundheit nützen. Für Kinder und Schwangere gibt die DGE wegen der Datenlage keine Empfehlung für oder gegen ab, die Academy äußert sich dazu nicht.',
     sources: ['dge2024', 'academyNutrition'],
+  },
+  {
+    question: 'Und meine Kinder?',
+    answer:
+      'Für Kinder, Jugendliche, Schwangere und Stillende spricht die DGE wegen der eingeschränkten Datenlage weder eine Empfehlung für noch gegen eine vegane Ernährung aus. Was trotzdem geht: mehr pflanzliche Gerichte für die ganze Familie, ohne dass jemand komplett umstellt. Für Kleinkinder sagt das Netzwerk Gesund ins Leben des Bundesministeriums: Eine ausgewogene vegetarische Ernährung mit Milchprodukten und Eiern kann den Bedarf decken; eine vegane Ernährung braucht Supplemente, vor allem Vitamin B12, die Versorgung soll ärztlich überprüft und die Eltern sollen individuell beraten werden. Die Verbraucherzentrale rät bei Kindern, Schwangeren und Stillenden zu einer Beratung durch eine qualifizierte Ernährungsfachkraft.',
+    sources: ['dge2024', 'gesundInsLebenToddlers', 'vzVegan'],
   },
   {
     question: 'Was hat mein Essen mit dem Klima zu tun?',
@@ -184,8 +190,8 @@ export const faqs: readonly Faq[] = [
   {
     question: 'Ist Fleisch wirklich ein Gesundheitsrisiko?',
     answer:
-      'Die WHO-Krebsforschungsagentur IARC stuft verarbeitetes Fleisch als krebserregend ein (Gruppe 1) und rotes Fleisch als wahrscheinlich krebserregend (Gruppe 2A). Jede Portion von 50 Gramm verarbeitetem Fleisch pro Tag erhöht das Darmkrebsrisiko um etwa 18 Prozent.',
-    sources: ['whoMeat'],
+      'Die WHO-Krebsforschungsagentur IARC stuft verarbeitetes Fleisch als krebserregend ein (Gruppe 1) und rotes Fleisch als wahrscheinlich krebserregend (Gruppe 2A). Nach ihrer Auswertung von zehn Studien erhöht jede Portion von 50 Gramm verarbeitetem Fleisch pro Tag das Darmkrebsrisiko um etwa 18 Prozent. Das heißt 18 Prozent mehr als ohne, nicht 18 von 100. Für den einzelnen Menschen bleibt das Risiko laut IARC klein, es steigt aber mit der Menge. Weltweit rechnet die IARC mit rund 34.000 Krebstodesfällen pro Jahr durch Ernährung mit viel verarbeitetem Fleisch, gegenüber etwa einer Million durch Tabak.',
+    sources: ['whoMeat', 'iarcPressMeat', 'iarcQaMeat'],
   },
   {
     question: 'Was sagt die Forschung, wie wir essen sollten?',

@@ -16,7 +16,7 @@ useJsonLd('faq-jsonld', {
 <template>
   <section id="fragen" class="faq chapter-section">
     <div class="container">
-      <span class="chapter chapter--center">Kapitel 7 &middot; Die Fragen davor</span>
+      <span class="chapter chapter--center">Die Fragen davor</span>
       <h2 class="chapter-title text-center">Was Menschen fragen, bevor sie etwas ändern</h2>
       <p class="chapter-lead chapter-lead--center">
         Kurze Antworten, keine Meinungen. Unter jeder steht, wo sie herkommt.

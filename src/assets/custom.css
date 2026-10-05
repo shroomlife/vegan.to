@@ -1,4 +1,7 @@
 :root {
+  /* The header's width is the page's width: every content page fills the same column on a wide screen */
+  --page-width: 1280px;
+  --page-gutter: 40px;
   /* Brand: forest green, cream and a warm signal accent */
   --brand-green: #14361f;
   --brand-green-deep: #0f2a17;
@@ -8,14 +11,19 @@
   --brand-mint: #e9f1ea;
   --brand-ink: #2f3b33;
   --brand-muted: #4a5a4f;
-  --brand-faint: #8d8474;
+  /* 5.1:1 on cream, so small notes and crumbs pass WCAG AA */
+  --brand-faint: #6b6457;
   --brand-cream: #f6f1e7;
   --brand-accent: #ff6a3d;
+  /* The accent for small text on light ground: 4.8:1 on cream (the bright accent only reaches 2.5:1) */
+  --brand-accent-text: #b8431a;
+  /* The red of the bars as text on light ground, 4.8:1 on cream */
+  --brand-death-text: #c0392b;
   /* The red of the lived-versus-possible bars and of the slaughter charts */
   --brand-death: #e74c3c;
   /* Used where a fall in the numbers is stated as such */
   --brand-fall: #1f7a45;
-  --font-display: 'Unbounded', 'Arial Black', sans-serif;
+  --font-display: 'Unbounded', 'Unbounded Fallback', 'Arial Black', sans-serif;
   --header-height: 68px;
   /* How far the light sheet slides over the hero, so the hero can keep its own content clear of it */
   --sheet-overlap: 56px;
@@ -29,7 +37,12 @@
 }
 
 html, body {
-  font-family: 'Lato', sans-serif;
+  font-family: 'Lato', 'Lato Fallback', sans-serif;
+}
+
+/* The prerendered consent banner stays hidden for visitors who already decided (set by the head script in index.html) */
+html[data-consent='decided'] .consent {
+  display: none;
 }
 
 html {
@@ -46,15 +59,27 @@ html {
   font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--brand-accent);
+  color: var(--brand-accent-text);
   margin-bottom: 0.9rem;
 }
 .chapter--center { text-align: center; }
 .chapter--on-dark { color: #7fe0a5; }
 
 /* Shared rhythm for every chapter of the start page: air above and below, one title scale */
+/*
+ * A chapter below the fold is neither laid out nor painted until it comes
+ * near; the estimate keeps the scrollbar honest until the real size is known.
+ * While an anchor position is measured (scroll.ts) every chapter renders, so
+ * the target lands where it belongs.
+ */
 .chapter-section {
   padding: 5.5rem 0;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 900px;
+}
+.is-measuring .chapter-section,
+.is-measuring .animals-section {
+  content-visibility: visible;
 }
 .chapter-title {
   margin: 0 0 0.8rem;
@@ -77,10 +102,68 @@ html {
   text-align: center;
 }
 @media (max-width: 767px) {
+  :root {
+    --page-gutter: 18px;
+  }
   .chapter-section {
     padding: 3.5rem 0;
   }
   .chapter-lead {
     margin-bottom: 1.5rem;
   }
+}
+
+/* Long-form text on the content pages (topics, Impressum, Datenschutz).
+   Global because the text arrives through a slot of ContentPage. */
+.prose {
+  font-size: 1.02rem;
+  line-height: 1.75;
+  color: var(--brand-ink);
+}
+.prose h2 {
+  margin: 3rem 0 0.9rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.35rem, 2.6vw, 1.75rem);
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  color: var(--brand-green);
+}
+.prose h2:first-child {
+  margin-top: 0;
+}
+.prose h3 {
+  margin: 2rem 0 0.6rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--brand-green);
+}
+.prose p,
+.prose ul,
+.prose ol {
+  margin: 0 0 1.1rem;
+}
+.prose ul,
+.prose ol {
+  padding-left: 1.3rem;
+}
+.prose li + li {
+  margin-top: 0.35rem;
+}
+.prose a {
+  color: var(--brand-green);
+  text-decoration: underline;
+  text-decoration-color: rgba(20, 54, 31, 0.35);
+  text-underline-offset: 2px;
+  overflow-wrap: anywhere;
+}
+.prose a:hover,
+.prose a:focus-visible {
+  color: var(--brand-accent);
+}
+.prose strong {
+  color: var(--brand-green);
+}
+.prose address {
+  font-style: normal;
+  margin: 0 0 1.1rem;
 }

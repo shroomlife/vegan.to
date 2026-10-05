@@ -1,28 +1,16 @@
 import { test, expect } from '@playwright/test'
-import dayjs from 'dayjs'
-// Explicit .js: playwright resolves these through node esm, not through vite
-import utc from 'dayjs/plugin/utc.js'
-import timezone from 'dayjs/plugin/timezone.js'
 import { parseDeNumber } from './helpers'
 import { animals } from '../src/data/animals'
-
-dayjs.extend(utc)
-dayjs.extend(timezone)
+import { startOfBerlinDay, startOfBerlinYear, daysInBerlinYear } from '../src/utils/berlinTime'
 
 /**
  * Same definition as useTimer.ts: the yearly figure is spread over the current
- * year in Berlin time. Built on dayjs like the app, so the expectation holds
- * whatever the runner's own clock is set to. Reading a Berlin wall clock back
- * into a plain Date would silently shift by the offset on a UTC machine.
+ * year in Berlin time. The helpers derive the Berlin calendar through Intl, so
+ * the expectation holds whatever the runner's own clock is set to; their own
+ * fixtures live in time-utils.spec.ts.
  */
-function berlinNow() {
-  return dayjs().tz('Europe/Berlin')
-}
-function daysInYear(year: number): number {
-  return (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0 ? 366 : 365
-}
 function secondsPerYearNow(): number {
-  return daysInYear(berlinNow().year()) * 86_400
+  return daysInBerlinYear(new Date()) * 86_400
 }
 
 function findAnimal(plural: string) {
@@ -66,11 +54,11 @@ test.describe('live counters', () => {
     await expect(card.locator('.animal-stat-value').first()).toBeVisible()
 
     const yearly = findAnimal('Hühner').deaths.year
-    const now = berlinNow()
+    const now = new Date()
     const rate = yearly / secondsPerYearNow()
-    const expectedToday = rate * now.diff(now.startOf('day'), 'second', true)
-    const expectedYear = rate * now.diff(now.startOf('year'), 'second', true)
-    const expectedPerDay = yearly / daysInYear(now.year())
+    const expectedToday = (rate * (now.getTime() - startOfBerlinDay(now).getTime())) / 1000
+    const expectedYear = (rate * (now.getTime() - startOfBerlinYear(now).getTime())) / 1000
+    const expectedPerDay = yearly / daysInBerlinYear(now)
 
     const values = await card.locator('.animal-stat-value').allInnerTexts()
     const [today, perDay, thisYear] = values.map(parseDeNumber)
@@ -109,6 +97,8 @@ test.describe('live counters', () => {
   test('emoji wall stays capped', async ({ page }) => {
     await page.goto('/')
     const card = page.locator('.animal-card', { hasText: 'Fische' })
+    // the wall only takes new values while it is on screen
+    await card.scrollIntoViewIfNeeded()
     // fish reach the cap within a few seconds
     await expect(card.locator('.animal-card-emojis-more')).toContainText('weitere', { timeout: 30_000 })
     const emojiText = await card.locator('.animal-card-emojis-wall').innerText()

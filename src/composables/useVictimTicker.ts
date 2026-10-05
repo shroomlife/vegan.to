@@ -1,6 +1,6 @@
 import { shallowRef, triggerRef, onUnmounted, toValue, type MaybeRefOrGetter } from 'vue'
 import { animals } from '@/data/animals'
-import { lifespanYearsBySpecies, slaughterAgeBySpecies, DAYS_PER_UNIT } from '@/data/lifespans'
+import { lifespanYearsBySpecies, slaughterAgeBySpecies, DAYS_PER_UNIT, type SlaughterAge } from '@/data/lifespans'
 
 /** 130+ verifizierte Schlachthof-Standorte in Deutschland */
 const slaughterhouseLocations = [
@@ -85,10 +85,10 @@ export interface Victim {
   name: string
   emoji: string
   species: string
-  /** Age at death as shown, e.g. "38 Tage" */
-  age: string
+  /** Age at death as shown, e.g. "38 Tage"; absent for species without a sourced slaughter age */
+  age?: string
   /** Age at death in days, for the lived-versus-possible bar */
-  livedDays: number
+  livedDays?: number
   /** Natural life expectancy in years, when a sourced value exists */
   lifespanYears?: number
   location: string
@@ -132,6 +132,23 @@ function randomInt(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min
 }
 
+const SINGULAR_UNIT: Readonly<Record<SlaughterAge['unit'], string>> = { Tage: 'Tag', Wochen: 'Woche', Monate: 'Monat', Jahre: 'Jahr' }
+
+/** "1 Jahr", "3 Jahre" */
+function formatAge(value: number, unit: SlaughterAge['unit']): string {
+  return `${value} ${value === 1 ? SINGULAR_UNIT[unit] : unit}`
+}
+
+/** A random age within the sourced range, or nothing when there is no sourced range */
+function randomAge(ageData: SlaughterAge | undefined): Pick<Victim, 'age' | 'livedDays'> {
+  if (!ageData) return {}
+  const ageValue = randomInt(ageData.min, ageData.max)
+  return {
+    age: formatAge(ageValue, ageData.unit),
+    livedDays: Math.round(ageValue * DAYS_PER_UNIT[ageData.unit]),
+  }
+}
+
 let idCounter = 0
 let lastLane: Lane = 'right'
 
@@ -139,10 +156,7 @@ function generateVictim(): Victim {
   const species = pickRandomSpecies()
   const names = namesBySpecies[species.single] ?? ['Unbekannt']
   const name = names[randomInt(0, names.length - 1)]!
-  const ageData = slaughterAgeBySpecies[species.single] ?? { min: 1, max: 12, unit: 'Monate' }
-  const ageValue = randomInt(ageData.min, ageData.max)
-  const age = `${ageValue} ${ageData.unit}`
-  const livedDays = Math.round(ageValue * DAYS_PER_UNIT[ageData.unit])
+  const { age, livedDays } = randomAge(slaughterAgeBySpecies[species.single])
   // Slow enough to read a name and a life; the cards are a vigil, not confetti
   const duration = randomInt(14, 18)
   const locations = species.single === 'Fisch' ? fishingLocations : slaughterhouseLocations

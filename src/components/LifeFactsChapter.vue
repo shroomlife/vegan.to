@@ -1,34 +1,34 @@
 <script setup lang="ts">
-import { Motion } from 'motion-v'
 import { lifeFacts, schweitzerQuote } from '@/data/facts'
 import SourceLinks from '@/components/SourceLinks.vue'
+import SceneImage from '@/components/SceneImage.vue'
 </script>
 
 <template>
   <section id="wie-sie-lebten" class="life-facts chapter-section">
     <div class="container">
-      <span class="chapter">Kapitel 4 &middot; Wie sie lebten</span>
+      <span class="chapter">Wie sie lebten</span>
       <h2 class="chapter-title">Das steht so im Gesetz.</h2>
       <p class="chapter-lead">
         Nichts davon ist ein Skandalfall. Es ist der erlaubte Normalfall,
         nachzulesen in Verordnungen, Fachpresse und Behördenseiten.
       </p>
+      <figure v-reveal="{ y: 24, duration: 0.6, amount: 0.3 }" class="life-facts-band">
+        <SceneImage name="hen-cage" alt="Hennen hinter dem Drahtgitter eines Käfigs" sizes="(min-width: 1320px) 1200px, 100vw" />
+        <figcaption>Legehennen im Käfig. In Deutschland bis Ende 2025 erlaubt, in Härtefällen bis 2028.</figcaption>
+      </figure>
       <div class="life-facts-grid">
-        <Motion
+        <div
           v-for="(fact, index) in lifeFacts"
           :key="fact.figure"
-          as="div"
+          v-reveal="{ y: 24, duration: 0.45, delay: (index % 3) * 0.08, amount: 0.3 }"
           class="life-fact"
-          :initial="{ opacity: 0, y: 24 }"
-          :whileInView="{ opacity: 1, y: 0 }"
-          :transition="{ duration: 0.45, delay: (index % 3) * 0.08 }"
-          :inViewOptions="{ once: true, amount: 0.3 }"
         >
           <span class="life-fact-figure">{{ fact.figure }}</span>
           <span class="life-fact-unit">{{ fact.unit }}</span>
           <p class="life-fact-text">{{ fact.text }}</p>
           <SourceLinks :ids="fact.sources" />
-        </Motion>
+        </div>
       </div>
 
       <blockquote class="life-quote">
@@ -46,6 +46,30 @@ import SourceLinks from '@/components/SourceLinks.vue'
   z-index: 2;
   background: var(--brand-cream);
   color: var(--brand-green);
+}
+.life-facts-band {
+  position: relative;
+  margin: 0 0 1.5rem;
+  border-radius: 24px;
+  overflow: hidden;
+  background: var(--brand-night);
+}
+.life-facts-band :deep(img) {
+  width: 100%;
+  aspect-ratio: 21 / 9;
+  object-fit: cover;
+  display: block;
+}
+.life-facts-band figcaption {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 2.5rem 1.25rem 1rem;
+  background: linear-gradient(0deg, rgba(14, 33, 20, 0.85), rgba(14, 33, 20, 0));
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--brand-cream);
 }
 .life-facts-grid {
   display: grid;
@@ -66,7 +90,7 @@ import SourceLinks from '@/components/SourceLinks.vue'
   font-weight: 700;
   letter-spacing: -0.03em;
   line-height: 1.05;
-  color: var(--brand-accent);
+  color: var(--brand-accent-text);
   font-variant-numeric: tabular-nums;
 }
 .life-fact-unit {
@@ -106,7 +130,7 @@ import SourceLinks from '@/components/SourceLinks.vue'
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--brand-accent);
+  color: var(--brand-accent-text);
 }
 
 @media (max-width: 991px) {
@@ -115,6 +139,9 @@ import SourceLinks from '@/components/SourceLinks.vue'
   }
 }
 @media (max-width: 767px) {
+  .life-facts-band :deep(img) {
+    aspect-ratio: 4 / 3;
+  }
   .life-facts-grid {
     grid-template-columns: 1fr;
   }

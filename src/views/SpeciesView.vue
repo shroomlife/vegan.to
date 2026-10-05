@@ -6,14 +6,18 @@ import { useJsonLd } from '@/composables/useJsonLd'
 import { animals } from '@/data/animals'
 import { speciesProfiles, profileBySlug } from '@/data/species'
 import { speciesFacts, lifeFacts } from '@/data/facts'
-import { lifespanYearsBySpecies, slaughterAgeBySpecies, DAYS_PER_UNIT } from '@/data/lifespans'
+import { lifespanYearsBySpecies, slaughterAgeBySpecies, DAYS_PER_UNIT, DATIVE_UNIT } from '@/data/lifespans'
 import { formatNumber } from '@/utils/formatNumber'
+import { LAND_ANIMALS_PER_PERSON_YEAR, FISH_PER_PERSON_YEAR } from '@/utils/perCapita'
 import { applyDocumentMeta, SITE_URL } from '@/utils/documentMeta'
 import { slaughterTrendBySpecies } from '@/data/trends'
 import { trendSummary, formatPercent } from '@/utils/trend'
 import AnimatedNumber from '@/components/AnimatedNumber.vue'
 import GapChart from '@/components/GapChart.vue'
 import SourceLinks from '@/components/SourceLinks.vue'
+import QuickAnswers from '@/components/QuickAnswers.vue'
+import { topicPages, topicByName } from '@/data/topics'
+import { cattleStock, census2023, pigStock, sheepStock } from '@/data/topics/livestock'
 
 const route = useRoute()
 const router = useRouter()
@@ -66,11 +70,19 @@ const NEARLY_UNCHANGED = 0.05
  * 41322-0001 has no such dimension, so that wording must not appear on the
  * four poultry pages.
  */
+const isPoultry = computed(() => profile.value?.countSources.includes('destatisPoultry') ?? false)
 const trendScope = computed(() =>
-  profile.value?.countSources.includes('destatisPoultry')
+  isPoultry.value
     ? 'In Geflügelschlachtereien geschlachtete Tiere'
     : 'Gewerbliche Schlachtungen von Tieren inländischer Herkunft',
 )
+/** What the counted figure covers; the quick answer below says the same in one sentence */
+const countedScope = computed(() =>
+  isPoultry.value
+    ? 'Gezählt vom Statistischen Bundesamt: alle Tiere, die in deutschen Geflügelschlachtereien geschlachtet wurden, auch solche aus dem Ausland.'
+    : 'Gezählt vom Statistischen Bundesamt: Tiere aus deutscher Haltung, ohne Hausschlachtungen und ohne Importe.',
+)
+const perCapitaTopic = topicByName('PerCapita')
 const trendLead = computed(() => {
   const facts = trendFacts.value
   if (!facts) return undefined
@@ -108,6 +120,71 @@ watchEffect(() => {
   applyDocumentMeta({ title: title.value, description: description.value, path: `/tiere/${slug.value}` })
 })
 
+/**
+ * Stock per species for the quick answers, with the date it refers to.
+ * Geese and fish have no published stock figure.
+ */
+const STOCK: Readonly<Partial<Record<string, { count: number; asOf: string }>>> = {
+  Schwein: { count: pigStock.may2026, asOf: 'im Mai 2026' },
+  Rind: { count: cattleStock.may2026, asOf: 'im Mai 2026' },
+  Schaf: { count: sheepStock.nov2025, asOf: 'im November 2025' },
+  Huhn: { count: census2023.chickens, asOf: 'am 1. März 2023' },
+  Truthuhn: { count: census2023.turkeys, asOf: 'am 1. März 2023' },
+  Ente: { count: census2023.ducks, asOf: 'am 1. März 2023' },
+  Ziege: { count: census2023.goats, asOf: 'am 1. März 2023' },
+}
+/** The use form the slaughter ages refer to, so the answer names it */
+const USE_FORM: Readonly<Partial<Record<string, string>>> = {
+  Huhn: 'Masthühner',
+  Schwein: 'Mastschweine',
+  Rind: 'Mastbullen',
+  Schaf: 'Mastlämmer',
+  Ziege: 'Ziegenlämmer',
+  Ente: 'Enten',
+  Gans: 'Mastgänse',
+  Truthuhn: 'Puten',
+}
+
+function buildAnswers() {
+  if (!raw.value || !live.value || !profile.value) return []
+  const plural = raw.value.names.plural
+  const approx = raw.value.estimate ? 'geschätzt ' : ''
+  const killed = profile.value.single === 'Fisch' ? 'gefangen und getötet' : 'geschlachtet'
+  const counted = isPoultry.value
+    ? 'Gezählt sind alle Tiere, die in deutschen Geflügelschlachtereien geschlachtet wurden, auch solche aus dem Ausland.'
+    : 'Gezählt sind Tiere aus deutscher Haltung, ohne Hausschlachtungen und ohne Importe.'
+  const items = [
+    {
+      question: `Wie viele ${plural} werden in Deutschland pro Tag ${killed}?`,
+      answer: `${raw.value.estimate ? 'Geschätzt rund' : 'Rund'} ${formatNumber(live.value.perDay)} am Tag. Grundlage sind ${approx}${formatNumber(raw.value.deaths.year)} ${plural} im Jahr, gleichmäßig auf die Tage verteilt.`,
+    },
+    {
+      question: `Wie viele ${plural} werden in Deutschland pro Jahr ${killed}?`,
+      answer: raw.value.estimate
+        ? `Geschätzt ${formatNumber(raw.value.deaths.year)}. ${raw.value.estimate.note}`
+        : `${formatNumber(raw.value.deaths.year)} im Jahr 2025, laut Statistischem Bundesamt. ${counted}`,
+    },
+  ]
+  const stock = STOCK[profile.value.single]
+  if (stock) {
+    items.push({
+      question: `Wie viele ${plural} gibt es in Deutschland?`,
+      answer: `${formatNumber(stock.count)} ${stock.asOf}, laut Statistischem Bundesamt.`,
+    })
+  }
+  const age = slaughterAge.value
+  if (age) {
+    const possible = lifespanYears.value ? ` Ohne Schlachtung könnten sie bis zu ${lifespanYears.value} Jahre alt werden.` : ''
+    const dairy = profile.value.single === 'Rind' ? ' Milchkühe werden im Schnitt 5,5 Jahre alt.' : ''
+    items.push({
+      question: `Wie alt werden ${plural} bis zur Schlachtung?`,
+      answer: `${USE_FORM[profile.value.single] ?? plural} werden mit ${age.min} bis ${age.max} ${DATIVE_UNIT[age.unit]} geschlachtet, laut Bundesinformationszentrum Landwirtschaft.${possible}${dairy}`,
+    })
+  }
+  return items
+}
+const answers = buildAnswers()
+
 useJsonLd('species-breadcrumb', {
   '@type': 'BreadcrumbList',
   itemListElement: [
@@ -136,7 +213,7 @@ useJsonLd('species-breadcrumb', {
         <p class="chapter-lead species-lead">
           Das sind {{ raw.estimate ? 'rund' : '' }} {{ formatNumber(live.perDay) }} am Tag, {{ rhythm }}.
           <template v-if="raw.estimate">{{ raw.estimate.note }}</template>
-          <template v-else>Gezählt vom Statistischen Bundesamt, Tiere inländischer Herkunft, ohne Hausschlachtungen und ohne Importe.</template>
+          <template v-else>{{ countedScope }}</template>
         </p>
 
         <div class="species-live">
@@ -186,7 +263,7 @@ useJsonLd('species-breadcrumb', {
             <dd>{{ formatNumber(trendFacts.peak.count) }}</dd>
           </div>
           <div class="species-trend-stat">
-            <dt>heute, {{ trendFacts.last.year }}</dt>
+            <dt>Jahreswert {{ trendFacts.last.year }}</dt>
             <dd>{{ formatNumber(trendFacts.last.count) }}</dd>
           </div>
           <!-- Only when the first year is not the peak, or both cards say the same -->
@@ -206,7 +283,7 @@ useJsonLd('species-breadcrumb', {
 
         <p class="species-trend-note">
           {{ trendScope }}, {{ trendFacts.first.year }} bis {{ trendFacts.last.year }}.
-          Weniger Schlachtungen heißt nicht weniger Leid: die Tiere werden schwerer, und lebend exportierte Tiere
+          Weniger Schlachtungen heißt nicht weniger Leid: Die Tiere werden schwerer, und lebend exportierte Tiere
           tauchen in dieser Reihe nicht auf.
         </p>
         <SourceLinks :ids="profile.countSources" />
@@ -247,7 +324,7 @@ useJsonLd('species-breadcrumb', {
         <div v-if="slaughterAge" class="species-card">
           <span class="chapter">Ein Leben</span>
           <p class="species-card-text">
-            Geschlachtet mit {{ slaughterAge.min }} bis {{ slaughterAge.max }} {{ slaughterAge.unit }}.
+            Geschlachtet mit {{ slaughterAge.min }} bis {{ slaughterAge.max }} {{ DATIVE_UNIT[slaughterAge.unit] }}.
             <template v-if="lifespanYears">Möglich wären bis zu {{ lifespanYears }} Jahre.</template>
           </p>
           <div v-if="lifespanYears" class="species-bar" aria-hidden="true">
@@ -259,13 +336,24 @@ useJsonLd('species-breadcrumb', {
           </p>
           <SourceLinks :ids="profile.lifeSources" />
         </div>
+        <!-- Horse and fish: no current, reliable slaughter age, so no bar either -->
+        <div v-else-if="lifespanYears" class="species-card">
+          <span class="chapter">Ein Leben</span>
+          <p class="species-card-text">Möglich wären bis zu {{ lifespanYears }} Jahre.</p>
+          <p class="species-card-note">Für das Schlachtalter gibt es keine aktuelle, belastbare Quelle.</p>
+          <SourceLinks :ids="profile.lifeSources" />
+        </div>
       </div>
     </div>
 
     <section v-if="conditions.length" class="species-section species-section--cream">
       <div class="species-inner">
         <span class="chapter">Wie sie lebten</span>
-        <h2 class="chapter-title">Das steht so im Gesetz.</h2>
+        <h2 class="chapter-title">Erlaubt und üblich.</h2>
+        <p class="chapter-lead">
+          Nichts davon ist ein Skandalfall. Es ist der erlaubte Normalfall,
+          nachzulesen in Verordnungen, Fachpresse und Behördenseiten.
+        </p>
         <div class="species-conditions">
           <div v-for="condition in conditions" :key="condition.figure" class="species-condition">
             <span class="species-condition-figure">{{ condition.figure }}</span>
@@ -281,12 +369,22 @@ useJsonLd('species-breadcrumb', {
       <div class="species-inner">
         <h2 class="chapter-title">Was du tun kannst</h2>
         <p class="chapter-lead">
-          Eine Person, die vegan isst, erspart im Jahr rund 62 Tieren dieses Ende. Wie sich das auf Wasser, Klima und Land auswirkt,
+          Auf eine Person in Deutschland entfallen rechnerisch rund {{ formatNumber(LAND_ANIMALS_PER_PERSON_YEAR) }} Landtiere im Jahr,
+          dazu rund {{ formatNumber(FISH_PER_PERSON_YEAR) }} Fische aus deutschem Fang (geschätzt). Das sind die Schlachtzahlen geteilt
+          durch die Bevölkerung; nach dem Fleischverbrauch gerechnet sind es etwas mehr, siehe
+          <RouterLink :to="perCapitaTopic.path">{{ perCapitaTopic.label }}</RouterLink>. Wie sich das auf Wasser, Klima und Land auswirkt,
           steht auf der Startseite. Und wie man anfängt, auch.
         </p>
         <div class="species-actions">
           <RouterLink to="/#impact" class="species-btn species-btn--primary">Dein Impact</RouterLink>
           <RouterLink to="/#mitmachen" class="species-btn">Mach mit</RouterLink>
+        </div>
+        <div v-if="answers.length" class="prose species-answers">
+          <QuickAnswers :items="answers" />
+        </div>
+        <h2 class="chapter-title species-others-title">Hintergründe</h2>
+        <div class="species-others species-topics">
+          <RouterLink v-for="entry in topicPages" :key="entry.path" :to="entry.path" class="species-chip">{{ entry.label }}</RouterLink>
         </div>
         <h2 class="chapter-title species-others-title">Andere Tierarten</h2>
         <div class="species-others">
@@ -305,9 +403,9 @@ useJsonLd('species-breadcrumb', {
   color: var(--brand-green);
 }
 .species-inner {
-  max-width: 960px;
+  max-width: var(--page-width);
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 var(--page-gutter);
 }
 .species-hero {
   padding: 3rem 0 3.5rem;
@@ -358,7 +456,7 @@ useJsonLd('species-breadcrumb', {
   font-size: clamp(1.2rem, 2.4vw, 1.7rem);
   letter-spacing: -0.03em;
   line-height: 1.1;
-  color: var(--brand-death);
+  color: var(--brand-death-text);
   font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
 }
@@ -454,6 +552,11 @@ useJsonLd('species-breadcrumb', {
   line-height: 1.45;
   color: var(--brand-green);
 }
+.species-card-note {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--brand-faint);
+}
 .species-bar {
   height: 6px;
   border-radius: 3px;
@@ -476,7 +579,7 @@ useJsonLd('species-breadcrumb', {
 }
 .species-bar-lived {
   font-weight: 700;
-  color: var(--brand-death);
+  color: var(--brand-death-text);
 }
 .species-conditions {
   display: grid;
@@ -509,7 +612,7 @@ useJsonLd('species-breadcrumb', {
   font-weight: 800;
   letter-spacing: -0.04em;
   line-height: 1;
-  color: var(--brand-accent);
+  color: var(--brand-accent-text);
   font-variant-numeric: tabular-nums;
 }
 .species-trend-unit {
@@ -583,7 +686,7 @@ useJsonLd('species-breadcrumb', {
   font-size: 1.8rem;
   letter-spacing: -0.03em;
   line-height: 1.05;
-  color: var(--brand-accent);
+  color: var(--brand-accent-text);
 }
 .species-condition-unit {
   margin-top: 0.25rem;
@@ -632,6 +735,12 @@ useJsonLd('species-breadcrumb', {
 .species-btn--primary:focus-visible {
   background: var(--brand-accent);
   transform: translateY(-1px);
+}
+.species-answers {
+  margin-bottom: 2.5rem;
+}
+.species-topics {
+  margin-bottom: 2rem;
 }
 .species-others-title {
   font-size: 1.2rem;
