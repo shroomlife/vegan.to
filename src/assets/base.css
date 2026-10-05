@@ -45,34 +45,49 @@
 }
 
 /*
- * Fallback faces with the webfonts' widths (size-adjust measured in Chromium:
- * Unbounded 800 is 115.3 % as wide as Arial Black, Unbounded 600 111.7 %,
- * Lato 700 96.9 % of Arial, Lato 400 99.7 %). Text keeps its size when the
- * webfont swaps in, so the first paint already shows the final layout.
+ * Fallback faces with the webfonts' widths (size-adjust measured in Chromium on
+ * "Hamburgefonstiv 1234": Unbounded 800 is 119.6 % as wide as Arial Black,
+ * Unbounded 600 115.7 %, Lato 700 96.5 % of Arial, Lato 400 101.1 %) and their vertical metrics
+ * (ascent and descent from the font files, divided by size-adjust because the
+ * overrides are scaled with it: Unbounded 0.995 / 0.245, Lato 0.987 / 0.213,
+ * no line gap). Text keeps its size and its line boxes when the webfont swaps
+ * in, so the first paint already shows the final layout and nothing shifts.
  */
 @font-face {
   font-family: 'Unbounded Fallback';
   font-weight: 600;
   src: local('Arial Black'), local('Arial-Black'), local('Roboto Black'), local('Arial Bold'), local('Roboto');
-  size-adjust: 111.7%;
+  size-adjust: 115.7%;
+  ascent-override: 86%;
+  descent-override: 21.2%;
+  line-gap-override: 0%;
 }
 @font-face {
   font-family: 'Unbounded Fallback';
   font-weight: 700 900;
   src: local('Arial Black'), local('Arial-Black'), local('Roboto Black'), local('Arial Bold'), local('Roboto');
-  size-adjust: 115.3%;
+  size-adjust: 119.6%;
+  ascent-override: 83.2%;
+  descent-override: 20.5%;
+  line-gap-override: 0%;
 }
 @font-face {
   font-family: 'Lato Fallback';
   font-weight: 400;
   src: local('Arial'), local('Roboto');
-  size-adjust: 99.7%;
+  size-adjust: 101.1%;
+  ascent-override: 97.6%;
+  descent-override: 21.1%;
+  line-gap-override: 0%;
 }
 @font-face {
   font-family: 'Lato Fallback';
   font-weight: 700 900;
   src: local('Arial Bold'), local('Arial'), local('Roboto');
-  size-adjust: 96.9%;
+  size-adjust: 96.5%;
+  ascent-override: 102.3%;
+  descent-override: 22.1%;
+  line-gap-override: 0%;
 }
 
 *,
