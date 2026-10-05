@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test'
+import { CONSENT_STORAGE_KEY } from './src/utils/consentStorage'
 
 const PORT = 4173
 const BASE_URL = `http://127.0.0.1:${PORT}`
@@ -15,6 +16,12 @@ export default defineConfig({
     trace: 'on-first-retry',
     locale: 'de-DE',
     timezoneId: 'Europe/Berlin',
+    // Every test starts as a visitor who already declined analytics, so the
+    // banner does not cover the page; e2e/consent.spec.ts starts without it
+    storageState: {
+      cookies: [],
+      origins: [{ origin: BASE_URL, localStorage: [{ name: CONSENT_STORAGE_KEY, value: 'denied' }] }],
+    },
   },
   projects: [
     { name: 'desktop', use: { ...devices['Desktop Chrome'] } },

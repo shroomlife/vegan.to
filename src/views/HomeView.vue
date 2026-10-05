@@ -1,28 +1,47 @@
 <script setup lang="ts">
+import { POPULATION_DE } from '@/data/population'
 import { ref, computed, useTemplateRef, watch } from 'vue'
-import dayjs from 'dayjs'
 import { useTransition, TransitionPresets, useElementVisibility } from '@vueuse/core'
-import { Motion } from 'motion-v'
 import { type ComputedAnimal } from '@/composables/useAnimalData'
 import { useLiveState } from '@/composables/useLiveState'
 import { animals } from '@/data/animals'
 import { slugBySpecies } from '@/data/species'
 import { sources } from '@/data/sources'
 import { useAnchorNavigation } from '@/composables/useAnchorNavigation'
+import { replacesSnapshot } from '@/utils/prerendered'
 import { formatNumber } from '@/utils/formatNumber'
+import { WORLD_YEAR, worldTotal } from '@/data/topics/world'
+import { meatConsumption } from '@/data/topics/perCapita'
+import { usageAges } from '@/data/topics/slaughterAge'
+import { topicByName } from '@/data/topics'
 import AnimatedNumber from '@/components/AnimatedNumber.vue'
-import OdometerNumber from '@/components/OdometerNumber.vue'
+import EmojiWall from '@/components/EmojiWall.vue'
 import GrowthTimeline from '@/components/GrowthTimeline.vue'
 import HeroSky from '@/components/HeroSky.vue'
 import VictimCard from '@/components/VictimCard.vue'
 import SpeciesFactsChapter from '@/components/SpeciesFactsChapter.vue'
 import LifeFactsChapter from '@/components/LifeFactsChapter.vue'
+import BackgroundsChapter from '@/components/BackgroundsChapter.vue'
+import ChapterExit from '@/components/ChapterExit.vue'
 import FaqChapter from '@/components/FaqChapter.vue'
 import ImpactChapter from '@/components/ImpactChapter.vue'
 import ActionChapter from '@/components/ActionChapter.vue'
 
 const { timer, animalData, totalDeathCount, victims, latest, heroVisible } = useLiveState()
 const { onNavClick } = useAnchorNavigation()
+
+/** The hero rises into view on a client-side visit; when it was already on screen as a snapshot it just stays */
+const heroEnters = !replacesSnapshot()
+
+/** The doors from the German numbers into the world, the lives and the plate */
+const worldBillions = formatNumber(worldTotal(WORLD_YEAR) / 1e9, 1)
+const meatLatest = meatConsumption[meatConsumption.length - 1]
+const broilerAge = usageAges.find((entry) => entry.use === 'Masthuhn')
+if (!meatLatest || !broilerAge) throw new Error('The per capita series and the usage ages must not be empty')
+const worldTopic = topicByName('World')
+const slaughterAgeTopic = topicByName('SlaughterAge')
+const perCapitaTopic = topicByName('PerCapita')
+const timelineTopic = topicByName('Timeline')
 
 /** All species together, per second of the current year (rounded for the caption) */
 const deathsPerSecond = computed(() => {
@@ -45,42 +64,32 @@ const rightLane = computed(() => victims.value.filter((v) => v.lane === 'right')
 /** The three most recent cards, newest first, for the "Wer sie waren" chapter */
 const recentVictims = computed(() => [...victims.value].slice(-3).reverse())
 
-const POPULATION_DE = 83_500_000 // Destatis, Bevölkerungsstand Ende 2025
 
 /**
- * Veganer*innen in Deutschland. Gemischte Quellen, weil es keine
- * durchgehende Zeitreihe gibt:
- * 2008 Nationale Verzehrsstudie II (unter 80.000), 2015 VEBU-Schätzung,
- * 2016 SKOPOS, 2018 bis 2025 IfD Allensbach (AWA).
+ * Vegans in Germany. Mixed sources, because there is no continuous series:
+ * 2008 Nationale Verzehrsstudie II (below 80,000), 2015 VEBU estimate,
+ * 2016 SKOPOS, 2018 to 2025 IfD Allensbach (AWA). The first and the latest
+ * Allensbach points are named so the text below can quote them as measured
+ * values, no projection in between.
  */
+const nvs2008 = { year: 2008, count: 80_000 }
+const awaFirst = { year: 2018, count: 950_000 }
+const awaLatest = { year: 2025, count: 1_680_000 }
 const veganTimeline = [
-  { year: 2008, count: 80_000 },
+  nvs2008,
   { year: 2015, count: 900_000 },
   { year: 2016, count: 1_300_000 },
-  { year: 2018, count: 950_000 },
+  awaFirst,
   { year: 2020, count: 1_130_000 },
   { year: 2022, count: 1_580_000 },
-  { year: 2025, count: 1_680_000 },
+  awaLatest,
 ]
 
 const veganTimelineAxisYears = [2008, 2012, 2016, 2020, 2025]
 
-/**
- * Veganer*innen heute: der letzte AWA-Wert (2025), sekundengenau fortgeschrieben
- * mit dem mittleren Zuwachs der letzten beiden AWA-Erhebungen (2022 bis 2025).
- * Bezugspunkt ist die Jahresmitte 2025, weil die AWA über das Jahr verteilt erhebt.
- * Eine Hochrechnung aus dem Trend, kein Messwert.
- */
-const latestVeganCount = veganTimeline[veganTimeline.length - 1]!
-const previousVeganCount = veganTimeline[veganTimeline.length - 2]!
-const VEGAN_TREND_PER_SECOND =
-  (latestVeganCount.count - previousVeganCount.count) /
-  ((latestVeganCount.year - previousVeganCount.year) * 365.25 * 86_400)
-const VEGAN_REFERENCE_DATE = dayjs(`${latestVeganCount.year}-07-01`)
-
-const animatedVeganCount = computed(() =>
-  Math.round(latestVeganCount.count + timer.now.value.diff(VEGAN_REFERENCE_DATE, 'second') * VEGAN_TREND_PER_SECOND),
-)
+/** "1,68 Millionen", the figure the stat and the text share */
+const awaLatestMillions = formatNumber(awaLatest.count / 1e6, 2)
+const veganSharePercent = (awaLatest.count / POPULATION_DE) * 100
 
 const childViewState = ref<Record<string, boolean>>({})
 
@@ -95,17 +104,19 @@ function isChildViewOpen(animal: ComputedAnimal): boolean {
 const animatedTotalDeaths = useTransition(totalDeathCount, {
   duration: 369,
   transition: TransitionPresets.easeOutCubic,
+  // Off screen the figure follows the count directly, nobody sees the easing
+  disabled: computed(() => !heroInView.value),
 })
 
 const shareText = () =>
-  `In nur ${timer.elapsedFormatted.value} in denen ich auf https://vegan.to war, sind in #Deutschland schon ${totalDeathCount.value} Tiere ermordet worden...\n\n#GoVegan\n#StopEatingAnimals\n#PostmeatGeneration\n\n🐷🐮🐔`
+  `In nur ${timer.elapsedFormatted.value}, in denen ich auf https://vegan.to war, sind in Deutschland schon ${formatNumber(totalDeathCount.value)} Tiere getötet worden…\n\n#vegan\n\n🐷🐮🐔`
 </script>
 
 <template>
   <!-- Hero: a sky of lights, one per animal, and cards with names in two lanes -->
   <section ref="hero" class="hero">
     <div class="hero-grid" aria-hidden="true"></div>
-    <HeroSky :count="totalDeathCount" />
+    <HeroSky :count="totalDeathCount" :active="heroInView" />
     <div class="hero-vignette" aria-hidden="true"></div>
 
     <div class="victim-lane victim-lane--left" aria-hidden="true">
@@ -139,40 +150,23 @@ const shareText = () =>
 
     <div class="hero-inner">
       <!-- One heading: the kicker names the topic for search, the line below carries the feeling -->
-      <Motion
-        as="h1"
-        class="hero-title"
-        :initial="{ opacity: 0, y: 30 }"
-        :animate="{ opacity: 1, y: 0 }"
-        :transition="{ duration: 0.8, delay: 0.1 }"
-      >
+      <h1 class="hero-title" :class="{ 'hero-enter': heroEnters }">
         <span class="hero-label">Live-Zähler: Tiere, die in Deutschland für unser Essen sterben</span>
         <span class="hero-title-line">Sie hatten Namen.</span>
-      </Motion>
+      </h1>
 
-      <Motion
-        as="p"
-        class="hero-subtitle"
-        :initial="{ opacity: 0, y: 20 }"
-        :animate="{ opacity: 1, y: 0 }"
-        :transition="{ duration: 0.8, delay: 0.3 }"
-      >
+      <p class="hero-subtitle" :class="{ 'hero-enter': heroEnters }">
         Jedes Licht ist ein Tier, das gestorben ist, seit du hier bist. Der Himmel füllt sich, solange du bleibst.
-      </Motion>
+      </p>
 
       <!-- Live Counter -->
-      <Motion
-        class="hero-counter"
-        :initial="{ opacity: 0, scale: 0.8 }"
-        :animate="{ opacity: 1, scale: 1 }"
-        :transition="{ duration: 0.6, delay: 0.5, type: 'spring', stiffness: 200 }"
-      >
+      <div class="hero-counter" :class="{ 'hero-enter': heroEnters }">
         <span class="hero-counter-ring" aria-hidden="true"></span>
         <span class="hero-counter-number">{{ formatNumber(animatedTotalDeaths) }}</span>
         <span class="hero-counter-label">Tiere getötet, seit du hier bist</span>
         <RouterLink to="/quellen#methodik" class="hero-counter-note">{{ deathsPerSecond }} in jeder Sekunde &middot; Fische geschätzt</RouterLink>
         <span class="hero-counter-time">🕰 {{ timer.elapsedFormatted.value }}</span>
-      </Motion>
+      </div>
     </div>
 
     <RouterLink to="/#wer" custom v-slot="{ href, navigate }">
@@ -185,12 +179,16 @@ const shareText = () =>
         </span>
       </a>
     </RouterLink>
+    <RouterLink :to="timelineTopic.path" class="hero-side-link">
+      <span class="hero-side-link-kicker">Zeitreise</span>
+      <span class="hero-side-link-label">Von 1867 bis heute <span aria-hidden="true">&rarr;</span></span>
+    </RouterLink>
   </section>
 
   <!-- Sheet: light surface sliding over the hero -->
   <section id="wer" class="sheet">
     <div class="container">
-      <h2 class="chapter">Kapitel 1 &middot; Wer sie waren</h2>
+      <h2 class="chapter">Wer sie waren</h2>
       <p class="live-sentence">
         Während du diesen Satz liest, sind
         <span class="live-number"><AnimatedNumber :value="totalDeathCount" /></span>
@@ -216,26 +214,23 @@ const shareText = () =>
   <!-- Animal Data -->
   <section id="zahlen" class="animals-section">
     <div class="container">
-      <span class="chapter">Kapitel 2 &middot; Wie viele</span>
+      <span class="chapter">Wie viele</span>
       <div class="section-head">
         <h2 class="chapter-title">Heute in Deutschland</h2>
         <span class="section-note">Jedes Emoji ein Tier, seit du hier bist. Destatis 2025.</span>
       </div>
 
       <div class="animal-grid">
-        <Motion
+        <div
           v-for="(animal, index) in animalData"
           :key="animal.names.single"
+          v-reveal="{ y: 40, duration: 0.5, delay: index * 0.05, amount: 0.2 }"
           class="animal-card"
           :class="{
             'animal-card--wide': animal.perDay >= WIDE_MIN_PER_DAY,
             'animal-card--estimate': animal.estimate,
             'animal-card--small': animal.perDay < WALL_MIN_PER_DAY,
           }"
-          :initial="{ opacity: 0, y: 40 }"
-          :whileInView="{ opacity: 1, y: 0 }"
-          :transition="{ duration: 0.5, delay: index * 0.05 }"
-          :inViewOptions="{ once: true, amount: 0.2 }"
         >
           <div class="animal-card-main">
             <div class="animal-card-name">
@@ -283,12 +278,7 @@ const shareText = () =>
             </button>
           </div>
 
-          <div v-if="animal.perDay >= WALL_MIN_PER_DAY" class="animal-card-emojis">
-            <div class="animal-card-emojis-wall" aria-hidden="true">{{ animal.killedSinceStartEmojis }}</div>
-            <span class="animal-card-emojis-more">
-              <template v-if="animal.killedSinceStartHidden > 0">+ {{ formatNumber(animal.killedSinceStartHidden) }} weitere</template>
-            </span>
-          </div>
+          <EmojiWall v-if="animal.perDay >= WALL_MIN_PER_DAY" :emojis="animal.killedSinceStartEmojis" :hidden="animal.killedSinceStartHidden" />
 
           <div v-if="isChildViewOpen(animal)" class="animal-children">
             <div v-for="child in animal.children" :key="child.name" class="animal-child">
@@ -298,22 +288,38 @@ const shareText = () =>
               <span class="animal-child-stat animal-child-stat--wide" data-label="dieses Jahr">{{ child.currentYearFormatted }}</span>
             </div>
           </div>
-        </Motion>
+        </div>
       </div>
     </div>
   </section>
 
+  <ChapterExit
+    kicker="Und weltweit?"
+    :title="`${worldBillions} Milliarden Landtiere im Jahr ${WORLD_YEAR}.`"
+    text="Deutschland ist ein Ausschnitt. Der Zähler für die ganze Welt, nach Tierart und mit den Fischen als Schätzung."
+    :to="worldTopic.path"
+    label="Weltweit zählen"
+    picture="cows-misty-video"
+    picture-alt="Kühe auf einer Weide im Morgennebel, von oben gesehen"
+  />
+
   <SpeciesFactsChapter />
+  <ChapterExit
+    kicker="Wie lange sie leben"
+    :title="`Ein Masthuhn wird ${broilerAge.ageText} alt.`"
+    text="Jede Art könnte Jahre leben. Wie alt sie bei der Schlachtung wirklich sind, für alle zehn Arten im Vergleich."
+    :to="slaughterAgeTopic.path"
+    label="Schlachtalter ansehen"
+    picture="chicks-box-video"
+    picture-alt="Eine Kiste voller gelber Küken auf einem Förderband"
+  />
   <LifeFactsChapter />
+  <BackgroundsChapter />
 
   <!-- Live Death Counter Summary -->
-  <Motion
-    as="section"
+  <section
+    v-reveal="{ duration: 0.8, amount: 0.3, y: 0 }"
     class="emoji-section chapter-section"
-    :initial="{ opacity: 0 }"
-    :whileInView="{ opacity: 1 }"
-    :transition="{ duration: 0.8 }"
-    :inViewOptions="{ once: true, amount: 0.3 }"
   >
     <div class="container">
       <h2 class="chapter-title">Während du hier bist, sterben sie weiter</h2>
@@ -333,33 +339,27 @@ const shareText = () =>
         <AnimatedNumber :value="totalDeathCount" /> Tiere, seit du diese Seite geöffnet hast.
       </div>
     </div>
-  </Motion>
+  </section>
 
   <!-- Vegan Growth: Full-Width Progress Bar -->
   <section class="growth-section chapter-section">
     <div class="growth-inner">
-      <span class="chapter chapter--center">Kapitel 5 &middot; Die anderen</span>
-      <Motion
-        as="h2"
+      <span class="chapter chapter--center">Die anderen</span>
+      <h2
+        v-reveal="{ y: 20, duration: 0.5 }"
         class="chapter-title text-center"
-        :initial="{ opacity: 0, y: 20 }"
-        :whileInView="{ opacity: 1, y: 0 }"
-        :transition="{ duration: 0.5 }"
-        :inViewOptions="{ once: true }"
       >
         Die Bewegung wächst
-      </Motion>
+      </h2>
 
       <div class="growth-stats">
         <div class="growth-stat">
-          <span class="growth-stat-number growth-stat-number--green">
-            <OdometerNumber :value="animatedVeganCount" :digits="7" />
-          </span>
-          <span class="growth-stat-label">Veganer*innen in Deutschland, AWA-Trend fortgeschrieben</span>
+          <span class="growth-stat-number growth-stat-number--green">{{ awaLatestMillions }} Millionen</span>
+          <span class="growth-stat-label">Veganer*innen in Deutschland (Allensbach, {{ awaLatest.year }})</span>
         </div>
         <div class="growth-stat">
           <span class="growth-stat-number">{{ formatNumber(POPULATION_DE) }}</span>
-          <span class="growth-stat-label">Gesamtbevölkerung. Da wollen wir hin.</span>
+          <span class="growth-stat-label">Menschen in Deutschland (Destatis, Ende 2025)</span>
         </div>
       </div>
 
@@ -367,33 +367,28 @@ const shareText = () =>
       <div class="growth-progress">
         <div
           class="growth-progress-fill"
-          :style="{ width: (animatedVeganCount / POPULATION_DE * 100).toFixed(4) + '%' }"
+          :style="{ width: veganSharePercent.toFixed(4) + '%' }"
         >
           <span class="growth-progress-label">
-            {{ (animatedVeganCount / POPULATION_DE * 100).toFixed(2) }}%
+            {{ formatNumber(veganSharePercent, 2) }}%
           </span>
         </div>
       </div>
 
-      <Motion
-        :initial="{ opacity: 0, y: 12 }"
-        :whileInView="{ opacity: 1, y: 0 }"
-        :transition="{ duration: 0.6, delay: 0.1 }"
-        :inViewOptions="{ once: true }"
+      <div
+        v-reveal="{ y: 12, duration: 0.6, delay: 0.1 }"
       >
         <GrowthTimeline :points="veganTimeline" :label-years="veganTimelineAxisYears" />
-      </Motion>
+      </div>
+      <p class="growth-note">Verschiedene Erhebungen (NVS II, VEBU, SKOPOS, Allensbach), nicht direkt vergleichbar.</p>
 
-      <Motion
-        as="p"
+      <p
+        v-reveal="{ duration: 0.6, delay: 0.2, y: 0 }"
         class="growth-message"
-        :initial="{ opacity: 0 }"
-        :whileInView="{ opacity: 1 }"
-        :transition="{ duration: 0.6, delay: 0.2 }"
-        :inViewOptions="{ once: true }"
       >
-        2008 waren es 80.000. Heute sind es über 1,6 Millionen. Und es werden jeden Tag mehr.
-      </Motion>
+        {{ nvs2008.year }} waren es weniger als {{ formatNumber(nvs2008.count) }}. Bei Allensbach stieg die Zahl von
+        {{ formatNumber(awaFirst.count) }} im Jahr {{ awaFirst.year }} auf {{ awaLatestMillions }} Millionen im Jahr {{ awaLatest.year }}.
+      </p>
 
       <p class="growth-source">
         Quellen:
@@ -405,6 +400,15 @@ const shareText = () =>
   </section>
 
   <ImpactChapter />
+  <ChapterExit
+    kicker="Und auf dem Teller?"
+    :title="`${formatNumber(meatLatest.total, 1)} Kilogramm Fleisch isst ein Mensch in Deutschland im Jahr ${meatLatest.year}.`"
+    text="Wie viele Tiere das sind, warum die Antwort eine Spanne ist und wie sich der Verzehr seit 2010 verändert hat."
+    :to="perCapitaTopic.path"
+    label="Pro Kopf nachrechnen"
+    picture="piglets"
+    picture-alt="Junge Schweine in einem Maststall"
+  />
 
   <FaqChapter />
 
@@ -417,7 +421,7 @@ const shareText = () =>
       <div class="text-center shareLinks">
         <a class="resp-sharing-button__link" href="https://facebook.com/sharer/sharer.php?u=https%3A%2F%2Fvegan.to" target="_blank" rel="noopener" aria-label="Auf Facebook teilen"><div class="resp-sharing-button resp-sharing-button--facebook resp-sharing-button--small"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18.77 7.46H14.5v-1.9c0-.9.6-1.1 1-1.1h3V.5h-4.33C10.24.5 9.5 3.44 9.5 5.32v2.15h-3v4h3v12h5v-12h3.85l.42-4z" /></svg></div></div></a>
         <a class="resp-sharing-button__link" :href="`https://x.com/intent/tweet?text=${encodeURIComponent(shareText())}&url=${encodeURIComponent('https://vegan.to')}`" target="_blank" rel="noopener" aria-label="Auf X teilen"><div class="resp-sharing-button resp-sharing-button--twitter resp-sharing-button--small"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M23.44 4.83c-.8.37-1.5.38-2.22.02.93-.56.98-.96 1.32-2.02-.88.52-1.86.9-2.9 1.1-.82-.88-2-1.43-3.3-1.43-2.5 0-4.55 2.04-4.55 4.54 0 .36.03.7.1 1.04-3.77-.2-7.12-2-9.36-4.75-.4.67-.6 1.45-.6 2.3 0 1.56.8 2.95 2 3.77-.74-.03-1.44-.23-2.05-.57v.06c0 2.2 1.56 4.03 3.64 4.44-.67.2-1.37.2-2.06.08.58 1.8 2.26 3.12 4.25 3.16C5.78 18.1 3.37 18.74 1 18.46c2 1.3 4.4 2.04 6.97 2.04 8.35 0 12.92-6.92 12.92-12.93 0-.2 0-.4-.02-.6.9-.63 1.96-1.22 2.56-2.14z" /></svg></div></div></a>
-        <a class="resp-sharing-button__link" :href="`mailto:?subject=%23GoVegan&body=${encodeURIComponent(shareText())}`" target="_self" rel="noopener" aria-label="Per E-Mail teilen"><div class="resp-sharing-button resp-sharing-button--email resp-sharing-button--small"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 4H2C.9 4 0 4.9 0 6v12c0 1.1.9 2 2 2h20c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM7.25 14.43l-3.5 2c-.08.05-.17.07-.25.07-.17 0-.34-.1-.43-.25-.14-.24-.06-.55.18-.68l3.5-2c.24-.14.55-.06.68.18.14.24.06.55-.18.68zm4.75.07c-.1 0-.2-.03-.27-.08l-8.5-5.5c-.23-.15-.3-.46-.15-.7.15-.22.46-.3.7-.14L12 13.4l8.23-5.32c.23-.15.54-.08.7.15.14.23.07.54-.16.7l-8.5 5.5c-.08.04-.17.07-.27.07zm8.93 1.75c-.1.16-.26.25-.43.25-.08 0-.17-.02-.25-.07l-3.5-2c-.24-.13-.32-.44-.18-.68s.44-.32.68-.18l3.5 2c.24.13.32.44.18.68z" /></svg></div></div></a>
+        <a class="resp-sharing-button__link" :href="`mailto:?subject=${encodeURIComponent('vegan.to')}&body=${encodeURIComponent(shareText())}`" target="_self" rel="noopener" aria-label="Per E-Mail teilen"><div class="resp-sharing-button resp-sharing-button--email resp-sharing-button--small"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M22 4H2C.9 4 0 4.9 0 6v12c0 1.1.9 2 2 2h20c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM7.25 14.43l-3.5 2c-.08.05-.17.07-.25.07-.17 0-.34-.1-.43-.25-.14-.24-.06-.55.18-.68l3.5-2c.24-.14.55-.06.68.18.14.24.06.55-.18.68zm4.75.07c-.1 0-.2-.03-.27-.08l-8.5-5.5c-.23-.15-.3-.46-.15-.7.15-.22.46-.3.7-.14L12 13.4l8.23-5.32c.23-.15.54-.08.7.15.14.23.07.54-.16.7l-8.5 5.5c-.08.04-.17.07-.27.07zm8.93 1.75c-.1.16-.26.25-.43.25-.08 0-.17-.02-.25-.07l-3.5-2c-.24-.13-.32-.44-.18-.68s.44-.32.68-.18l3.5 2c.24.13.32.44.18.68z" /></svg></div></div></a>
         <a class="resp-sharing-button__link" href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fvegan.to" target="_blank" rel="noopener" aria-label="Auf LinkedIn teilen"><div class="resp-sharing-button resp-sharing-button--linkedin resp-sharing-button--small"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M6.5 21.5h-5v-13h5v13zM4 6.5C2.5 6.5 1.5 5.3 1.5 4s1-2.4 2.5-2.4c1.6 0 2.5 1 2.6 2.5 0 1.4-1 2.5-2.6 2.5zm11.5 6c-1 0-2 1-2 2v7h-5v-13h5V10s1.6-1.5 4-1.5c3 0 5 2.2 5 6.3v6.7h-5v-7c0-1-1-2-2-2z" /></svg></div></div></a>
         <a class="resp-sharing-button__link" :href="`whatsapp://send?text=${encodeURIComponent(shareText())}`" target="_blank" rel="noopener" aria-label="Per WhatsApp teilen"><div class="resp-sharing-button resp-sharing-button--whatsapp resp-sharing-button--small"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20.1 3.9C17.9 1.7 15 .5 12 .5 5.8.5.7 5.6.7 11.9c0 2 .5 3.9 1.5 5.6L.6 23.4l6-1.6c1.6.9 3.5 1.3 5.4 1.3 6.3 0 11.4-5.1 11.4-11.4-.1-2.8-1.2-5.7-3.3-7.8zM12 21.4c-1.7 0-3.3-.5-4.8-1.3l-.4-.2-3.5 1 1-3.4L4 17c-1-1.5-1.4-3.2-1.4-5.1 0-5.2 4.2-9.4 9.4-9.4 2.5 0 4.9 1 6.7 2.8 1.8 1.8 2.8 4.2 2.8 6.7-.1 5.2-4.3 9.4-9.5 9.4zm5.1-7.1c-.3-.1-1.7-.9-1.9-1-.3-.1-.5-.1-.7.1-.2.3-.8 1-.9 1.1-.2.2-.3.2-.6.1s-1.2-.5-2.3-1.4c-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6s.3-.3.4-.5c.2-.1.3-.3.4-.5.1-.2 0-.4 0-.5C10 9 9.3 7.6 9 7c-.1-.4-.4-.3-.5-.3h-.6s-.4.1-.7.3c-.3.3-1 1-1 2.4s1 2.8 1.1 3c.1.2 2 3.1 4.9 4.3.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.6-.1 1.7-.7 1.9-1.3.2-.7.2-1.2.2-1.3-.1-.3-.3-.4-.6-.5z" /></svg></div></div></a>
         <a class="resp-sharing-button__link" :href="`https://t.me/share/url?url=https%3A%2F%2Fvegan.to&text=${encodeURIComponent(shareText())}`" target="_blank" rel="noopener" aria-label="Per Telegram teilen"><div class="resp-sharing-button resp-sharing-button--telegram resp-sharing-button--small"><div aria-hidden="true" class="resp-sharing-button__icon resp-sharing-button__icon--solid"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M.707 8.475C.275 8.64 0 9.508 0 9.508s.284.867.718 1.03l5.09 1.897 1.986 6.38a1.102 1.102 0 0 0 1.75.527l2.96-2.41a.405.405 0 0 1 .494-.013l5.34 3.87a1.1 1.1 0 0 0 1.046.135 1.1 1.1 0 0 0 .682-.803l3.91-18.795A1.102 1.102 0 0 0 22.5.075L.706 8.475z" /></svg></div></div></a>
@@ -533,8 +537,56 @@ const shareText = () =>
   animation-play-state: paused;
   transform: translateY(4px);
 }
+/* The second door out of the hero: the Zeitreise, bottom right, opposite the scroll cue */
+.hero-side-link {
+  position: absolute;
+  right: 40px;
+  bottom: calc(var(--sheet-overlap) + 28px);
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  padding: 12px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(246, 241, 231, 0.18);
+  background: rgba(246, 241, 231, 0.05);
+  backdrop-filter: blur(6px);
+  color: rgba(246, 241, 231, 0.75);
+  text-decoration: none;
+  transition: border-color 0.25s ease, background-color 0.25s ease, color 0.25s ease;
+}
+.hero-side-link-kicker {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #7fe0a5;
+}
+.hero-side-link-label {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  letter-spacing: -0.01em;
+}
+.hero-side-link:hover,
+.hero-side-link:focus-visible {
+  color: var(--brand-cream);
+  border-color: var(--brand-accent);
+  background: rgba(255, 106, 61, 0.16);
+  text-decoration: none;
+}
+.hero-side-link:focus-visible {
+  outline: 2px solid var(--brand-cream);
+  outline-offset: 3px;
+}
+
+/* Every looping animation on this page rests when the visitor asked for less motion */
 @media (prefers-reduced-motion: reduce) {
-  .hero-scroll-badge {
+  .hero-enter,
+  .hero-scroll-badge,
+  .hero-counter-ring,
+  .hero-counter-number,
+  .growth-progress-fill::after {
     animation: none;
   }
   .hero-scroll:hover .hero-scroll-badge,
@@ -562,6 +614,24 @@ const shareText = () =>
 }
 .hero-title-line {
   display: block;
+}
+/* Entrance on a client-side visit: title and line rise, the counter springs up. CSS only, no library */
+.hero-title.hero-enter {
+  animation: hero-rise 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 0.1s both;
+}
+.hero-subtitle.hero-enter {
+  animation: hero-rise 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 0.3s both;
+}
+.hero-counter.hero-enter {
+  animation: hero-spring 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 0.5s both;
+}
+@keyframes hero-rise {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes hero-spring {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: none; }
 }
 .hero-title {
   font-family: var(--font-display);
@@ -718,6 +788,8 @@ const shareText = () =>
   position: relative;
   z-index: 2;
   padding: 0.5rem 0 5.5rem;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 1600px;
   background: var(--brand-cream);
 }
 
@@ -823,21 +895,6 @@ const shareText = () =>
 .animal-card-emojis {
   padding: 0 1.25rem 0.75rem;
   font-size: 0.85rem;
-}
-/* Exactly two rows, always the same height: no layout shift while it fills */
-.animal-card-emojis-wall {
-  height: 3.6em;
-  overflow: hidden;
-  line-height: 1.8;
-  word-break: break-all;
-}
-.animal-card-emojis-more {
-  display: block;
-  min-height: 1.2rem;
-  margin-top: 0.25rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #6c757d;
 }
 .animal-children { border-top: 1px solid #f1f3f5; background: #fafbfc; }
 .animal-child {
@@ -979,6 +1036,12 @@ const shareText = () =>
   white-space: nowrap;
   z-index: 1;
 }
+.growth-note {
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--brand-faint);
+  margin: 0.5rem auto 1.25rem;
+}
 .growth-message {
   text-align: center;
   font-size: 1.05rem;
@@ -1051,9 +1114,6 @@ const shareText = () =>
   }
   .victim-lane .victim-card {
     width: 176px;
-  }
-  .hero-scroll {
-    display: none;
   }
   .animal-emoji {
     font-size: 1.6rem;
@@ -1144,6 +1204,13 @@ const shareText = () =>
   }
   .section-title--sm {
     font-size: 1.1rem;
+  }
+}
+/* On short phone screens the centred hero content reaches the bottom edge, and the
+   scroll hint would sit on top of the counter. Taller phones have the room. */
+@media (max-width: 767px) and (max-height: 739px) {
+  .hero-scroll {
+    display: none;
   }
 }
 </style>

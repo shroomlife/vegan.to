@@ -62,9 +62,9 @@ const rows = computed(() =>
   color: var(--brand-green);
 }
 .species-index-inner {
-  max-width: 1120px;
+  max-width: var(--page-width);
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 var(--page-gutter);
 }
 .species-index-hero {
   padding: 3.5rem 0 2.5rem;

@@ -1,82 +1,68 @@
 <script setup lang="ts">
-import { Motion } from 'motion-v'
-import { useLiveState } from '@/composables/useLiveState'
-import { coreQuestions, actionCategories } from '@/data/actions'
-
-const { latest } = useLiveState()
+import { coreQuestions, entrySteps, actionCategories } from '@/data/actions'
+import SceneImage from '@/components/SceneImage.vue'
 </script>
 
 <template>
   <section id="mitmachen" class="action chapter-section">
     <div class="container">
-      <span class="chapter">Kapitel 8 &middot; Mach mit</span>
+      <span class="chapter">Mach mit</span>
       <div class="action-head">
-        <Motion
-          as="h2"
+        <h2
+          v-reveal="{ y: 24, duration: 0.5 }"
           class="chapter-title action-title"
-          :initial="{ opacity: 0, y: 24 }"
-          :whileInView="{ opacity: 1, y: 0 }"
-          :transition="{ duration: 0.5 }"
-          :inViewOptions="{ once: true }"
         >
-          Deine nächste Mahlzeit entscheidet, ob es {{ latest.name }} trifft.
-        </Motion>
-        <Motion
-          as="div"
+          Deine nächste Mahlzeit zählt mit.
+        </h2>
+        <div
+          v-reveal="{ y: 16, duration: 0.5, delay: 0.1 }"
           class="action-intro"
-          :initial="{ opacity: 0, y: 16 }"
-          :whileInView="{ opacity: 1, y: 0 }"
-          :transition="{ duration: 0.5, delay: 0.1 }"
-          :inViewOptions="{ once: true }"
         >
           <p>
-            Die Zahlen sind erschreckend. Aber du bist nicht machtlos. Mit jeder Mahlzeit
-            entscheidest du mit, und jede dieser Entscheidungen kann ein Leben retten.
+            Die Zahlen sind groß, dein Teller ist klein. Aber er ist deiner. Jede pflanzliche Mahlzeit
+            nimmt ein Stück Nachfrage aus dieser Rechnung.
           </p>
           <p>
-            Pflanzliche Alternativen gibt es inzwischen für alles, im Supermarkt genauso wie im
-            Restaurant oder in der Bäckerei um die Ecke. Du verzichtest auf nichts. Du entscheidest dich nur anders.
+            Pflanzliche Alternativen gibt es inzwischen für fast alles, im Supermarkt genauso wie im
+            Restaurant oder in der Bäckerei um die Ecke. Vieles schmeckt anders, manches besser, manches
+            fehlt erst mal. Probier eine Woche.
           </p>
-        </Motion>
+        </div>
       </div>
+      <figure v-reveal="{ y: 24, duration: 0.6, amount: 0.3 }" class="action-figure">
+        <SceneImage name="hands-chick" alt="Zwei Hände halten ein gelbes Küken im Abendlicht" sizes="(min-width: 1320px) 1200px, 100vw" />
+        <figcaption>Es liegt in deiner Hand. Jede Mahlzeit.</figcaption>
+      </figure>
 
       <!-- The three core questions: why, how, with whom -->
       <div class="why-how">
-        <Motion
+        <a
           v-for="(question, index) in coreQuestions"
           :key="question.key"
-          as="a"
+          v-reveal="{ y: 24, duration: 0.45, delay: index * 0.08, amount: 0.3 }"
           :href="question.url"
           target="_blank"
           rel="noopener"
           class="why-how-card"
           :class="`why-how-card--${question.key}`"
-          :initial="{ opacity: 0, y: 24 }"
-          :whileInView="{ opacity: 1, y: 0 }"
-          :transition="{ duration: 0.45, delay: index * 0.08 }"
-          :inViewOptions="{ once: true, amount: 0.3 }"
         >
           <span class="why-how-kicker">{{ question.kicker }}</span>
           <span class="why-how-title">{{ question.title }}</span>
           <span class="why-how-desc">{{ question.description }}</span>
           <span class="why-how-domain">{{ question.domain }} <span aria-hidden="true">↗</span></span>
-        </Motion>
+        </a>
       </div>
 
-      <Motion
-        as="a"
+      <a
+        v-reveal="{ scale: 0.95, duration: 0.4, delay: 0.1, y: 0 }"
         href="https://veganuary.com/de/"
         class="cta-button"
         target="_blank"
         rel="noopener"
-        :initial="{ opacity: 0, scale: 0.95 }"
-        :whileInView="{ opacity: 1, scale: 1 }"
-        :transition="{ duration: 0.4, delay: 0.1 }"
-        :inViewOptions="{ once: true }"
       >
         <span class="cta-text">#GoVegan</span>
         <span class="cta-sub">Heute anfangen, mit Veganuary</span>
-      </Motion>
+      </a>
 
       <div class="motivation">
         <div class="motivation-fact">
@@ -93,16 +79,29 @@ const { latest } = useLiveState()
         </div>
       </div>
 
+      <!-- Four sizes of a first step, smallest first -->
+      <ol class="entry-steps" aria-label="Einstiege, vom kleinsten zum größten Schritt">
+        <li v-for="(step, index) in entrySteps" :key="step.label" class="entry-step">
+          <span class="entry-step-index" aria-hidden="true">{{ index + 1 }}</span>
+          <component
+            :is="step.url ? 'a' : 'span'"
+            :href="step.url"
+            :target="step.url ? '_blank' : undefined"
+            :rel="step.url ? 'noopener' : undefined"
+            class="entry-step-label"
+          >
+            {{ step.label }}<span v-if="step.url" aria-hidden="true"> ↗</span>
+          </component>
+          <span class="entry-step-hint">{{ step.hint }}</span>
+        </li>
+      </ol>
+
       <div class="action-grid">
-        <Motion
+        <article
           v-for="(category, index) in actionCategories"
           :key="category.title"
-          as="article"
+          v-reveal="{ y: 24, duration: 0.45, delay: index * 0.07, amount: 0.2 }"
           class="action-category"
-          :initial="{ opacity: 0, y: 24 }"
-          :whileInView="{ opacity: 1, y: 0 }"
-          :transition="{ duration: 0.45, delay: index * 0.07 }"
-          :inViewOptions="{ once: true, amount: 0.2 }"
         >
           <h3 class="action-category-title">
             <span aria-hidden="true">{{ category.emoji }}</span> {{ category.title }}
@@ -121,10 +120,10 @@ const { latest } = useLiveState()
               <span class="action-link-desc">{{ link.description }}</span>
             </a>
           </div>
-        </Motion>
+        </article>
       </div>
 
-      <p class="action-closing">Jede Mahlzeit ist eine Chance. Nimm sie.</p>
+      <p class="action-closing">Jede Mahlzeit ist eine neue Chance. Die nächste kommt bald.</p>
     </div>
   </section>
 </template>
@@ -143,6 +142,30 @@ const { latest } = useLiveState()
 }
 .action-title {
   margin: 0;
+}
+.action-figure {
+  position: relative;
+  margin: 0 0 2.5rem;
+  border-radius: 24px;
+  overflow: hidden;
+  background: var(--brand-night);
+}
+.action-figure :deep(img) {
+  width: 100%;
+  aspect-ratio: 21 / 9;
+  object-fit: cover;
+  object-position: 50% 45%;
+  display: block;
+}
+.action-figure figcaption {
+  position: absolute;
+  left: 1.25rem;
+  bottom: 1rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.1rem, 2vw, 1.5rem);
+  letter-spacing: -0.02em;
+  color: var(--brand-cream);
+  text-shadow: 0 2px 18px rgba(0, 0, 0, 0.5);
 }
 .action-intro p {
   margin: 0 0 0.6rem;
@@ -202,7 +225,7 @@ const { latest } = useLiveState()
   padding-top: 0.8rem;
   font-size: 0.8rem;
   font-weight: 700;
-  color: var(--brand-accent);
+  color: var(--brand-accent-text);
 }
 .cta-button {
   display: flex;
@@ -263,9 +286,56 @@ const { latest } = useLiveState()
   line-height: 1.45;
   color: var(--brand-muted);
 }
-.action-grid {
+.entry-steps {
+  list-style: none;
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin: 0 0 1.5rem;
+  padding: 0;
+}
+.entry-step {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  column-gap: 0.65rem;
+  row-gap: 0.15rem;
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  background: var(--brand-mint);
+}
+.entry-step-index {
+  grid-row: 1 / span 2;
+  align-self: start;
+  width: 1.6rem;
+  height: 1.6rem;
+  border-radius: 50%;
+  background: var(--brand-green);
+  color: var(--brand-cream);
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  line-height: 1.6rem;
+  text-align: center;
+}
+.entry-step-label {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--brand-green);
+  text-decoration: none;
+}
+a.entry-step-label:hover,
+a.entry-step-label:focus-visible {
+  color: var(--brand-accent-text);
+  text-decoration: underline;
+}
+.entry-step-hint {
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: var(--brand-muted);
+}
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.9rem;
 }
 .action-category {
@@ -336,13 +406,15 @@ const { latest } = useLiveState()
     grid-template-columns: 1fr;
     gap: 1rem;
   }
-  .action-grid {
+  .action-grid,
+  .entry-steps {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 @media (max-width: 767px) {
   .why-how,
   .action-grid,
+  .entry-steps,
   .motivation {
     grid-template-columns: 1fr;
   }

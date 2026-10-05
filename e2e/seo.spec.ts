@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { faqs } from '../src/data/facts'
 
 test.describe('on-page seo', () => {
   test('every route carries its own title, description and canonical', async ({ page }) => {
@@ -39,7 +40,7 @@ test.describe('on-page seo', () => {
     expect(types).toEqual(expect.arrayContaining(['WebSite', 'Organization', 'WebApplication', 'FAQPage']))
     const faq = blocks.find((text) => text.includes('FAQPage'))
     expect(faq).toBeDefined()
-    expect(JSON.parse(faq ?? '{}').mainEntity).toHaveLength(5)
+    expect(JSON.parse(faq ?? '{}').mainEntity).toHaveLength(faqs.length)
   })
 
   test('sharing assets respond', async ({ request }) => {

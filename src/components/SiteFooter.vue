@@ -2,13 +2,16 @@
 import BrandWordmark from '@/components/BrandWordmark.vue'
 import PrideFlag from '@/components/PrideFlag.vue'
 import { useAnchorNavigation } from '@/composables/useAnchorNavigation'
+import { useConsent } from '@/composables/useConsent'
 import { animals } from '@/data/animals'
 import { speciesProfiles } from '@/data/species'
+import { topicPages } from '@/data/topics'
 
 declare const __APP_VERSION__: string
 const appVersion = __APP_VERSION__
 const currentYear = new Date().getFullYear()
 const { onNavClick, isPageLink } = useAnchorNavigation()
+const { openSettings } = useConsent()
 
 const siteLinks = [
   { label: 'Zahlen', to: '/#zahlen' },
@@ -64,6 +67,13 @@ const partnerLinks = [
           </RouterLink>
         </nav>
 
+        <nav class="site-footer-col" aria-label="Hintergründe">
+          <h2 class="site-footer-title">Hintergründe</h2>
+          <RouterLink v-for="link in topicPages" :key="link.path" :to="link.path" custom v-slot="{ href, navigate, isExactActive }">
+            <a :href="href" :aria-current="isExactActive ? 'page' : undefined" @click="navigate($event); onNavClick(link.path)">{{ link.label }}</a>
+          </RouterLink>
+        </nav>
+
         <nav class="site-footer-col" aria-label="Weitergehen">
           <h2 class="site-footer-title">Weitergehen</h2>
           <a v-for="link in partnerLinks" :key="link.href" :href="link.href" target="_blank" rel="noopener">{{ link.label }}</a>
@@ -75,13 +85,16 @@ const partnerLinks = [
           <RouterLink to="/quellen#datenstand" custom v-slot="{ href, navigate }">
             <a :href="href" @click="navigate($event); onNavClick('/quellen#datenstand')">Datenstand 2025</a>
           </RouterLink>
+          <RouterLink to="/impressum">Impressum</RouterLink>
+          <RouterLink to="/datenschutz">Datenschutz</RouterLink>
+          <button type="button" class="site-footer-consent" @click="openSettings">Cookie-Einstellungen</button>
           <span class="site-footer-version">Version {{ appVersion }}</span>
         </nav>
       </div>
 
       <div class="site-footer-bottom">
         <span>&copy; 2020 bis {{ currentYear }} vegan.to</span>
-        <span>Open Source, ohne Tracking, ohne Werbung</span>
+        <span>Open Source, ohne Werbung</span>
       </div>
     </div>
   </footer>
@@ -103,7 +116,7 @@ const partnerLinks = [
 }
 .site-footer-grid {
   display: grid;
-  grid-template-columns: 4fr 2fr 2fr 2fr 2fr;
+  grid-template-columns: 4fr repeat(5, 2fr);
   gap: 32px;
 }
 .site-footer-brand {
@@ -129,7 +142,7 @@ const partnerLinks = [
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: rgba(246, 241, 231, 0.55);
+  color: rgba(246, 241, 231, 0.78);
 }
 .site-footer-col {
   display: flex;
@@ -145,6 +158,9 @@ const partnerLinks = [
   color: var(--brand-accent);
 }
 .site-footer-col a {
+  /* At least 24 px tall, the touch target size WCAG asks for */
+  display: inline-block;
+  line-height: 1.6;
   font-size: 15px;
   font-weight: 600;
   color: var(--brand-cream);
@@ -160,9 +176,29 @@ const partnerLinks = [
   outline: 2px solid var(--brand-cream);
   outline-offset: 3px;
 }
+/* Looks like the links next to it, but it opens the consent banner instead of navigating */
+.site-footer-consent {
+  padding: 0;
+  border: none;
+  background: none;
+  text-align: left;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--brand-cream);
+  cursor: pointer;
+  transition: color 0.15s;
+}
+.site-footer-consent:hover,
+.site-footer-consent:focus-visible {
+  color: #e9c9a8;
+}
+.site-footer-consent:focus-visible {
+  outline: 2px solid var(--brand-cream);
+  outline-offset: 3px;
+}
 .site-footer-version {
   font-size: 13px;
-  color: rgba(246, 241, 231, 0.5);
+  color: rgba(246, 241, 231, 0.75);
 }
 .site-footer-bottom {
   display: flex;
@@ -176,7 +212,7 @@ const partnerLinks = [
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(246, 241, 231, 0.5);
+  color: rgba(246, 241, 231, 0.75);
 }
 
 @media (max-width: 991px) {

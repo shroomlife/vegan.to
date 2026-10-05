@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, useTemplateRef, watch } from 'vue'
-import { useElementSize, usePreferredReducedMotion } from '@vueuse/core'
+import { usePreferredReducedMotion, useResizeObserver } from '@vueuse/core'
 
 /**
  * One light per animal killed since the page opened. New lights rise from the
@@ -8,15 +8,21 @@ import { useElementSize, usePreferredReducedMotion } from '@vueuse/core'
  *
  * Settled lights are painted once into an offscreen canvas, so the per-frame
  * cost only covers the lights still rising (a few hundred), never the total.
+ * The canvas size comes from a ResizeObserver, which reports after layout
+ * instead of forcing one in the middle of the mount.
  */
 const props = defineProps<{
   /** Total number of lights that should exist right now */
   count: number
+  /** False while the hero is scrolled away; the sky then stops drawing until it is back */
+  active: boolean
 }>()
 
 const RISE_SECONDS = 9
 const MAX_LIGHTS = 60_000
 const COLORS = ['255, 179, 122', '246, 241, 231', '255, 140, 100']
+/** Alpha is rounded to this many steps while a light rises, so lights can be drawn in batches */
+const ALPHA_STEPS = 8
 
 interface Light {
   x: number
@@ -29,7 +35,6 @@ interface Light {
 }
 
 const canvasRef = useTemplateRef<HTMLCanvasElement>('canvas')
-const { width, height } = useElementSize(canvasRef)
 const reducedMotion = usePreferredReducedMotion()
 
 const rising: Light[] = []
@@ -59,10 +64,13 @@ function paintSettled(light: Light) {
   ctx.fill()
 }
 
-function resizeSettled() {
-  const w = Math.round(width.value)
-  const h = Math.round(height.value)
-  if (!w || !h) return
+function resize(width: number, height: number) {
+  const canvas = canvasRef.value
+  const w = Math.round(width)
+  const h = Math.round(height)
+  if (!canvas || !w || !h) return
+  canvas.width = w
+  canvas.height = h
   settled = document.createElement('canvas')
   settled.width = w
   settled.height = h
@@ -82,6 +90,9 @@ function spawnUpTo(target: number, now: number) {
   }
 }
 
+/** Rising lights grouped by fill style, so each group costs one path and one fill instead of hundreds */
+const batches = new Map<string, { x: number; y: number; r: number }[]>()
+
 function draw(now: number) {
   const canvas = canvasRef.value
   const ctx = canvas?.getContext('2d')
@@ -92,10 +103,10 @@ function draw(now: number) {
   ctx.clearRect(0, 0, canvas.width, canvas.height)
   ctx.drawImage(settled, 0, 0)
 
-  const t = now
+  for (const batch of batches.values()) batch.length = 0
   for (let i = rising.length - 1; i >= 0; i--) {
     const light = rising[i]!
-    const age = (t - light.born) / 1000
+    const age = (now - light.born) / 1000
     const progress = Math.min(1, age / RISE_SECONDS)
     if (progress >= 1) {
       paintSettled(light)
@@ -104,25 +115,40 @@ function draw(now: number) {
     }
     // Ease out: fast start, gentle landing
     const eased = 1 - Math.pow(1 - progress, 3)
-    const y = 1 - (1 - light.y) * eased
-    const alpha = light.alpha * (0.4 + 0.6 * eased)
-    ctx.fillStyle = `rgba(${light.color}, ${alpha})`
+    const alpha = Math.round(light.alpha * (0.4 + 0.6 * eased) * ALPHA_STEPS) / ALPHA_STEPS
+    const key = `rgba(${light.color}, ${alpha})`
+    let batch = batches.get(key)
+    if (!batch) {
+      batch = []
+      batches.set(key, batch)
+    }
+    batch.push({ x: light.x * canvas.width, y: (1 - (1 - light.y) * eased) * canvas.height, r: light.r + (1 - eased) * 0.8 })
+  }
+  for (const [fillStyle, batch] of batches) {
+    if (batch.length === 0) continue
+    ctx.fillStyle = fillStyle
     ctx.beginPath()
-    ctx.arc(light.x * canvas.width, y * canvas.height, light.r + (1 - eased) * 0.8, 0, Math.PI * 2)
+    for (const dot of batch) {
+      ctx.moveTo(dot.x + dot.r, dot.y)
+      ctx.arc(dot.x, dot.y, dot.r, 0, Math.PI * 2)
+    }
     ctx.fill()
   }
-  frame = requestAnimationFrame(draw)
+  frame = props.active ? requestAnimationFrame(draw) : 0
 }
 
-watch([width, height], () => {
-  const canvas = canvasRef.value
-  if (!canvas) return
-  canvas.width = Math.round(width.value)
-  canvas.height = Math.round(height.value)
-  resizeSettled()
+useResizeObserver(canvasRef, (entries) => {
+  const rect = entries[0]?.contentRect
+  if (rect) resize(rect.width, rect.height)
 })
 
 watch(() => props.count, (count) => spawnUpTo(count, performance.now()))
+watch(
+  () => props.active,
+  (active) => {
+    if (active && frame === 0) frame = requestAnimationFrame(draw)
+  },
+)
 
 onMounted(() => {
   frame = requestAnimationFrame(draw)

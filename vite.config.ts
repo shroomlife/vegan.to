@@ -61,6 +61,8 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: false,
+      // Deferred, so the registration script no longer blocks the first paint
+      injectRegister: 'script-defer',
     }),
     spaFallback('docs', routePaths),
     sitemap('docs', routePaths),

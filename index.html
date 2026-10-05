@@ -4,6 +4,14 @@
   <base href="/">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <!-- The consent banner is part of the prerendered page. A visitor who already decided must not see it
+       flash before the app mounts, so the stored choice is read before the first paint. The key is
+       CONSENT_STORAGE_KEY from src/utils/consentStorage.ts, kept in sync by e2e/consent.spec.ts. -->
+  <script>try{var c=localStorage.getItem('vegan-to-consent');if(c==='granted'||c==='denied'){document.documentElement.setAttribute('data-consent','decided')}}catch(e){}</script>
+
+  <!-- The two faces of the first paint, so text does not swap after it appears -->
+  <link rel="preload" href="/fonts/unbounded-latin-800.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/lato-latin-400.woff2" as="font" type="font/woff2" crossorigin>
 
   <!-- SEO -->
   <title>Wie viele Tiere sterben in Deutschland? Live-Zähler | vegan.to</title>
@@ -127,10 +135,6 @@
   <!-- PWA & Manifest -->
   <link rel="manifest" href="/manifest.json">
 
-  <!-- Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Unbounded:wght@600;800&display=swap" rel="stylesheet">
 </head>
 <body>
   <div id="app"></div>

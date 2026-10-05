@@ -33,9 +33,6 @@
   "dependencies": {
     "@vueuse/core": "^13.1.0",
     "d3-shape": "^3.2.0",
-    "dayjs": "^1.11.13",
-    "humanize-duration": "^3.32.1",
-    "motion-v": "^2.2.0",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0"
   },

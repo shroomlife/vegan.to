@@ -23,7 +23,7 @@ const entries = computed(() => props.ids.map((id) => sources[id]))
   margin: 0;
   font-size: 0.75rem;
   line-height: 1.5;
-  color: #8d8474;
+  color: var(--brand-faint);
 }
 .source-links-label {
   margin-right: 0.25em;
@@ -31,7 +31,7 @@ const entries = computed(() => props.ids.map((id) => sources[id]))
 .source-links a {
   color: inherit;
   text-decoration: underline;
-  text-decoration-color: rgba(141, 132, 116, 0.5);
+  text-decoration-color: rgba(107, 100, 87, 0.5);
   text-underline-offset: 2px;
 }
 .source-links a:hover,

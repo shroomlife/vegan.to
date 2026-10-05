@@ -32,6 +32,11 @@ test.describe('page health', () => {
 
   test('every image is loaded and has alt text', async ({ page }) => {
     await page.goto('/')
+    // Pictures below the fold load lazily: bring each one on screen and give it a moment
+    for (const img of await page.locator('img[loading="lazy"]').all()) {
+      await img.scrollIntoViewIfNeeded()
+      await expect.poll(() => img.evaluate((el) => (el as HTMLImageElement).complete)).toBe(true)
+    }
     const images = await page.locator('img').evaluateAll((imgs) =>
       (imgs as HTMLImageElement[]).map((img) => ({
         src: img.currentSrc,

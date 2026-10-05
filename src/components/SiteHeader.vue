@@ -9,6 +9,7 @@ import { useLiveState } from '@/composables/useLiveState'
 const navLinks = [
   { label: 'Zahlen', to: '/#zahlen', mobile: false },
   { label: 'Tiere', to: '/tiere', mobile: false },
+  { label: 'Zeitreise', to: '/zeitreise', mobile: false },
   { label: 'Impact', to: '/#impact', mobile: false },
   { label: 'Quellen', to: '/quellen', mobile: true },
 ]
@@ -94,10 +95,10 @@ const light = computed(() => route.name === 'Home' && !live.heroVisible.value)
   color: var(--brand-green);
 }
 .site-header-inner {
-  max-width: 1280px;
+  max-width: var(--page-width);
   height: 100%;
   margin: 0 auto;
-  padding: 0 40px;
+  padding: 0 var(--page-gutter);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -182,10 +183,12 @@ const light = computed(() => route.name === 'Home' && !live.heroVisible.value)
   outline-offset: 3px;
 }
 
-@media (max-width: 767px) {
-  .site-header-inner {
-    padding: 0 18px;
+@media (max-width: 991px) {
+  .site-header-nav {
+    gap: 20px;
   }
+}
+@media (max-width: 767px) {
   .site-header-brand {
     font-size: 18px;
   }

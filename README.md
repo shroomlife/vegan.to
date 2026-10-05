@@ -34,7 +34,7 @@ Jede Sekunde werden in Deutschland Tiere getötet. Diese Seite macht das sichtba
 - **Vite 6** + vite-plugin-pwa
 - **motion-v**: Scroll-Animationen, Staggered Reveals
 - **@vueuse/core**: `useTransition` für animierte Zahlenwerte
-- **dayjs** + **humanize-duration**: Zeitberechnung
+- **Intl.DateTimeFormat**: Berliner Tages- und Jahresgrenzen ohne Datumsbibliothek
 - **Bun** als Package Manager
 
 ## Entwicklung

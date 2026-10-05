@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import { ref, computed, useTemplateRef } from 'vue'
-import dayjs from 'dayjs'
-import { Motion } from 'motion-v'
-import { animals } from '@/data/animals'
 import { useLiveState } from '@/composables/useLiveState'
 import { usePersonalTracker } from '@/composables/usePersonalTracker'
 import { formatNumber } from '@/utils/formatNumber'
+import { localIsoDate } from '@/utils/isoDate'
+import { LAND_ANIMALS_PER_PERSON_YEAR, FISH_PER_PERSON_YEAR } from '@/utils/perCapita'
 import SourceLinks from '@/components/SourceLinks.vue'
 
 const { timer } = useLiveState()
@@ -19,7 +18,8 @@ const { timer } = useLiveState()
  * https://doi.org/10.1038/s43016-023-00795-w
  *
  * Lives: Destatis slaughter figures (animals.ts) divided by the population
- * of Germany, per day. Estimated fish included, imports excluded.
+ * of Germany, per day. Land animals carry the card; the estimated fish from
+ * the German catch stand beside it as their own line. Imports excluded.
  */
 const impactTimeline = [
   { label: '1 Tag', days: 1 },
@@ -31,9 +31,8 @@ const impactTimeline = [
   { label: '50 Jahre', days: 18250 },
 ]
 
-const POPULATION_DE = 83_500_000 // Destatis, Bevölkerungsstand Ende 2025
-const YEARLY_DEATHS_DE = animals.reduce((sum, a) => sum + a.deaths.year, 0)
-const DAILY_LIVES = YEARLY_DEATHS_DE / POPULATION_DE / 365.25
+const DAILY_LIVES = LAND_ANIMALS_PER_PERSON_YEAR / 365.25
+const DAILY_FISH = FISH_PER_PERSON_YEAR / 365.25
 const DAILY_WATER_L = 370
 const DAILY_CO2_KG = 4.57
 const DAILY_LAND_M2 = 6.91
@@ -56,11 +55,11 @@ function closeTrackerModal() {
   trackerDialog.value?.close()
 }
 // Local date (not UTC), so "today" is selectable right after midnight in Germany
-const todayLocalIso = computed(() => dayjs(timer.now.value).format('YYYY-MM-DD'))
+const todayLocalIso = computed(() => localIsoDate(timer.now.value))
 
 const personalShareText = computed(() => {
   const impact = personalImpact.value
-  return `Seit ${formattedDuration.value} lebe ich vegan und habe damit schon ${impact.lives.value} Tierleben gerettet, ${impact.water.value} L Wasser gespart und ${impact.co2.value} kg CO₂ vermieden. 🌱\n\nWas ist dein Impact? 👉 https://vegan.to\n\n#GoVegan #VeganFürDieTiere`
+  return `Seit ${formattedDuration.value} lebe ich vegan und habe damit schon ${impact.lives.value} Landtieren das Leben gerettet (dazu rund ${impact.fish.value} Fische, geschätzt), ${impact.water.value} L Wasser gespart und ${impact.co2.value} kg CO₂ vermieden. 🌱\n\nWas ist dein Impact? 👉 https://vegan.to\n\n#GoVegan #VeganFürDieTiere`
 })
 
 function copyPersonalShare() {
@@ -75,14 +74,19 @@ interface Metric {
   comparisons: string[]
 }
 
-function impactFor(days: number): Record<'lives' | 'water' | 'co2' | 'land', Metric> {
+type MetricKey = 'lives' | 'water' | 'co2' | 'land'
+
+/** The four cards plus the fish figure, which the lives card shows as its own line */
+function impactFor(days: number): Record<MetricKey, Metric> & { fish: { value: string } } {
   const lives = days * DAILY_LIVES
+  const fish = days * DAILY_FISH
   const water = days * DAILY_WATER_L
   const co2 = days * DAILY_CO2_KG
   const land = days * DAILY_LAND_M2
 
   return {
     lives: { value: formatNumber(lives, lives < 10 ? 1 : 0), comparisons: lifeComparisons(lives) },
+    fish: { value: formatNumber(fish, fish < 10 ? 1 : 0) },
     water: { value: formatNumber(water), comparisons: waterComparisons(water) },
     co2: { value: formatNumber(co2), comparisons: co2Comparisons(co2) },
     land: { value: formatNumber(land), comparisons: landComparisons(land) },
@@ -132,18 +136,18 @@ function landComparisons(m2: number): string[] {
 }
 
 /** Card order and labels, shared by the period cards and the personal result */
-const metrics = [
-  { key: 'lives', icon: '🐾', label: 'Tierleben gerettet', unit: '' },
+const metrics: readonly { key: MetricKey; icon: string; label: string; unit: string }[] = [
+  { key: 'lives', icon: '🐾', label: 'Landtiere gerettet', unit: '' },
   { key: 'water', icon: '💧', label: 'Wasser gespart', unit: ' L' },
   { key: 'co2', icon: '🌿', label: 'CO₂ vermieden', unit: ' kg' },
   { key: 'land', icon: '🌾', label: 'Land geschont', unit: ' m²' },
-] as const
+]
 </script>
 
 <template>
   <section id="impact" class="impact chapter-section">
     <div class="container">
-      <span class="chapter">Kapitel 6 &middot; Was du bewirkst</span>
+      <span class="chapter">Was du bewirkst</span>
       <div class="impact-head">
         <div>
           <h2 class="chapter-title impact-title">Ein Mensch. {{ activeItem.label }}.</h2>
@@ -168,35 +172,29 @@ const metrics = [
       </div>
 
       <div class="impact-cards">
-        <Motion
+        <div
           v-for="(metric, index) in metrics"
           :key="metric.key"
-          as="div"
+          v-reveal="{ y: 24, duration: 0.45, delay: index * 0.07, amount: 0.3 }"
           class="impact-card"
           :class="`impact-card--${metric.key}`"
-          :initial="{ opacity: 0, y: 24 }"
-          :whileInView="{ opacity: 1, y: 0 }"
-          :transition="{ duration: 0.45, delay: index * 0.07 }"
-          :inViewOptions="{ once: true, amount: 0.3 }"
         >
           <span class="impact-card-icon" aria-hidden="true">{{ metric.icon }}</span>
           <span class="impact-card-value">{{ activeImpactData[metric.key].value }}{{ metric.unit }}</span>
           <span class="impact-card-label">{{ metric.label }}</span>
+          <span v-if="metric.key === 'lives'" class="impact-card-extra">dazu ≈ {{ activeImpactData.fish.value }} Fische (geschätzt)</span>
           <ul class="impact-card-comparisons">
             <li v-for="c in activeImpactData[metric.key].comparisons" :key="c">{{ c }}</li>
           </ul>
-        </Motion>
+        </div>
       </div>
 
       <SourceLinks :ids="['scarborough', 'destatisPopulation', 'uba', 'myclimate']" class="impact-source" />
 
       <!-- Personal tracker -->
-      <Motion
+      <div
+        v-reveal="{ y: 24, duration: 0.5, amount: 0.3 }"
         class="personal"
-        :initial="{ opacity: 0, y: 24 }"
-        :whileInView="{ opacity: 1, y: 0 }"
-        :transition="{ duration: 0.5 }"
-        :inViewOptions="{ once: true, amount: 0.3 }"
       >
         <div v-if="!hasPersonalDate" class="personal-intro">
           <div>
@@ -219,6 +217,7 @@ const metrics = [
               <span class="personal-stat-icon" aria-hidden="true">{{ metric.icon }}</span>
               <span class="personal-impact-value" :class="`personal-impact-value--${metric.key}`">{{ personalImpact[metric.key].value }}{{ metric.unit }}</span>
               <span class="personal-stat-label">{{ metric.label }}</span>
+              <span v-if="metric.key === 'lives'" class="personal-stat-extra">dazu ≈ {{ personalImpact.fish.value }} Fische (geschätzt)</span>
             </div>
           </div>
 
@@ -252,7 +251,7 @@ const metrics = [
             </div>
           </div>
         </div>
-      </Motion>
+      </div>
 
       <!-- Tracker modal: native <dialog>, opened via showModal() -->
       <dialog ref="trackerDialog" class="vt-modal" aria-labelledby="vt-modal-title" @mousedown.self="closeTrackerModal">
@@ -381,7 +380,15 @@ const metrics = [
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #8d8474;
+  color: var(--brand-faint);
+}
+/* The fish line under the lives card: an estimate, so it stays small and apart from the counted figure */
+.impact-card-extra {
+  margin-top: 0.35rem;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: var(--brand-muted);
+  font-variant-numeric: tabular-nums;
 }
 .impact-card-comparisons {
   list-style: none;
@@ -477,7 +484,7 @@ const metrics = [
   letter-spacing: -0.02em;
 }
 .personal-duration strong {
-  color: var(--brand-accent);
+  color: var(--brand-accent-text);
 }
 .personal-reset {
   padding: 4px 10px;
@@ -532,6 +539,13 @@ const metrics = [
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: rgba(246, 241, 231, 0.55);
+}
+.personal-stat-extra {
+  margin-top: 0.3rem;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  color: rgba(246, 241, 231, 0.7);
+  font-variant-numeric: tabular-nums;
 }
 .personal-share {
   margin-top: 1.1rem;

@@ -5,6 +5,7 @@ import SiteHeader from '@/components/SiteHeader.vue'
 import SiteFooter from '@/components/SiteFooter.vue'
 import BackToTop from '@/components/BackToTop.vue'
 import CounterPill from '@/components/CounterPill.vue'
+import ConsentBanner from '@/components/ConsentBanner.vue'
 import { provideLiveState } from '@/composables/useLiveState'
 
 // One clock and one ticker for header, home view and the floating pill
@@ -34,6 +35,7 @@ const showMobilePill = computed(() => live.isMobile.value && route.name === 'Hom
     </div>
   </Transition>
   <BackToTop />
+  <ConsentBanner />
 </template>
 
 <style>
