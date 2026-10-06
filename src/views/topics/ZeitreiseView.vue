@@ -162,10 +162,12 @@ const words2009 = QUOTE_2009.split(' ')
 const lit = (id: string, total: number) => Math.round(span(p(id), 0.05, 0.8) * total)
 
 /* ── Käfig, Uhr, Countdown ───────────────────────────────── */
-const A4_CM2 = 21 * 29.7
+const A4_WIDTH_CM = 21
+const A4_CM2 = A4_WIDTH_CM * 29.7
 const CAGE_CM2 = 450
-/** The cage square relative to the A4 sheet, by area */
-const cageSide = Math.sqrt(CAGE_CM2 / A4_CM2)
+/** The cage drawn across the full width of the sheet: 450 cm² are 21 × 21,4 cm, 72 % of an A4 */
+const cageShare = CAGE_CM2 / A4_CM2
+const cageHeightCm = CAGE_CM2 / A4_WIDTH_CM
 const CLOCK_LENGTH = 804.2
 const clockHours = computed(() => Math.round(span(p('transport'), 0.1, 0.9) * 24))
 /** BZL figure for the years before the ban; the ministry says about 40 million, see /kueken-und-legehennen */
@@ -416,8 +418,15 @@ useJsonLd('page-breadcrumb', {
         </figure>
         <div class="cage">
           <div class="cage-art" aria-hidden="true">
-            <div class="cage-a4"><span>DIN A4 · 21 × 29,7 cm · {{ formatNumber(A4_CM2) }} cm²</span></div>
-            <div class="cage-hen" :style="{ '--side': cageSide }"><span>{{ CAGE_CM2 }} cm² · eine Henne</span></div>
+            <span class="cage-a3-label">DIN A3 · 42 × 29,7 cm · zwei A4</span>
+            <div class="cage-a4 cage-a4--blank"><span>DIN A4 · {{ formatNumber(A4_CM2) }} cm²</span></div>
+            <div class="cage-a4">
+              <span>DIN A4 · {{ formatNumber(A4_CM2) }} cm²</span>
+              <div class="cage-hen" :style="{ '--share': cageShare }">
+                <span class="cage-hen-size">{{ A4_WIDTH_CM }} × {{ formatNumber(cageHeightCm, 1) }} cm</span>
+                <span>{{ CAGE_CM2 }} cm² · eine Henne</span>
+              </div>
+            </div>
           </div>
           <div class="cage-copy">
             <h2 class="kicker">Akt III · 1987 · Der Käfig</h2>
@@ -1308,69 +1317,72 @@ useJsonLd('page-breadcrumb', {
   width: min(1200px, 100%);
   margin: 0 auto;
 }
+/* Two A4 sheets side by side make an A3; the right sheet carries the cage */
 .cage-art {
   position: relative;
-  aspect-ratio: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  aspect-ratio: 420 / 297;
   max-width: 100%;
+  margin-top: 1.6rem;
+  border: 1.5px dashed rgba(246, 241, 231, 0.45);
+  border-radius: 4px;
 }
-/* A sheet of paper: cream, a faint ruled edge, a folded corner, the DIN label like a stamp */
-.cage-a4 {
+.cage-a3-label {
   position: absolute;
-  left: 12%;
-  top: 4%;
-  width: 60%;
-  height: calc(60% * 1.414);
-  background: var(--paper);
-  border-radius: 3px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(20, 54, 31, 0.08);
-  display: flex;
-  align-items: flex-end;
+  left: 0;
+  bottom: 100%;
+  margin-bottom: 10px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(246, 241, 231, 0.7);
+  white-space: nowrap;
+}
+.cage-a4 {
+  position: relative;
+  overflow: hidden;
   padding: 12px 14px;
-  font-size: 0.78rem;
+  background: var(--paper);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--brand-green);
 }
-.cage-a4::before {
-  content: '';
-  position: absolute;
-  right: 0;
-  top: 0;
-  width: 14%;
-  aspect-ratio: 1;
-  background: linear-gradient(225deg, var(--night) 50%, rgba(20, 54, 31, 0.18) 50%);
-  border-bottom-left-radius: 3px;
+.cage-a4--blank {
+  border-radius: 3px 0 0 3px;
+  border-right: 1px dashed rgba(20, 54, 31, 0.35);
 }
-.cage-a4::after {
-  content: 'Ein Blatt Papier';
-  position: absolute;
-  left: 14px;
-  top: 12px;
-  font-size: 0.7rem;
-  font-weight: 400;
-  letter-spacing: 0.04em;
-  text-transform: none;
-  color: var(--brand-muted);
+.cage-a4:not(.cage-a4--blank) {
+  border-radius: 0 3px 3px 0;
 }
+/* The cage grows from the bottom of the sheet to its real share early in the act, so a phone sees it full while the sheets are still on screen */
 .cage-hen {
   position: absolute;
-  left: 12%;
-  top: 4%;
-  /* The square's side is sqrt(450 / 623.7) of the A4 short side; it starts bigger and shrinks with the scroll */
-  width: calc(60% * var(--side));
-  height: calc(60% * var(--side));
-  background: var(--blood);
-  border-radius: 3px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(var(--share) * 100% * clamp(0, (var(--p) - 0.05) / 0.35, 1));
+  overflow: hidden;
   display: flex;
-  align-items: flex-end;
-  padding: 10px;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 4px;
+  padding: 10px 14px;
+  background: var(--blood);
+  box-shadow: 0 -10px 40px rgba(231, 76, 60, 0.35);
   font-weight: 900;
   font-size: 0.85rem;
+  letter-spacing: 0;
+  text-transform: none;
   color: #2a0d08;
-  box-shadow: 0 30px 80px rgba(231, 76, 60, 0.35);
-  transform: scale(calc(1.9 - var(--p) * 0.9));
-  transform-origin: 0 0;
+}
+.cage-hen-size {
+  font-weight: 400;
+  font-size: 0.72rem;
 }
 .cage-copy {
   position: relative;
@@ -1738,8 +1750,7 @@ useJsonLd('page-breadcrumb', {
     display: none;
   }
   .cage-art {
-    aspect-ratio: auto;
-    height: 42vh;
+    margin-top: 2rem;
   }
   .side {
     position: relative;
