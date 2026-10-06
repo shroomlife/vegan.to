@@ -78,5 +78,7 @@ export default defineConfig({
   build: {
     outDir: 'docs',
     emptyOutDir: true,
+    // The body font rides inside the stylesheet (see base.css); everything else keeps Vite's default limit
+    assetsInlineLimit: (filePath) => (filePath.endsWith('lato-latin-400.woff2') ? true : undefined),
   },
 })
