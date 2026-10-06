@@ -24,7 +24,8 @@ const rows = computed(() =>
         <p class="chapter-lead">
           Für jede Tierart eine eigene Seite: wie viele pro Jahr, pro Tag und in dieser Sekunde sterben,
           wie alt sie werden dürfen, wie alt sie werden könnten, und woher jede Zahl stammt.
-          Seit du hier bist: <strong class="species-index-live"><AnimatedNumber :value="totalDeathCount" /></strong> Tiere.
+          <!-- Its own line: the live figure grows from the snapshot's 0 to thousands and must not rewrap the sentence before it -->
+          <span class="species-index-since">Seit du hier bist: <strong class="species-index-live"><AnimatedNumber :value="totalDeathCount" /></strong> Tiere.</span>
         </p>
       </div>
     </section>
@@ -76,6 +77,10 @@ const rows = computed(() =>
   font-size: clamp(1.8rem, 4.6vw, 3rem);
   letter-spacing: -0.035em;
   line-height: 1.05;
+}
+.species-index-since {
+  display: block;
+  margin-top: 0.35rem;
 }
 .species-index-live {
   color: var(--brand-death-text);
