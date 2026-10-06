@@ -677,6 +677,9 @@ const shareText = () =>
   font-size: clamp(2.5rem, 10vw, 5rem);
   font-weight: 700;
   color: #e74c3c;
+  /* Room for five digits and a separator: the snapshot shows 0, the live figure reaches thousands within a minute, nothing around it may move */
+  min-width: 6ch;
+  text-align: center;
   line-height: 1;
   font-variant-numeric: tabular-nums;
   text-shadow: 0 0 60px rgba(231, 76, 60, 0.5), 0 0 120px rgba(231, 76, 60, 0.2);
