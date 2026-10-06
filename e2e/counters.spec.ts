@@ -110,3 +110,25 @@ test.describe('live counters', () => {
     expect(heightLater).toBe(height)
   })
 })
+
+test.describe('hero cards across page changes', () => {
+  test('cards in flight keep their place when you come back to the start page', async ({ page }) => {
+    // A fake clock jumps 20 s ahead, so the seed cards are gone and every card alive was spawned by the ticker
+    await page.clock.install()
+    await page.goto('/')
+    await expect(page.locator('.victim-rise').first()).toBeAttached()
+    await page.clock.runFor(20_000)
+    await page.locator('.site-footer').getByRole('link', { name: 'Quellen und Methodik' }).click()
+    await expect(page).toHaveURL(/\/quellen$/)
+    await page.clock.runFor(1_500)
+    await page.locator('.site-header .wordmark').click()
+    await expect(page.locator('.victim-rise').first()).toBeAttached()
+    const delays = await page
+      .locator('.victim-rise')
+      .evaluateAll((cards) => cards.map((card) => Number.parseFloat(getComputedStyle(card).animationDelay)))
+    // Every card alive at the return was already in flight and continues from there;
+    // at most one card can have been spawned fresh in the moment of the return
+    expect(delays.length).toBeGreaterThanOrEqual(2)
+    expect(delays.filter((delay) => delay >= 0).length).toBeLessThanOrEqual(1)
+  })
+})

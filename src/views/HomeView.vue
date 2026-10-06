@@ -4,6 +4,7 @@ import { ref, computed, useTemplateRef, watch } from 'vue'
 import { useTransition, TransitionPresets, useElementVisibility } from '@vueuse/core'
 import { type ComputedAnimal } from '@/composables/useAnimalData'
 import { useLiveState } from '@/composables/useLiveState'
+import type { Victim } from '@/composables/useVictimTicker'
 import { animals } from '@/data/animals'
 import { slugBySpecies } from '@/data/species'
 import { sources } from '@/data/sources'
@@ -58,6 +59,22 @@ const WIDE_MIN_PER_DAY = 50_000
 const heroRef = useTemplateRef<HTMLElement>('hero')
 const heroInView = useElementVisibility(heroRef)
 watch(heroInView, (visible) => { heroVisible.value = visible }, { immediate: true })
+
+/**
+ * Each card's animation delay, fixed the first time this view renders it. A card
+ * that was already rising when the view mounted (seed cards, or cards spawned
+ * while another page was open) continues mid-flight instead of starting again
+ * from the bottom; a card spawned while the view is open starts at the bottom.
+ */
+const riseDelays = new WeakMap<Victim, string>()
+function riseDelay(victim: Victim): string {
+  let delay = riseDelays.get(victim)
+  if (delay === undefined) {
+    delay = `${Math.min(0, (victim.bornAt - Date.now()) / 1000).toFixed(2)}s`
+    riseDelays.set(victim, delay)
+  }
+  return delay
+}
 
 const leftLane = computed(() => victims.value.filter((v) => v.lane === 'left'))
 const rightLane = computed(() => victims.value.filter((v) => v.lane === 'right'))
@@ -129,7 +146,7 @@ const shareText = () =>
         :style="{
           left: victim.left,
           animationDuration: victim.duration + 's',
-          animationDelay: victim.startOffset ? victim.startOffset + 's' : '0s',
+          animationDelay: riseDelay(victim),
         }"
       />
     </div>
@@ -143,7 +160,7 @@ const shareText = () =>
         :style="{
           left: victim.left,
           animationDuration: victim.duration + 's',
-          animationDelay: victim.startOffset ? victim.startOffset + 's' : '0s',
+          animationDelay: riseDelay(victim),
         }"
       />
     </div>
