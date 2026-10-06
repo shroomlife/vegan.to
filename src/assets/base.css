@@ -7,13 +7,12 @@
  */
 
 /*
- * Self-hosted webfonts (latin subsets from @fontsource). The two faces the
- * first paint needs, Lato 400 for the body text and Unbounded 800 for the
- * headlines, travel inside the stylesheet as data URIs (vite.config.ts inlines
- * them, the prerender inlines the stylesheet): they are there at the first
- * paint and never swap in later, so no line ever rewraps. Lato 700 and
- * Unbounded 600 live in public/fonts. The 800 face also serves 700 and 900
- * so nothing gets synthesised.
+ * Self-hosted webfonts (latin subsets from @fontsource). All four faces travel
+ * inside the stylesheet as data URIs (vite.config.ts inlines them, the
+ * prerender inlines the stylesheet): they are there at the first paint and
+ * never swap in later, so no line ever rewraps. Measured on production, every
+ * face that arrived late moved a paragraph; a bold word in a lead was enough.
+ * The 800 face also serves 700 and 900 so nothing gets synthesised.
  */
 @font-face {
   font-family: 'Lato';
@@ -28,7 +27,7 @@
   font-style: normal;
   font-weight: 700 900;
   font-display: swap;
-  src: url(/fonts/lato-latin-700.woff2) format('woff2');
+  src: url(./fonts/lato-latin-700.woff2) format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 @font-face {
@@ -36,7 +35,7 @@
   font-style: normal;
   font-weight: 600;
   font-display: swap;
-  src: url(/fonts/unbounded-latin-600.woff2) format('woff2');
+  src: url(./fonts/unbounded-latin-600.woff2) format('woff2');
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 @font-face {

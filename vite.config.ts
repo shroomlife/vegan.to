@@ -78,7 +78,7 @@ export default defineConfig({
   build: {
     outDir: 'docs',
     emptyOutDir: true,
-    // The two first-paint fonts ride inside the stylesheet (see base.css); everything else keeps Vite's default limit
-    assetsInlineLimit: (filePath) => (/(lato-latin-400|unbounded-latin-800)\.woff2$/.test(filePath) ? true : undefined),
+    // The webfonts ride inside the stylesheet (see base.css); everything else keeps Vite's default limit
+    assetsInlineLimit: (filePath) => (filePath.endsWith('.woff2') ? true : undefined),
   },
 })
