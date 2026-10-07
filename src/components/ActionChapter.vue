@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { coreQuestions, entrySteps, actionCategories } from '@/data/actions'
-import SceneImage from '@/components/SceneImage.vue'
+import ClipVideo from '@/components/ClipVideo.vue'
 </script>
 
 <template>
@@ -30,7 +30,7 @@ import SceneImage from '@/components/SceneImage.vue'
         </div>
       </div>
       <figure v-reveal="{ y: 24, duration: 0.6, amount: 0.3 }" class="action-figure">
-        <SceneImage name="hands-chick" alt="Zwei Hände halten ein gelbes Küken im Abendlicht" sizes="(min-width: 1320px) 1200px, 100vw" />
+        <ClipVideo folder="start" name="mahlzeit" :widths="[1168, 720]" label="Zwei Hände halten ein gelbes Küken im Abendlicht, KI-generiert" note="KI-generiert" class="action-clip" />
         <figcaption>Es liegt in deiner Hand. Jede Mahlzeit.</figcaption>
       </figure>
 
@@ -150,12 +150,12 @@ import SceneImage from '@/components/SceneImage.vue'
   overflow: hidden;
   background: var(--brand-night);
 }
-.action-figure :deep(img) {
+.action-clip {
   width: 100%;
   aspect-ratio: 21 / 9;
-  object-fit: cover;
+}
+.action-clip :deep(video) {
   object-position: 50% 45%;
-  display: block;
 }
 .action-figure figcaption {
   position: absolute;

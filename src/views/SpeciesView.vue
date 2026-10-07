@@ -15,6 +15,7 @@ import { trendSummary, formatPercent } from '@/utils/trend'
 import AnimatedNumber from '@/components/AnimatedNumber.vue'
 import GapChart from '@/components/GapChart.vue'
 import SourceLinks from '@/components/SourceLinks.vue'
+import SpeciesPortrait from '@/components/SpeciesPortrait.vue'
 import QuickAnswers from '@/components/QuickAnswers.vue'
 import { topicPages, topicByName } from '@/data/topics'
 import { cattleStock, census2023, pigStock, sheepStock } from '@/data/topics/livestock'
@@ -198,7 +199,8 @@ useJsonLd('species-breadcrumb', {
 <template>
   <main v-if="raw && live && profile" class="species">
     <section class="species-hero">
-      <div class="species-inner">
+      <div class="species-inner species-hero-grid">
+        <div class="species-hero-copy">
         <nav class="species-crumbs" aria-label="Pfad">
           <RouterLink to="/">vegan.to</RouterLink>
           <span aria-hidden="true">/</span>
@@ -235,6 +237,8 @@ useJsonLd('species-breadcrumb', {
           <span v-if="live.killedSinceStartHidden > 0" class="species-emojis-more">+ {{ formatNumber(live.killedSinceStartHidden) }} weitere</span>
         </div>
         <SourceLinks :ids="profile.countSources" />
+        </div>
+        <SpeciesPortrait :slug="profile.slug" sizes="(max-width: 991px) 100vw, 420px" loading="eager" fetchpriority="high" class="species-hero-portrait" />
       </div>
     </section>
 
@@ -410,6 +414,19 @@ useJsonLd('species-breadcrumb', {
 .species-hero {
   padding: 3rem 0 3.5rem;
   background: var(--brand-cream);
+}
+/* Text left, the portrait right; on a phone the portrait comes first */
+.species-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 420px);
+  gap: 3rem;
+  align-items: center;
+}
+.species-hero-portrait {
+  width: 100%;
+  max-width: 420px;
+  justify-self: end;
+  box-shadow: 0 30px 60px rgba(20, 54, 31, 0.18);
 }
 .species-crumbs {
   display: flex;
@@ -771,6 +788,15 @@ useJsonLd('species-breadcrumb', {
 @media (max-width: 767px) {
   .species-hero {
     padding: 2rem 0 2.5rem;
+  }
+  .species-hero-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  .species-hero-portrait {
+    order: -1;
+    max-width: 100%;
+    justify-self: stretch;
   }
   .species-section {
     padding: 2.5rem 0;
