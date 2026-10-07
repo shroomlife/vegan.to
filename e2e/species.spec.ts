@@ -90,3 +90,27 @@ test.describe('species pages', () => {
     await expect(page.locator('.site-footer a[href="/tiere/rinder"]')).toHaveCount(1)
   })
 })
+
+test.describe('species portraits', () => {
+  test('every species page shows its portrait, loaded and marked as AI-generated', async ({ page }) => {
+    for (const slug of ['huehner', 'fische']) {
+      await page.goto(`/tiere/${slug}`)
+      const portrait = page.locator('.species-hero .portrait')
+      await expect(portrait).toHaveCount(1)
+      await expect(portrait.locator('.portrait-note')).toHaveText('KI-generiert')
+      const img = portrait.locator('img')
+      await expect(img).toHaveAttribute('alt', /Lichter/)
+      await expect.poll(() => img.evaluate((el) => (el as HTMLImageElement).complete && (el as HTMLImageElement).naturalWidth > 0)).toBe(true)
+      const src = await img.evaluate((el) => (el as HTMLImageElement).currentSrc)
+      expect(src).toContain(`/img/tiere/${slug}-`)
+    }
+  })
+
+  test('the start page carries one portrait per species, each marked as AI-generated', async ({ page }) => {
+    await page.goto('/')
+    await page.evaluate(() => document.getElementById('wer-sie-sind')?.scrollIntoView())
+    const portraits = page.locator('.species-fact .portrait')
+    await expect(portraits).toHaveCount(10)
+    await expect(portraits.locator('.portrait-note')).toHaveText(Array(10).fill('KI-generiert'))
+  })
+})

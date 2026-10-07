@@ -28,8 +28,7 @@ useJsonLd('faq-jsonld', {
             <span class="faq-toggle" aria-hidden="true"></span>
           </summary>
           <div class="faq-answer">
-            <p>{{ faq.answer }}</p>
-            <SourceLinks :ids="faq.sources" />
+            <p>{{ faq.answer }}<SourceLinks :ids="faq.sources" /></p>
           </div>
         </details>
       </div>

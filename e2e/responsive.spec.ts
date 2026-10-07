@@ -9,7 +9,7 @@ const KEY_SECTIONS = [
   '.growth-progress',
   '.timeline',
   '.impact-card',
-  '.why-how-card',
+  '.hand-off',
   '.cta-button',
   '.site-footer',
   '.site-header',

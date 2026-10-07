@@ -98,10 +98,10 @@ export interface Victim {
   left: string
   /** CSS animation duration in seconds */
   duration: number
+  /** When this card started rising (ms since epoch); a view that mounts later picks its animation up from here */
+  bornAt: number
   /** When this card expires (ms since epoch) */
   expiresAt: number
-  /** Negative animation-delay in seconds for seed cards (0 for new ones) */
-  startOffset: number
 }
 
 /**
@@ -162,6 +162,7 @@ function generateVictim(): Victim {
   const locations = species.single === 'Fisch' ? fishingLocations : slaughterhouseLocations
   const location = locations[randomInt(0, locations.length - 1)]!
   lastLane = lastLane === 'left' ? 'right' : 'left'
+  const bornAt = Date.now()
 
   return {
     id: idCounter++,
@@ -175,9 +176,9 @@ function generateVictim(): Victim {
     lane: lastLane,
     left: `${randomInt(0, 70)}%`,
     duration,
+    bornAt,
     // +1s buffer so CSS animation is fully done before GC removes the node
-    expiresAt: Date.now() + (duration + 1) * 1000,
-    startOffset: 0,
+    expiresAt: bornAt + (duration + 1) * 1000,
   }
 }
 
@@ -193,15 +194,12 @@ export function useVictimTicker(spawnIntervalMs: MaybeRefOrGetter<number> = 2300
   // shallowRef + manual trigger for performance — avoids deep reactivity on the array
   const victims = shallowRef<Victim[]>([])
 
-  // Seed immediately — use negative animation-delay to place them mid-flight
+  // Seed immediately: the first cards were born a while ago, so they appear mid-flight
   const seed: Victim[] = []
   for (let i = 0; i < toValue(seedCount); i++) {
     const v = generateVictim()
-    // Negative offset makes CSS animation start partway through
-    const offset = randomInt(1, v.duration - 1)
-    v.startOffset = -offset
-    // Expires after the remaining animation time + 1s buffer
-    v.expiresAt = Date.now() + (v.duration - offset + 1) * 1000
+    v.bornAt -= randomInt(1, v.duration - 1) * 1000
+    v.expiresAt = v.bornAt + (v.duration + 1) * 1000
     seed.push(v)
   }
   victims.value = seed

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, useTemplateRef } from 'vue'
 import { useLiveState } from '@/composables/useLiveState'
-import { usePersonalTracker } from '@/composables/usePersonalTracker'
+import { usePersonalTracker, formatDurationDative } from '@/composables/usePersonalTracker'
 import { formatNumber } from '@/utils/formatNumber'
 import { localIsoDate } from '@/utils/isoDate'
 import { LAND_ANIMALS_PER_PERSON_YEAR, FISH_PER_PERSON_YEAR } from '@/utils/perCapita'
@@ -44,6 +44,60 @@ const activeImpactData = computed(() => impactFor(activeItem.value.days))
 
 const { veganSince, isSet: hasPersonalDate, daysSinceVegan, formattedDuration, clear: clearPersonalDate } = usePersonalTracker()
 const personalImpact = computed(() => impactFor(daysSinceVegan.value))
+
+/** The start date written out, "5. August 2023" */
+const personalSinceLabel = computed(() => {
+  const start = new Date(veganSince.value)
+  if (Number.isNaN(start.getTime())) return ''
+  return new Intl.DateTimeFormat('de-DE', { day: 'numeric', month: 'long', year: 'numeric' }).format(start)
+})
+
+/** The ring counts to the next full year of the visitor's own time */
+const DAYS_PER_YEAR = 365.25
+const RING_LENGTH = 2 * Math.PI * 58
+const personalRing = computed(() => {
+  const days = daysSinceVegan.value
+  const nextYear = Math.floor(days / DAYS_PER_YEAR) + 1
+  const share = (days % DAYS_PER_YEAR) / DAYS_PER_YEAR
+  return {
+    percent: Math.round(share * 100),
+    nextYear,
+    dashOffset: RING_LENGTH * (1 - share),
+  }
+})
+
+/**
+ * Milestones the visitor's own impact passes: the first few in days, then the
+ * figures the cards count. The ones reached show a check; the next one says
+ * how long it still takes at the daily rates.
+ */
+interface Milestone {
+  label: string
+  /** Days needed to reach it */
+  days: number
+}
+const milestones: readonly Milestone[] = [
+  { label: '1 Monat', days: 30 },
+  { label: '1 Jahr', days: 365 },
+  { label: '10 Landtiere', days: 10 / DAILY_LIVES },
+  { label: '100.000 Liter Wasser', days: 100_000 / DAILY_WATER_L },
+  { label: '1 Tonne CO₂', days: 1000 / DAILY_CO2_KG },
+  { label: '5 Jahre', days: 5 * 365 },
+  { label: '50 Landtiere', days: 50 / DAILY_LIVES },
+  { label: '10 Jahre', days: 10 * 365 },
+  { label: '100 Landtiere', days: 100 / DAILY_LIVES },
+  { label: '1 Million Liter Wasser', days: 1_000_000 / DAILY_WATER_L },
+]
+const personalMilestones = computed(() => {
+  const days = daysSinceVegan.value
+  const sorted = [...milestones].sort((a, b) => a.days - b.days)
+  const reached = sorted.filter((m) => m.days <= days)
+  const next = sorted.find((m) => m.days > days)
+  return {
+    reached,
+    next: next ? { label: next.label, inText: formatDurationDative(Math.ceil(next.days - days)) } : null,
+  }
+})
 const copyLabel = ref('Kopieren')
 
 // Native <dialog>: top layer, focus trap, Escape to close, backdrop for free
@@ -102,12 +156,18 @@ function lifeComparisons(lives: number): string[] {
   return r.slice(0, 2)
 }
 
+/** "1 Badewanne", "900 Badewannen": the rounded figure decides the form */
+function counted(value: number, singular: string, plural: string): string {
+  const text = formatNumber(value)
+  return `${text} ${text === '1' ? singular : plural}`
+}
+
 function waterComparisons(liters: number): string[] {
   const r: string[] = []
   const bathtubs = liters / 150
   const pools = liters / 50_000 // Gartenpool 8 x 4 m
-  if (pools >= 1) r.push(`${formatNumber(pools)} Gartenpools voll Wasser`)
-  if (bathtubs >= 1) r.push(`${formatNumber(bathtubs)} volle Badewannen`)
+  if (pools >= 1) r.push(`${counted(pools, 'Gartenpool', 'Gartenpools')} voll Wasser`)
+  if (bathtubs >= 1) r.push(`${counted(bathtubs, 'volle Badewanne', 'volle Badewannen')}`)
   if (liters >= 1000) r.push(`${formatNumber(liters / 1000)} Tonnen Wasser, genug für ein kleines Dorf`)
   return r.slice(0, 2)
 }
@@ -128,19 +188,19 @@ function landComparisons(m2: number): string[] {
   const r: string[] = []
   const soccer = m2 / 7140 // FIFA Fußballfeld
   const tennis = m2 / 261 // Tennisplatz
-  if (soccer >= 1) r.push(`${formatNumber(soccer)} Fußballfelder`)
-  if (tennis >= 1) r.push(`${formatNumber(tennis)} Tennisplätze`)
-  if (m2 >= 10) r.push(`${formatNumber(m2 / 10)} Parkplätze weniger versiegelt`)
+  if (soccer >= 1) r.push(counted(soccer, 'Fußballfeld', 'Fußballfelder'))
+  if (tennis >= 1) r.push(counted(tennis, 'Tennisplatz', 'Tennisplätze'))
+  if (m2 >= 10) r.push(`${counted(m2 / 10, 'Parkplatz', 'Parkplätze')} weniger versiegelt`)
   if (r.length === 0) r.push(`Etwa so viel wie ein kleines Badezimmer`)
   return r.slice(0, 2)
 }
 
-/** Card order and labels, shared by the period cards and the personal result */
-const metrics: readonly { key: MetricKey; icon: string; label: string; unit: string }[] = [
-  { key: 'lives', icon: '🐾', label: 'Landtiere gerettet', unit: '' },
-  { key: 'water', icon: '💧', label: 'Wasser gespart', unit: ' L' },
-  { key: 'co2', icon: '🌿', label: 'CO₂ vermieden', unit: ' kg' },
-  { key: 'land', icon: '🌾', label: 'Land geschont', unit: ' m²' },
+/** Card order, labels and the daily rate behind each, shared by the period cards and the board */
+const metrics: readonly { key: MetricKey; icon: string; label: string; shortLabel: string; unit: string; perDay: string }[] = [
+  { key: 'lives', icon: '🐾', label: 'Landtiere gerettet', shortLabel: 'Landtiere', unit: '', perDay: '' },
+  { key: 'water', icon: '💧', label: 'Wasser gespart', shortLabel: 'Wasser', unit: ' L', perDay: `${formatNumber(DAILY_WATER_L)} Liter am Tag` },
+  { key: 'co2', icon: '🌿', label: 'CO₂ vermieden', shortLabel: 'CO₂', unit: ' kg', perDay: `${formatNumber(DAILY_CO2_KG, 2)} Kilogramm am Tag` },
+  { key: 'land', icon: '🌾', label: 'Land geschont', shortLabel: 'Land', unit: ' m²', perDay: `${formatNumber(DAILY_LAND_M2, 2)} Quadratmeter am Tag` },
 ]
 </script>
 
@@ -153,7 +213,7 @@ const metrics: readonly { key: MetricKey; icon: string; label: string; unit: str
           <h2 class="chapter-title impact-title">Ein Mensch. {{ activeItem.label }}.</h2>
           <p class="chapter-lead impact-lead">
             So viel spart eine einzige Person, die vegan statt mit mittlerem Fleischkonsum isst.
-            Wähle den Zeitraum, die Karten rechnen mit.
+            Wähle den Zeitraum, die Karten rechnen mit.<SourceLinks :ids="['scarborough', 'destatisPopulation', 'uba', 'myclimate']" class="impact-source" />
           </p>
         </div>
         <div class="impact-tabs" role="group" aria-label="Zeitraum">
@@ -180,16 +240,15 @@ const metrics: readonly { key: MetricKey; icon: string; label: string; unit: str
           :class="`impact-card--${metric.key}`"
         >
           <span class="impact-card-icon" aria-hidden="true">{{ metric.icon }}</span>
-          <span class="impact-card-value">{{ activeImpactData[metric.key].value }}{{ metric.unit }}</span>
+          <span class="impact-card-value">{{ activeImpactData[metric.key].value }}<span v-if="metric.unit" class="impact-card-unit">{{ metric.unit }}</span></span>
           <span class="impact-card-label">{{ metric.label }}</span>
           <span v-if="metric.key === 'lives'" class="impact-card-extra">dazu ≈ {{ activeImpactData.fish.value }} Fische (geschätzt)</span>
+          <span v-else class="impact-card-extra">{{ metric.perDay }}</span>
           <ul class="impact-card-comparisons">
             <li v-for="c in activeImpactData[metric.key].comparisons" :key="c">{{ c }}</li>
           </ul>
         </div>
       </div>
-
-      <SourceLinks :ids="['scarborough', 'destatisPopulation', 'uba', 'myclimate']" class="impact-source" />
 
       <!-- Personal tracker -->
       <div
@@ -206,19 +265,49 @@ const metrics: readonly { key: MetricKey; icon: string; label: string; unit: str
 
         <div v-else class="personal-result">
           <div class="personal-header">
-            <p class="personal-duration">
-              Du lebst seit <strong>{{ formattedDuration }}</strong> vegan.
-            </p>
-            <button type="button" class="personal-reset" @click="openTrackerModal">ändern</button>
+            <div class="personal-header-copy">
+              <span class="personal-kicker">Mein Impact</span>
+              <p class="personal-duration">
+                Du lebst seit <strong>{{ formattedDuration }}</strong> vegan.
+              </p>
+              <p class="personal-since">
+                <template v-if="personalSinceLabel">Seit dem {{ personalSinceLabel }} · </template>{{ formatNumber(daysSinceVegan) }} {{ daysSinceVegan === 1 ? 'Tag' : 'Tage' }} ·
+                <button type="button" class="personal-reset" @click="openTrackerModal">ändern</button>
+              </p>
+            </div>
+            <!-- The ring fills towards the next full year -->
+            <div class="personal-ring" role="img" :aria-label="`${personalRing.percent} Prozent auf dem Weg zu ${personalRing.nextYear} ${personalRing.nextYear === 1 ? 'Jahr' : 'Jahren'}`">
+              <svg viewBox="0 0 132 132" width="132" height="132" aria-hidden="true">
+                <circle class="personal-ring-track" cx="66" cy="66" r="58" />
+                <circle class="personal-ring-fill" cx="66" cy="66" r="58" :stroke-dasharray="RING_LENGTH" :stroke-dashoffset="personalRing.dashOffset" />
+              </svg>
+              <span class="personal-ring-text">
+                <strong>{{ personalRing.percent }} %</strong>
+                <span>bis {{ personalRing.nextYear }} {{ personalRing.nextYear === 1 ? 'Jahr' : 'Jahre' }}</span>
+              </span>
+            </div>
           </div>
 
           <div class="personal-stats">
             <div v-for="metric in metrics" :key="metric.key" class="personal-stat">
               <span class="personal-stat-icon" aria-hidden="true">{{ metric.icon }}</span>
-              <span class="personal-impact-value" :class="`personal-impact-value--${metric.key}`">{{ personalImpact[metric.key].value }}{{ metric.unit }}</span>
-              <span class="personal-stat-label">{{ metric.label }}</span>
+              <span class="personal-impact-value" :class="`personal-impact-value--${metric.key}`">{{ personalImpact[metric.key].value }}<span v-if="metric.unit" class="personal-impact-unit">{{ metric.unit }}</span></span>
+              <span class="personal-stat-label">{{ metric.shortLabel }}</span>
               <span v-if="metric.key === 'lives'" class="personal-stat-extra">dazu ≈ {{ personalImpact.fish.value }} Fische (geschätzt)</span>
+              <span v-else class="personal-stat-extra">≈ {{ personalImpact[metric.key].comparisons[0] }}</span>
             </div>
+          </div>
+
+          <div class="personal-milestones">
+            <span class="personal-kicker">Meilensteine</span>
+            <ul class="personal-milestone-list">
+              <li v-for="milestone in personalMilestones.reached" :key="milestone.label" class="personal-milestone personal-milestone--reached">
+                <span aria-hidden="true">✓</span> {{ milestone.label }}
+              </li>
+              <li v-if="personalMilestones.next" class="personal-milestone personal-milestone--next">
+                {{ personalMilestones.next.label }} · in {{ personalMilestones.next.inText }}
+              </li>
+            </ul>
           </div>
 
           <div class="personal-share">
@@ -343,58 +432,69 @@ const metrics: readonly { key: MetricKey; icon: string; label: string; unit: str
   outline: 2px solid var(--brand-accent);
   outline-offset: 2px;
 }
+/* Four cards on one grid of rows: icon, figure, label, note, comparisons, so every line aligns across the row */
 .impact-cards {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.9rem;
+  gap: 1.1rem;
+  align-items: stretch;
 }
 .impact-card {
-  display: flex;
-  flex-direction: column;
-  padding: 1.35rem 1.35rem 1.2rem;
+  display: grid;
+  grid-template-rows: 2rem auto auto 1fr auto;
+  gap: 0.55rem;
+  padding: 1.75rem 1.75rem 1.5rem;
   background: #fff;
   border: 1.5px solid rgba(20, 54, 31, 0.08);
-  border-radius: 20px;
+  border-radius: 24px;
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.impact-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 18px 40px rgba(20, 54, 31, 0.1);
 }
 .impact-card-icon {
-  font-size: 1.5rem;
-  line-height: 1;
-  margin-bottom: 0.9rem;
+  font-size: 1.6rem;
+  line-height: 2rem;
 }
 .impact-card-value {
   font-family: var(--font-display);
-  font-size: clamp(1.4rem, 2.2vw, 1.8rem);
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  line-height: 1.05;
+  font-size: clamp(1.6rem, 2.4vw, 2.4rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
   font-variant-numeric: tabular-nums;
-  overflow-wrap: anywhere;
+  white-space: nowrap;
+}
+.impact-card-unit,
+.personal-impact-unit {
+  margin-left: 0.3em;
+  font-size: 0.5em;
+  font-weight: 700;
+  letter-spacing: 0;
+  color: var(--brand-muted);
 }
 .impact-card--lives .impact-card-value { color: #e74c3c; }
 .impact-card--water .impact-card-value { color: #2b7fb8; }
 .impact-card--co2 .impact-card-value { color: var(--brand-green); }
 .impact-card--land .impact-card-value { color: #b8781e; }
 .impact-card-label {
-  margin-top: 0.35rem;
-  font-size: 0.72rem;
+  font-size: 1rem;
   font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--brand-faint);
+  color: var(--brand-green);
 }
-/* The fish line under the lives card: an estimate, so it stays small and apart from the counted figure */
+/* The note under the label: the fish estimate on the lives card, the daily rate on the others */
 .impact-card-extra {
-  margin-top: 0.35rem;
   font-size: 0.8rem;
-  line-height: 1.4;
-  color: var(--brand-muted);
+  line-height: 1.5;
+  color: var(--brand-faint);
   font-variant-numeric: tabular-nums;
 }
 .impact-card-comparisons {
   list-style: none;
-  margin: 0.9rem 0 0;
-  padding: 0.8rem 0 0;
-  border-top: 1px solid #f1f3f5;
+  margin: 0.4rem 0 0;
+  padding: 0.85rem 0 0;
+  border-top: 1px solid rgba(20, 54, 31, 0.08);
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
@@ -413,17 +513,26 @@ const metrics: readonly { key: MetricKey; icon: string; label: string; unit: str
   font-weight: 700;
   color: #b8b0a0;
 }
-.impact-source {
-  margin-top: 0.9rem;
-}
 
-/* Personal tracker: a dark card that turns the period numbers into the visitor's own */
+/* Personal tracker: a dark board that turns the period numbers into the visitor's own */
 .personal {
-  margin-top: 2rem;
+  margin-top: 2.5rem;
   padding: 1.75rem 2rem;
-  border-radius: 24px;
+  border-radius: 28px;
   background: var(--brand-green);
   color: var(--brand-cream);
+  box-shadow: 0 30px 70px rgba(20, 54, 31, 0.25);
+}
+.personal-result {
+  margin: -1.75rem -2rem;
+}
+.personal-kicker {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #7fe0a5;
 }
 .personal-intro {
   display: flex;
@@ -471,86 +580,167 @@ const metrics: readonly { key: MetricKey; icon: string; label: string; unit: str
   outline-offset: 3px;
 }
 .personal-header {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: 0.9rem;
-  flex-wrap: wrap;
-  margin-bottom: 1.1rem;
+  gap: 2rem;
+  padding: 2.5rem 3rem 2rem;
+}
+.personal-header-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
 }
 .personal-duration {
   margin: 0;
   font-family: var(--font-display);
-  font-size: 1.15rem;
-  letter-spacing: -0.02em;
+  font-size: clamp(1.4rem, 2.6vw, 2.1rem);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
 }
 .personal-duration strong {
-  color: var(--brand-accent-text);
+  color: #ffb37a;
+}
+.personal-since {
+  margin: 0;
+  font-size: 0.95rem;
+  color: rgba(246, 241, 231, 0.7);
+  font-variant-numeric: tabular-nums;
 }
 .personal-reset {
-  padding: 4px 10px;
-  border: 1px solid rgba(246, 241, 231, 0.25);
-  border-radius: 999px;
+  padding: 0;
+  border: none;
   background: transparent;
-  color: rgba(246, 241, 231, 0.7);
+  color: var(--brand-cream);
   font: inherit;
-  font-size: 0.75rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
   cursor: pointer;
-  transition: background 0.15s, color 0.15s;
 }
 .personal-reset:hover {
-  background: rgba(246, 241, 231, 0.1);
-  color: var(--brand-cream);
+  color: #ffb37a;
 }
+.personal-ring {
+  position: relative;
+  width: 132px;
+  height: 132px;
+  display: grid;
+  place-items: center;
+}
+.personal-ring svg {
+  position: absolute;
+  inset: 0;
+  transform: rotate(-90deg);
+}
+.personal-ring circle {
+  fill: none;
+  stroke-width: 8;
+}
+.personal-ring-track {
+  stroke: rgba(246, 241, 231, 0.12);
+}
+.personal-ring-fill {
+  stroke: var(--brand-accent);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s ease-out;
+}
+.personal-ring-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+}
+.personal-ring-text strong {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  letter-spacing: -0.03em;
+}
+.personal-ring-text span {
+  font-size: 0.66rem;
+  line-height: 1.3;
+  color: rgba(246, 241, 231, 0.65);
+}
+/* The four own figures, one strip with hairlines between them */
 .personal-stats {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.75rem;
+  gap: 1px;
+  background: rgba(246, 241, 231, 0.1);
+  border-top: 1px solid rgba(246, 241, 231, 0.1);
+  border-bottom: 1px solid rgba(246, 241, 231, 0.1);
 }
 .personal-stat {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: 0.9rem 1rem;
-  border-radius: 16px;
-  border: 1px solid rgba(246, 241, 231, 0.12);
-  background: rgba(246, 241, 231, 0.045);
+  gap: 0.35rem;
+  padding: 1.75rem 2rem;
+  background: var(--brand-green);
 }
 .personal-stat-icon {
-  font-size: 1.1rem;
-  margin-bottom: 0.4rem;
+  font-size: 1.35rem;
 }
 .personal-impact-value {
   font-family: var(--font-display);
-  font-size: 1.15rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
+  font-size: clamp(1.5rem, 2.4vw, 2.1rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
   font-variant-numeric: tabular-nums;
-  overflow-wrap: anywhere;
+  white-space: nowrap;
+}
+.personal-impact-unit {
+  color: rgba(246, 241, 231, 0.7);
 }
 .personal-impact-value--lives { color: var(--brand-accent); }
 .personal-impact-value--water { color: #8fd0ff; }
 .personal-impact-value--co2 { color: #7fe0a5; }
 .personal-impact-value--land { color: #f2c27b; }
 .personal-stat-label {
-  margin-top: 0.25rem;
-  font-size: 0.68rem;
+  font-size: 0.9rem;
   font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: rgba(246, 241, 231, 0.55);
 }
 .personal-stat-extra {
-  margin-top: 0.3rem;
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   line-height: 1.4;
-  color: rgba(246, 241, 231, 0.7);
+  color: rgba(246, 241, 231, 0.6);
   font-variant-numeric: tabular-nums;
 }
+.personal-milestones {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.75rem 3rem 0;
+}
+.personal-milestone-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.personal-milestone {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  height: 34px;
+  padding: 0 0.8rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+.personal-milestone--reached {
+  background: rgba(127, 224, 165, 0.14);
+  color: #7fe0a5;
+}
+.personal-milestone--next {
+  border: 1px dashed rgba(246, 241, 231, 0.3);
+  color: rgba(246, 241, 231, 0.65);
+}
 .personal-share {
-  margin-top: 1.1rem;
-  padding-top: 1rem;
-  border-top: 1px solid rgba(246, 241, 231, 0.12);
+  padding: 1.25rem 3rem 2.25rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -734,11 +924,23 @@ const metrics: readonly { key: MetricKey; icon: string; label: string; unit: str
     padding: 1.35rem 1.25rem;
     border-radius: 20px;
   }
-  .personal-stats {
-    gap: 0.5rem;
+  .personal-result {
+    margin: -1.35rem -1.25rem;
+  }
+  .personal-header {
+    grid-template-columns: 1fr;
+    justify-items: start;
+    gap: 1.25rem;
+    padding: 1.75rem 1.5rem 1.5rem;
   }
   .personal-stat {
-    padding: 0.75rem 0.8rem;
+    padding: 1.1rem 1.25rem;
+  }
+  .personal-milestones {
+    padding: 1.25rem 1.5rem 0;
+  }
+  .personal-share {
+    padding: 1rem 1.5rem 1.75rem;
   }
   .vt-modal {
     border-radius: 18px;

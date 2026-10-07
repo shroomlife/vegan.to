@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { handOff, handOffUrl } from '@/data/actions'
 import { useRoute } from 'vue-router'
 import BrandWordmark from '@/components/BrandWordmark.vue'
 import CounterPill from '@/components/CounterPill.vue'
@@ -53,9 +54,7 @@ const light = computed(() => route.name === 'Home' && !live.heroVisible.value)
             {{ link.label }}
           </a>
         </RouterLink>
-        <RouterLink to="/#mitmachen" custom v-slot="{ href, navigate }">
-          <a :href="href" class="site-header-cta" @click="navigate($event); onNavClick('/#mitmachen')">#GoVegan</a>
-        </RouterLink>
+        <a :href="handOffUrl('header')" class="site-header-cta" target="_blank" rel="noopener">{{ handOff.label }}</a>
       </nav>
     </div>
   </header>

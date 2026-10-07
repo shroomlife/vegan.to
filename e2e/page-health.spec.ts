@@ -99,3 +99,18 @@ test.describe('page health', () => {
     expect(scrollWidth).toBeLessThanOrEqual(innerWidth)
   })
 })
+
+test.describe('clips stay out of the snapshot', () => {
+  test('the prerendered start page carries no video element, the app adds the clips', async ({ page, request, isMobile }) => {
+    const html = await (await request.get('/')).text()
+    expect(html).not.toContain('<video')
+    expect(html).not.toContain('poster=')
+    await page.goto('/')
+    await page.locator('.action-figure').scrollIntoViewIfNeeded()
+    const clip = page.locator('.action-figure video')
+    await expect(clip).toHaveCount(1)
+    if (!isMobile) {
+      await expect.poll(() => clip.evaluate((el) => !(el as HTMLVideoElement).paused), { timeout: 10_000 }).toBe(true)
+    }
+  })
+})

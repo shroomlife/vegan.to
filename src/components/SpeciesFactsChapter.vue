@@ -3,12 +3,17 @@ import { speciesFacts } from '@/data/facts'
 import { animals } from '@/data/animals'
 import { slugBySpecies } from '@/data/species'
 import SourceLinks from '@/components/SourceLinks.vue'
-import SceneImage from '@/components/SceneImage.vue'
+import SpeciesPortrait from '@/components/SpeciesPortrait.vue'
+import ClipVideo from '@/components/ClipVideo.vue'
 
-/** The species page behind a fact, found by the plural name the fact carries */
-function speciesPath(plural: string): string | undefined {
+/** The species page slug behind a fact, found by the plural name the fact carries */
+function speciesSlug(plural: string): string | undefined {
   const animal = animals.find((entry) => entry.names.plural === plural)
-  const slug = animal ? slugBySpecies(animal.names.single) : undefined
+  return animal ? slugBySpecies(animal.names.single) : undefined
+}
+
+function speciesPath(plural: string): string | undefined {
+  const slug = speciesSlug(plural)
   return slug ? `/tiere/${slug}` : undefined
 }
 </script>
@@ -25,9 +30,12 @@ function speciesPath(plural: string): string | undefined {
             Jeder Satz hier hat eine Quelle, du kannst sie nachlesen.
           </p>
         </div>
-        <figure v-reveal="{ x: 24, duration: 0.6, amount: 0.3 }" class="species-facts-portrait">
-          <SceneImage name="pig-eye" alt="Das Auge eines Schweins hinter einem Gatter" sizes="(max-width: 991px) 100vw, 480px" />
-          <figcaption>Ein Schwein sieht dich an. Es erkennt Gesichter, auch deins.</figcaption>
+        <!-- The eye: the clip opens like a lid while it scrolls into view, then blinks now and then -->
+        <figure class="species-facts-eye">
+          <div class="species-facts-lid">
+            <ClipVideo folder="start" name="calf-eyes" :widths="[1920, 1280]" label="Ein braunes Kalb, ganz nah, es sieht in die Kamera und blinzelt" class="species-facts-clip" />
+          </div>
+          <figcaption>Ein Kalb sieht dich an. Es blinzelt. Du auch.</figcaption>
         </figure>
       </div>
       <div class="species-facts-grid">
@@ -37,12 +45,12 @@ function speciesPath(plural: string): string | undefined {
           v-reveal="{ y: 24, duration: 0.45, delay: (index % 3) * 0.08, amount: 0.3 }"
           class="species-fact"
         >
+          <SpeciesPortrait v-if="speciesSlug(fact.species)" :slug="speciesSlug(fact.species) ?? ''" sizes="(max-width: 767px) 100vw, (max-width: 991px) 50vw, 400px" class="species-fact-portrait" />
           <div class="species-fact-head">
             <span class="species-fact-emoji" aria-hidden="true">{{ fact.emoji }}</span>
             <h3 class="species-fact-name">{{ fact.species }}</h3>
           </div>
-          <p class="species-fact-text">{{ fact.text }}</p>
-          <SourceLinks :ids="fact.sources" />
+          <p class="species-fact-text">{{ fact.text }}<SourceLinks :ids="fact.sources" /></p>
           <RouterLink v-if="speciesPath(fact.species)" :to="speciesPath(fact.species) ?? '/tiere'" class="species-fact-link">
             Mehr über {{ fact.species }} <span aria-hidden="true">&rarr;</span>
           </RouterLink>
@@ -60,33 +68,61 @@ function speciesPath(plural: string): string | undefined {
 }
 .species-facts-head {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 480px);
-  gap: 2.5rem;
-  align-items: end;
-  margin-bottom: 2rem;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 520px);
+  gap: 3rem;
+  align-items: center;
+  margin-bottom: 2.5rem;
 }
 .species-facts-head .chapter-lead {
   margin-bottom: 0;
 }
-.species-facts-portrait {
+.species-facts-eye {
   margin: 0;
-  border-radius: 24px;
-  overflow: hidden;
-  background: #fff;
-  border: 1.5px solid rgba(20, 54, 31, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
-.species-facts-portrait :deep(img) {
-  width: 100%;
-  aspect-ratio: 16 / 10;
-  object-fit: cover;
-  object-position: 50% 40%;
-  display: block;
+/* The lid: an ellipse that is almost shut when the chapter enters and open when it has arrived */
+.species-facts-lid {
+  aspect-ratio: 4 / 3;
+  clip-path: ellipse(56% 50% at 54% 50%);
+  background: var(--brand-night);
 }
-.species-facts-portrait figcaption {
-  padding: 0.75rem 1rem 0.85rem;
+.species-facts-clip {
+  height: 100%;
+  animation: eye-blink 7s ease-in-out infinite;
+  clip-path: ellipse(60% 54% at 54% 50%);
+}
+.species-facts-clip :deep(video),
+.species-facts-clip :deep(img) {
+  transform: scale(1.12);
+  transform-origin: 50% 50%;
+}
+@keyframes eye-blink {
+  0%, 92%, 100% { clip-path: ellipse(60% 54% at 54% 50%); }
+  95% { clip-path: ellipse(60% 3% at 54% 50%); }
+}
+@supports (animation-timeline: view()) {
+  .species-facts-lid {
+    animation: eye-open linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 90%;
+  }
+  @keyframes eye-open {
+    from { clip-path: ellipse(56% 6% at 54% 50%); }
+    to { clip-path: ellipse(56% 50% at 54% 50%); }
+  }
+}
+.species-facts-eye figcaption {
   font-size: 0.88rem;
   line-height: 1.45;
   color: var(--brand-muted);
+}
+@media (prefers-reduced-motion: reduce) {
+  .species-facts-lid,
+  .species-facts-clip {
+    animation: none;
+  }
 }
 .species-facts-grid {
   display: grid;
@@ -101,6 +137,11 @@ function speciesPath(plural: string): string | undefined {
   background: #fff;
   border: 1.5px solid rgba(20, 54, 31, 0.08);
   border-radius: 20px;
+}
+/* The portrait bleeds to the card's edges, the text keeps its padding */
+.species-fact-portrait {
+  margin: -1.25rem -1.35rem 0.4rem;
+  border-radius: 18px 18px 0 0;
 }
 .species-fact-head {
   display: flex;

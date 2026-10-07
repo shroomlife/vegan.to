@@ -1,8 +1,37 @@
 /**
- * Where visitors go next. Every link here is a deliberate hand-off:
- * the three core questions first, then places to start, learn, act and live.
- * Every URL was opened and read before it was added.
+ * Where visitors go next. Every link here is a deliberate hand-off: the main
+ * one into Veganstart, the three core questions as a small line, then places
+ * to start, learn, act and live. Every URL was opened and read before it was added.
  */
+
+/** The main hand-off of the page, in the header and in the "Mach mit" chapter */
+export const handOff = {
+  url: 'https://www.veganstart.de/',
+  domain: 'veganstart.de',
+  kicker: 'Der erste Schritt',
+  title: 'Go vegan. Mit Veganstart an deiner Seite.',
+  // Wording checked against veganstart.de on 2026-10-07: PETA's free 30-day programme, app or e-mail, recipes, tips, support
+  description: 'Das kostenlose 30-Tage-Programm von PETA: jeden Tag Tipps und Rezepte per App oder E-Mail, dazu ein Einkaufsguide und ein Team, das Fragen beantwortet. Schritt für Schritt, ohne Druck.',
+  label: '#GoVegan',
+} as const
+
+/** The spots on this site a visitor can leave for Veganstart from */
+export type HandOffPlacement = 'header' | 'mach-mit' | 'pause'
+
+/**
+ * The Veganstart link with campaign parameters. veganstart.de runs Google Tag
+ * Manager with GA4 (checked on 2026-10-07), which reads the standard utm_*
+ * parameters from the landing URL, so PETA sees that the visit came from
+ * vegan.to and from which spot on the page.
+ */
+export function handOffUrl(placement: HandOffPlacement): string {
+  const url = new URL(handOff.url)
+  url.searchParams.set('utm_source', 'vegan.to')
+  url.searchParams.set('utm_medium', 'referral')
+  url.searchParams.set('utm_campaign', 'govegan')
+  url.searchParams.set('utm_content', placement)
+  return url.toString()
+}
 
 export interface CoreQuestion {
   key: 'why' | 'how' | 'who'

@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch, type ComponentPublicInstance } from 'vue'
-import { useWindowSize } from '@vueuse/core'
 import { useJsonLd } from '@/composables/useJsonLd'
-import { span, useSceneProgress } from '@/composables/useSceneProgress'
+import { span, useSceneProgress, type SceneMode } from '@/composables/useSceneProgress'
 import { topicByName } from '@/data/topics'
 import {
   cageStations,
@@ -31,9 +30,9 @@ const topic = topicByName('Timeline')
 const { register, progress, page, reducedMotion } = useSceneProgress()
 const still = computed(() => reducedMotion.value === 'reduce')
 
-/** Template ref callback that hands the track element to the scene tracker */
-function track(id: string) {
-  return (el: Element | ComponentPublicInstance | null) => register(id, el instanceof HTMLElement ? el : null)
+/** Template ref callback that hands the element to the scene tracker, see SceneMode for how its progress is read */
+function track(id: string, mode: SceneMode = 'scene') {
+  return (el: Element | ComponentPublicInstance | null) => register(id, el instanceof HTMLElement ? el : null, mode)
 }
 const p = (id: string) => progress[id] ?? 0
 
@@ -129,9 +128,8 @@ watch(
 )
 
 /* ── Akt I: eine Station nach der anderen ────────────────── */
-const { width: viewportWidth } = useWindowSize()
-/** On a phone the scenes are not pinned (see the styles), so every slide simply stays in the flow */
-const earlyPinned = computed(() => viewportWidth.value >= 760 && !still.value)
+/** With reduced motion the scenes are not pinned (see the styles), so every slide simply stays in the flow */
+const earlyPinned = computed(() => !still.value)
 /** The intro counts as the first slide */
 const EARLY_SLIDES = earlyStations.length + 1
 /** Where the scroll stands, in slides: 0.5 is the middle of the first, EARLY_SLIDES - 0.5 the middle of the last */
@@ -162,15 +160,17 @@ const words2009 = QUOTE_2009.split(' ')
 const lit = (id: string, total: number) => Math.round(span(p(id), 0.05, 0.8) * total)
 
 /* ── Käfig, Uhr, Countdown ───────────────────────────────── */
-const A4_CM2 = 21 * 29.7
+const A4_WIDTH_CM = 21
+const A4_CM2 = A4_WIDTH_CM * 29.7
 const CAGE_CM2 = 450
-/** The cage square relative to the A4 sheet, by area */
-const cageSide = Math.sqrt(CAGE_CM2 / A4_CM2)
+/** The cage drawn across the full width of the sheet: 450 cm² are 21 × 21,4 cm, 72 % of an A4 */
+const cageShare = CAGE_CM2 / A4_CM2
+const cageHeightCm = CAGE_CM2 / A4_WIDTH_CM
 const CLOCK_LENGTH = 804.2
-const clockHours = computed(() => Math.round(span(p('transport'), 0.1, 0.9) * 24))
+const clockHours = computed(() => Math.round(span(p('transport'), 0.05, 0.9) * 24))
 /** BZL figure for the years before the ban; the ministry says about 40 million, see /kueken-und-legehennen */
 const CHICKS_BEFORE_BAN = 45_000_000
-const countdown = computed(() => (still.value ? CHICKS_BEFORE_BAN : Math.round(CHICKS_BEFORE_BAN * (1 - span(p('countdown'), 0.15, 0.85)))))
+const countdown = computed(() => (still.value ? CHICKS_BEFORE_BAN : Math.round(CHICKS_BEFORE_BAN * (1 - span(p('countdown'), 0.05, 0.85)))))
 
 /* ── Deutschland heute: Exporte ──────────────────────────── */
 const exportsMax = Math.max(...thirdCountryExports.map((entry) => entry.cattle))
@@ -390,8 +390,8 @@ useJsonLd('page-breadcrumb', {
       </div>
     </section>
 
-    <section :ref="track('foundation')" class="flow flow--band" aria-label="1972 bis 1980">
-      <figure class="band band--eye" :style="{ '--p': p('foundation') }" aria-hidden="true">
+    <section class="flow flow--band" aria-label="1972 bis 1980">
+      <figure :ref="track('foundation', 'pass')" class="band band--eye" :style="{ '--p': p('foundation') }" aria-hidden="true">
         <SceneImage name="cow-eye" alt="" />
       </figure>
       <div class="flow-inner">
@@ -416,8 +416,15 @@ useJsonLd('page-breadcrumb', {
         </figure>
         <div class="cage">
           <div class="cage-art" aria-hidden="true">
-            <div class="cage-a4"><span>DIN A4 · 21 × 29,7 cm · {{ formatNumber(A4_CM2) }} cm²</span></div>
-            <div class="cage-hen" :style="{ '--side': cageSide }"><span>{{ CAGE_CM2 }} cm² · eine Henne</span></div>
+            <span class="cage-a3-label">DIN A3 · 42 × 29,7 cm · zwei A4</span>
+            <div class="cage-a4 cage-a4--blank"><span>DIN A4 · {{ formatNumber(A4_CM2) }} cm²</span></div>
+            <div class="cage-a4">
+              <span>DIN A4 · {{ formatNumber(A4_CM2) }} cm²</span>
+              <div class="cage-hen" :style="{ '--share': cageShare }">
+                <span class="cage-hen-size">{{ A4_WIDTH_CM }} × {{ formatNumber(cageHeightCm, 1) }} cm</span>
+                <span>{{ CAGE_CM2 }} cm² · eine Henne</span>
+              </div>
+            </div>
           </div>
           <div class="cage-copy">
             <h2 class="kicker">Akt III · 1987 · Der Käfig</h2>
@@ -458,7 +465,7 @@ useJsonLd('page-breadcrumb', {
         <div class="clock">
           <svg class="clock-ring" viewBox="0 0 300 300" aria-hidden="true">
             <circle cx="150" cy="150" r="128" class="clock-track" />
-            <circle cx="150" cy="150" r="128" class="clock-arc" :style="{ strokeDasharray: CLOCK_LENGTH, strokeDashoffset: CLOCK_LENGTH * (1 - span(p('transport'), 0.1, 0.9)) }" transform="rotate(-90 150 150)" />
+            <circle cx="150" cy="150" r="128" class="clock-arc" :style="{ strokeDasharray: CLOCK_LENGTH, strokeDashoffset: CLOCK_LENGTH * (1 - span(p('transport'), 0.05, 0.9)) }" transform="rotate(-90 150 150)" />
           </svg>
           <div class="clock-copy">
             <h2 class="kicker">Akt IV · 2005 · Unterwegs</h2>
@@ -526,10 +533,10 @@ useJsonLd('page-breadcrumb', {
     </section>
 
     <!-- Deutschland heute -->
-    <section :ref="track('today')" class="flow" aria-label="Deutschland heute">
+    <section class="flow" aria-label="Deutschland heute">
       <div class="flow-inner">
         <h2 class="kicker">Deutschland heute</h2>
-        <figure class="exports" :style="{ '--p': p('today') }">
+        <figure :ref="track('today', 'enter')" class="exports" :style="{ '--p': p('today') }">
           <div class="exports-media">
             <SceneVideo name="truck" poster="truck-video" label="Ein Lastwagen mit Rindern bei Sonnenuntergang" />
           </div>
@@ -561,7 +568,7 @@ useJsonLd('page-breadcrumb', {
 
     <!-- Akt VII: heute legal -->
     <section id="akt-7" :ref="track('legal')" class="flow flow--split flow--band" aria-label="Akt VII: Heute legal">
-      <figure class="band" :style="{ '--p': p('legal') }">
+      <figure :ref="track('legalBand', 'pass')" class="band" :style="{ '--p': p('legalBand') }">
         <SceneVideo name="piglets-straw" poster="piglets-straw-video" label="Ferkel drängen sich auf Stroh" />
       </figure>
       <div class="flow-inner flow-inner--split flow-inner--swap">
@@ -1308,69 +1315,72 @@ useJsonLd('page-breadcrumb', {
   width: min(1200px, 100%);
   margin: 0 auto;
 }
+/* Two A4 sheets side by side make an A3; the right sheet carries the cage */
 .cage-art {
   position: relative;
-  aspect-ratio: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  aspect-ratio: 420 / 297;
   max-width: 100%;
+  margin-top: 1.6rem;
+  border: 1.5px dashed rgba(246, 241, 231, 0.45);
+  border-radius: 4px;
 }
-/* A sheet of paper: cream, a faint ruled edge, a folded corner, the DIN label like a stamp */
-.cage-a4 {
+.cage-a3-label {
   position: absolute;
-  left: 12%;
-  top: 4%;
-  width: 60%;
-  height: calc(60% * 1.414);
-  background: var(--paper);
-  border-radius: 3px;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(20, 54, 31, 0.08);
-  display: flex;
-  align-items: flex-end;
+  left: 0;
+  bottom: 100%;
+  margin-bottom: 10px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(246, 241, 231, 0.7);
+  white-space: nowrap;
+}
+.cage-a4 {
+  position: relative;
+  overflow: hidden;
   padding: 12px 14px;
-  font-size: 0.78rem;
+  background: var(--paper);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--brand-green);
 }
-.cage-a4::before {
-  content: '';
-  position: absolute;
-  right: 0;
-  top: 0;
-  width: 14%;
-  aspect-ratio: 1;
-  background: linear-gradient(225deg, var(--night) 50%, rgba(20, 54, 31, 0.18) 50%);
-  border-bottom-left-radius: 3px;
+.cage-a4--blank {
+  border-radius: 3px 0 0 3px;
+  border-right: 1px dashed rgba(20, 54, 31, 0.35);
 }
-.cage-a4::after {
-  content: 'Ein Blatt Papier';
-  position: absolute;
-  left: 14px;
-  top: 12px;
-  font-size: 0.7rem;
-  font-weight: 400;
-  letter-spacing: 0.04em;
-  text-transform: none;
-  color: var(--brand-muted);
+.cage-a4:not(.cage-a4--blank) {
+  border-radius: 0 3px 3px 0;
 }
+/* The cage grows from the bottom of the sheet to its real share early in the act, so a phone sees it full while the sheets are still on screen */
 .cage-hen {
   position: absolute;
-  left: 12%;
-  top: 4%;
-  /* The square's side is sqrt(450 / 623.7) of the A4 short side; it starts bigger and shrinks with the scroll */
-  width: calc(60% * var(--side));
-  height: calc(60% * var(--side));
-  background: var(--blood);
-  border-radius: 3px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(var(--share) * 100% * clamp(0, (var(--p) - 0.05) / 0.35, 1));
+  overflow: hidden;
   display: flex;
-  align-items: flex-end;
-  padding: 10px;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 4px;
+  padding: 10px 14px;
+  background: var(--blood);
+  box-shadow: 0 -10px 40px rgba(231, 76, 60, 0.35);
   font-weight: 900;
   font-size: 0.85rem;
+  letter-spacing: 0;
+  text-transform: none;
   color: #2a0d08;
-  box-shadow: 0 30px 80px rgba(231, 76, 60, 0.35);
-  transform: scale(calc(1.9 - var(--p) * 0.9));
-  transform-origin: 0 0;
+}
+.cage-hen-size {
+  font-weight: 400;
+  font-size: 0.72rem;
 }
 .cage-copy {
   position: relative;
@@ -1701,31 +1711,35 @@ useJsonLd('page-breadcrumb', {
     display: none;
   }
 }
-/* Small screens: no pinning, every scene is as tall as its content and animates while it scrolls through */
+/* Small screens: the scenes pin like on a desktop, the slides and the rail just take less room */
 @media (max-width: 759px) {
-  .track {
-    height: auto;
-  }
-  .stage {
-    position: relative;
-    top: auto;
-    height: auto;
-    min-height: 72svh;
-    padding-block: 12vh;
-  }
-  .early-slides {
-    display: grid;
-    gap: 3rem;
+  /* Room above for the fixed year badge, the picture a little lower so the slide and the rail fit one screen */
+  .early--pinned {
+    gap: 2vh;
+    padding-block: 8vh 3vh;
   }
   .early-slide--pictured {
     grid-template-columns: 1fr;
-    gap: 1.25rem;
+    gap: 1rem;
   }
   .early-picture {
     order: -1;
     aspect-ratio: 16 / 10;
-    max-height: none;
+    max-height: 26vh;
     border-radius: 20px;
+  }
+  /* The rail keeps its five years on one line, the titles go */
+  .early-rail {
+    grid-template-columns: repeat(5, auto);
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .early-rail-year {
+    font-size: 0.78rem;
+    white-space: nowrap;
+  }
+  .early-rail-title {
+    display: none;
   }
   .flow-inner--split,
   .cage,
@@ -1738,8 +1752,7 @@ useJsonLd('page-breadcrumb', {
     display: none;
   }
   .cage-art {
-    aspect-ratio: auto;
-    height: 42vh;
+    margin-top: 2rem;
   }
   .side {
     position: relative;
