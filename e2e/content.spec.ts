@@ -69,6 +69,30 @@ test.describe('editorial chapters', () => {
     await expectCitation(page, first)
   })
 
+  test('the pause button cannot pause: the dialog counts on and offers three ways out', async ({ page }) => {
+    await page.goto('/')
+    const button = page.locator('.pause-button')
+    await button.scrollIntoViewIfNeeded()
+    await expect(page.locator('.pause-dialog')).toBeHidden()
+    await button.click()
+    const dialog = page.locator('.pause-dialog')
+    await expect(dialog).toBeVisible()
+    await expect(dialog.locator('.pause-title')).toHaveText('Geht nicht.')
+    // the count inside the dialog starts at the moment of the press and keeps running
+    const number = dialog.locator('.pause-count-number')
+    const first = Number((await number.innerText()).replace(/\./g, ''))
+    await page.waitForTimeout(2500)
+    const later = Number((await number.innerText()).replace(/\./g, ''))
+    expect(later).toBeGreaterThan(first)
+    const ways = dialog.locator('.pause-way')
+    await expect(ways).toHaveCount(3)
+    await expect(ways.nth(0)).toHaveAttribute('href', '#mitmachen')
+    await expect(ways.nth(1)).toHaveAttribute('href', /^https:\/\/www\.veganstart\.de\/\?utm_source=vegan\.to.*utm_content=pause$/)
+    await expect(ways.nth(2)).toHaveAttribute('href', '#impact')
+    await page.keyboard.press('Escape')
+    await expect(dialog).toBeHidden()
+  })
+
   test('the live sentence names the newest card', async ({ page }) => {
     await page.goto('/')
     const name = (await page.locator('.live-name').innerText()).trim()
