@@ -46,7 +46,7 @@ test.describe('editorial chapters', () => {
     await page.goto('/')
     const name = (await page.locator('.live-name').innerText()).trim()
     expect(name.length).toBeGreaterThan(1)
-    await expect(page.locator('.recent-grid .victim-card').first().locator('.victim-card-name')).toHaveText(name)
+    await expect(page.locator('.recent-list .victim-card').first().locator('.victim-card-name')).toHaveText(name)
   })
 
   test('the counter pill follows once the hero has scrolled away', async ({ page, isMobile }) => {

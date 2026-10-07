@@ -19,6 +19,7 @@ import AnimatedNumber from '@/components/AnimatedNumber.vue'
 import EmojiWall from '@/components/EmojiWall.vue'
 import GrowthTimeline from '@/components/GrowthTimeline.vue'
 import HeroSky from '@/components/HeroSky.vue'
+import HeroBackdrop from '@/components/HeroBackdrop.vue'
 import VictimCard from '@/components/VictimCard.vue'
 import SpeciesFactsChapter from '@/components/SpeciesFactsChapter.vue'
 import LifeFactsChapter from '@/components/LifeFactsChapter.vue'
@@ -78,8 +79,24 @@ function riseDelay(victim: Victim): string {
 
 const leftLane = computed(() => victims.value.filter((v) => v.lane === 'left'))
 const rightLane = computed(() => victims.value.filter((v) => v.lane === 'right'))
-/** The three most recent cards, newest first, for the "Wer sie waren" chapter */
-const recentVictims = computed(() => [...victims.value].slice(-3).reverse())
+/** The five most recent cards, newest first: the lifelines of the "Wer sie waren" chapter */
+const recentVictims = computed(() => [...victims.value].slice(-5).reverse())
+
+/**
+ * The torch: a warm cone in the hero backdrop follows the pointer. One write
+ * per frame at most, as two custom properties on the hero element.
+ */
+let spotFrame = 0
+function onHeroPointer(event: PointerEvent) {
+  const hero = heroRef.value
+  if (!hero || spotFrame !== 0) return
+  spotFrame = requestAnimationFrame(() => {
+    spotFrame = 0
+    const rect = hero.getBoundingClientRect()
+    hero.style.setProperty('--spot-x', `${(((event.clientX - rect.left) / rect.width) * 100).toFixed(1)}%`)
+    hero.style.setProperty('--spot-y', `${(((event.clientY - rect.top) / rect.height) * 100).toFixed(1)}%`)
+  })
+}
 
 
 /**
@@ -131,8 +148,8 @@ const shareText = () =>
 
 <template>
   <!-- Hero: a sky of lights, one per animal, and cards with names in two lanes -->
-  <section ref="hero" class="hero">
-    <div class="hero-grid" aria-hidden="true"></div>
+  <section ref="hero" class="hero" @pointermove="onHeroPointer">
+    <HeroBackdrop :active="heroInView" />
     <HeroSky :count="totalDeathCount" :active="heroInView" />
     <div class="hero-vignette" aria-hidden="true"></div>
 
@@ -169,7 +186,7 @@ const shareText = () =>
       <!-- One heading: the kicker names the topic for search, the line below carries the feeling -->
       <h1 class="hero-title" :class="{ 'hero-enter': heroEnters }">
         <span class="hero-label">Live-Zähler: Tiere, die in Deutschland für unser Essen sterben</span>
-        <span class="hero-title-line">Sie hatten Namen.</span>
+        <span class="hero-title-line hero-title-sweep">Sie hatten Namen.</span>
       </h1>
 
       <p class="hero-subtitle" :class="{ 'hero-enter': heroEnters }">
@@ -178,11 +195,15 @@ const shareText = () =>
 
       <!-- Live Counter -->
       <div class="hero-counter" :class="{ 'hero-enter': heroEnters }">
-        <span class="hero-counter-ring" aria-hidden="true"></span>
         <span class="hero-counter-number">{{ formatNumber(animatedTotalDeaths) }}</span>
+        <!-- The heart line: flat, then one beat, then flat again, on and on -->
+        <svg class="hero-ecg" :class="{ 'hero-ecg--still': !heroInView }" viewBox="0 0 480 48" width="480" height="48" aria-hidden="true">
+          <path class="hero-ecg-trace" d="M0 24 H120 L132 24 L140 6 L148 42 L156 24 H260 L270 24 L277 14 L284 34 L290 24 H400 L410 24 L418 2 L427 46 L436 24 H480" />
+          <path class="hero-ecg-beam" d="M0 24 H120 L132 24 L140 6 L148 42 L156 24 H260 L270 24 L277 14 L284 34 L290 24 H400 L410 24 L418 2 L427 46 L436 24 H480" />
+        </svg>
         <span class="hero-counter-label">Tiere getötet, seit du hier bist</span>
         <RouterLink to="/quellen#methodik" class="hero-counter-note">{{ deathsPerSecond }} in jeder Sekunde &middot; Fische geschätzt</RouterLink>
-        <span class="hero-counter-time">🕰 {{ timer.elapsedFormatted.value }}</span>
+        <span class="hero-counter-time"><span class="hero-tick" aria-hidden="true"></span>{{ timer.elapsedFormatted.value }} hier</span>
       </div>
     </div>
 
@@ -213,15 +234,15 @@ const shareText = () =>
         <span class="live-name">{{ latest.name }}</span>.
       </p>
       <p class="chapter-lead">
-        Die Zahlen im Text laufen live, sie sind keine Beispiele. Die Namen stehen stellvertretend,
-        das Alter entspricht der üblichen Schlachtreife, die Lebenserwartung dem, was diese Tiere ohne uns hätten.
+        Die Zahlen im Text laufen live, sie sind keine Beispiele. Jede Linie ist ein mögliches Leben, der rote Anteil das gelebte.
+        Die Namen stehen stellvertretend, das Alter entspricht der üblichen Schlachtreife, die Lebenserwartung dem, was diese Tiere ohne uns hätten.
       </p>
-      <div class="recent-grid">
+      <div class="recent-list">
         <VictimCard
           v-for="(victim, index) in recentVictims"
           :key="victim.id"
           :victim="victim"
-          variant="light"
+          variant="row"
           :hot="index === 0"
         />
       </div>
@@ -231,9 +252,9 @@ const shareText = () =>
   <!-- Animal Data -->
   <section id="zahlen" class="animals-section">
     <div class="container">
-      <span class="chapter">Wie viele</span>
+      <span class="chapter chapter--on-dark">Wie viele</span>
       <div class="section-head">
-        <h2 class="chapter-title">Heute in Deutschland</h2>
+        <h2 class="chapter-title chapter-title--on-dark">Heute in Deutschland</h2>
         <span class="section-note">Jedes Emoji ein Tier, seit du hier bist. Destatis 2025.</span>
       </div>
 
@@ -260,11 +281,11 @@ const shareText = () =>
                 :title="animal.estimate.note"
               >Schätzung</RouterLink>
             </div>
+            <div class="animal-stat animal-stat--today">
+              <span class="animal-stat-value animal-stat-value--today"><template v-if="animal.estimate">≈ </template><AnimatedNumber :value="animal.currentDay" /></span>
+              <span class="animal-stat-label">heute, bis jetzt</span>
+            </div>
             <div class="animal-card-stats">
-              <div class="animal-stat">
-                <span class="animal-stat-label">heute</span>
-                <span class="animal-stat-value animal-stat-value--danger"><template v-if="animal.estimate">≈ </template><AnimatedNumber :value="animal.currentDay" /></span>
-              </div>
               <div class="animal-stat">
                 <span class="animal-stat-label">pro Tag</span>
                 <span class="animal-stat-value">{{ animal.estimate ? '≈ ' : '' }}{{ formatNumber(animal.perDay) }}</span>
@@ -462,15 +483,7 @@ const shareText = () =>
   position: relative;
   overflow: hidden;
 }
-/* One tone of dark green: a fine dot grid for depth, a vignette at the edges */
-.hero-grid {
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(rgba(246, 241, 231, 0.06) 1px, transparent 1.2px);
-  background-size: 26px 26px;
-  background-position: 13px 13px;
-  pointer-events: none;
-}
+/* A vignette over the backdrop keeps the edges dark and the middle readable */
 .hero-vignette {
   position: absolute;
   inset: 0;
@@ -507,7 +520,7 @@ const shareText = () =>
 .hero-scroll {
   position: absolute;
   left: 50%;
-  bottom: calc(var(--sheet-overlap) + 24px);
+  bottom: calc(var(--sheet-overlap) + 48px);
   transform: translateX(-50%);
   display: flex;
   flex-direction: column;
@@ -558,7 +571,7 @@ const shareText = () =>
 .hero-side-link {
   position: absolute;
   right: 40px;
-  bottom: calc(var(--sheet-overlap) + 28px);
+  bottom: calc(var(--sheet-overlap) + 48px);
   z-index: 1;
   display: flex;
   flex-direction: column;
@@ -601,10 +614,17 @@ const shareText = () =>
 @media (prefers-reduced-motion: reduce) {
   .hero-enter,
   .hero-scroll-badge,
-  .hero-counter-ring,
+  .hero-title-sweep,
+  .hero-ecg-beam,
+  .hero-tick,
   .hero-counter-number,
   .growth-progress-fill::after {
     animation: none;
+  }
+  .hero-title-sweep {
+    background: none;
+    -webkit-text-fill-color: inherit;
+    color: inherit;
   }
   .hero-scroll:hover .hero-scroll-badge,
   .hero-scroll:focus-visible .hero-scroll-badge {
@@ -631,6 +651,20 @@ const shareText = () =>
 }
 .hero-title-line {
   display: block;
+}
+/* A warm glint runs through the title once every eight seconds */
+.hero-title-sweep {
+  background: linear-gradient(100deg, var(--brand-cream) 0%, var(--brand-cream) 38%, #fff 46%, #ffc79a 50%, var(--brand-cream) 56%, var(--brand-cream) 100%);
+  background-size: 260% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: hero-sweep 8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+@keyframes hero-sweep {
+  0% { background-position: 120% 0; }
+  60%, 100% { background-position: -60% 0; }
 }
 /* Entrance on a client-side visit: title and line rise, the counter springs up. CSS only, no library */
 .hero-title.hero-enter {
@@ -673,38 +707,66 @@ const shareText = () =>
   margin-bottom: 2rem;
 }
 .hero-counter > * { position: relative; }
-.hero-counter-ring {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 300px;
-  height: 300px;
-  transform: translate(-50%, -56%);
-  border-radius: 50%;
-  border: 1px solid rgba(255, 106, 61, 0.18);
-  box-shadow: 0 0 0 28px rgba(255, 106, 61, 0.04), 0 0 0 56px rgba(255, 106, 61, 0.02);
-  animation: heartbeat 1s ease-in-out infinite;
-  pointer-events: none;
-}
-@keyframes heartbeat {
-  0%, 100% { transform: translate(-50%, -56%) scale(1); }
-  50% { transform: translate(-50%, -56%) scale(1.03); }
-}
 .hero-counter-number {
-  font-size: clamp(2.5rem, 10vw, 5rem);
-  font-weight: 700;
-  color: #e74c3c;
+  font-family: var(--font-display);
+  font-size: clamp(2.8rem, 11vw, 6rem);
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  color: var(--brand-accent);
   /* Room for five digits and a separator: the snapshot shows 0, the live figure reaches thousands within a minute, nothing around it may move */
   min-width: 6ch;
   text-align: center;
   line-height: 1;
   font-variant-numeric: tabular-nums;
-  text-shadow: 0 0 60px rgba(231, 76, 60, 0.5), 0 0 120px rgba(231, 76, 60, 0.2);
-  animation: pulse-glow 2s ease-in-out infinite alternate;
+  animation: pulse-glow 1.6s ease-in-out infinite;
 }
 @keyframes pulse-glow {
-  from { text-shadow: 0 0 40px rgba(231, 76, 60, 0.4), 0 0 80px rgba(231, 76, 60, 0.1); }
-  to   { text-shadow: 0 0 60px rgba(231, 76, 60, 0.6), 0 0 120px rgba(231, 76, 60, 0.25); }
+  0%, 100% { text-shadow: 0 0 28px rgba(255, 106, 61, 0.35), 0 0 90px rgba(255, 106, 61, 0.18); }
+  50% { text-shadow: 0 0 44px rgba(255, 106, 61, 0.6), 0 0 140px rgba(255, 106, 61, 0.3); }
+}
+/* The heart line under the figure: a faint trace, and a bright beam that draws it over and over */
+.hero-ecg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.hero-ecg path {
+  fill: none;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.hero-ecg-trace {
+  stroke: rgba(255, 106, 61, 0.25);
+  stroke-width: 2;
+}
+.hero-ecg-beam {
+  stroke: var(--brand-accent);
+  stroke-width: 2.5;
+  stroke-dasharray: 720;
+  stroke-dashoffset: 720;
+  filter: drop-shadow(0 0 6px rgba(255, 106, 61, 0.9));
+  animation: hero-ecg 3.2s linear infinite;
+}
+.hero-ecg--still .hero-ecg-beam {
+  animation-play-state: paused;
+}
+@keyframes hero-ecg {
+  to { stroke-dashoffset: 0; }
+}
+.hero-tick {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background: var(--brand-accent);
+  vertical-align: 1px;
+  animation: hero-tick 1.2s steps(1) infinite;
+}
+@keyframes hero-tick {
+  0%, 55% { opacity: 1; }
+  56%, 100% { opacity: 0.25; }
 }
 .hero-counter-label {
   font-size: 1rem;
@@ -712,7 +774,8 @@ const shareText = () =>
 }
 .hero-counter-time {
   font-size: 0.85rem;
-  opacity: 0.5;
+  opacity: 0.6;
+  font-variant-numeric: tabular-nums;
 }
 .hero-counter-note {
   display: block;
@@ -771,10 +834,12 @@ const shareText = () =>
   color: var(--brand-green);
   border-color: rgba(20, 54, 31, 0.3);
 }
-.recent-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
+/* The lifelines share one axis, so the rows read as one chart */
+.recent-list {
+  display: flex;
+  flex-direction: column;
+  margin-top: 1rem;
+  border-top: 1px solid rgba(20, 54, 31, 0.1);
 }
 .section-head {
   display: flex;
@@ -801,34 +866,87 @@ const shareText = () =>
 .animal-card--wide { grid-column: span 2; }
 .animal-card--estimate {
   grid-column: 1 / -1;
-  border: 1.5px dashed rgba(133, 100, 4, 0.35);
+  border: 1px dashed rgba(246, 241, 231, 0.22);
 }
-/* Sits above the sheet's shadow so the two cream surfaces read as one */
+/* The wall: the night of the hero comes back, every card a pane of glass on it */
 .animals-section {
   position: relative;
   z-index: 2;
-  padding: 0.5rem 0 5.5rem;
+  padding: 5.5rem 0 6rem;
   content-visibility: auto;
   contain-intrinsic-size: auto 1600px;
-  background: var(--brand-cream);
+  background:
+    radial-gradient(1.4px 1.4px at 6% 12%, rgba(255, 179, 122, 0.55), transparent 60%),
+    radial-gradient(1.2px 1.2px at 21% 6%, rgba(255, 179, 122, 0.7), transparent 60%),
+    radial-gradient(1px 1px at 43% 14%, rgba(255, 179, 122, 0.45), transparent 60%),
+    radial-gradient(1.6px 1.6px at 62% 4%, rgba(255, 179, 122, 0.7), transparent 60%),
+    radial-gradient(1px 1px at 82% 11%, rgba(255, 179, 122, 0.5), transparent 60%),
+    radial-gradient(1.2px 1.2px at 96% 7%, rgba(255, 179, 122, 0.6), transparent 60%),
+    radial-gradient(1px 1px at 10% 90%, rgba(255, 179, 122, 0.4), transparent 60%),
+    radial-gradient(1.3px 1.3px at 53% 96%, rgba(255, 179, 122, 0.5), transparent 60%),
+    radial-gradient(1px 1px at 92% 93%, rgba(255, 179, 122, 0.5), transparent 60%),
+    var(--brand-green-deep);
+  color: var(--brand-cream);
+}
+.chapter-title--on-dark {
+  color: var(--brand-cream);
+}
+.animals-section .section-note {
+  color: rgba(246, 241, 231, 0.6);
 }
 
 .animal-card {
-  background: #fff;
-  border-radius: 20px;
-  border: 1.5px solid rgba(20, 54, 31, 0.08);
+  position: relative;
+  background: rgba(246, 241, 231, 0.05);
+  border-radius: 22px;
+  border: 1px solid rgba(246, 241, 231, 0.1);
   overflow: hidden;
-  transition: box-shadow 0.2s;
+  transition: border-color 0.3s, transform 0.3s;
 }
 .animal-card:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  border-color: rgba(246, 241, 231, 0.22);
+  transform: translateY(-2px);
+}
+/* The largest group carries a warm glow in its corner */
+.animal-card--wide::before {
+  content: '';
+  position: absolute;
+  right: -40px;
+  top: -60px;
+  width: 260px;
+  height: 260px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 106, 61, 0.22), rgba(255, 106, 61, 0) 70%);
+  pointer-events: none;
 }
 .animal-card-main {
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  padding: 1.1rem 1.25rem 0.25rem;
-  gap: 0.5rem;
+  padding: 1.6rem 1.75rem 0.5rem;
+  gap: 0.9rem;
+}
+/* The figure of the day leads the card, its label sits beside it in plain words */
+.animal-stat--today {
+  flex-direction: row;
+  align-items: baseline;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+}
+.animal-stat-value--today {
+  font-weight: 800;
+  font-size: clamp(2rem, 3.6vw, 3.4rem);
+  letter-spacing: -0.04em;
+  color: #ff8c64;
+}
+.animal-card--wide .animal-stat-value--today {
+  font-size: clamp(2.2rem, 4.4vw, 4rem);
+}
+.animal-stat--today .animal-stat-label {
+  font-size: 0.85rem;
+  letter-spacing: 0;
+  text-transform: none;
+  color: rgba(246, 241, 231, 0.6);
 }
 .animal-card-name {
   flex: 2;
@@ -836,15 +954,25 @@ const shareText = () =>
   align-items: center;
   gap: 0.75rem;
 }
-.animal-emoji { font-size: 2rem; line-height: 1; }
-.animal-label { font-size: 1.15rem; font-weight: 600; }
+.animal-emoji { font-size: 1.6rem; line-height: 1; }
+.animal-label {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--brand-cream);
+}
+.animal-label:hover,
+.animal-label:focus-visible {
+  color: #ffb37a;
+}
 .animal-estimate {
   display: inline-block;
   margin-left: 0.5rem;
-  padding: 0.1rem 0.5rem;
+  padding: 0.15rem 0.55rem;
   border-radius: 999px;
-  background: #fff3cd;
-  color: #856404;
+  border: 1px solid rgba(246, 241, 231, 0.25);
+  color: rgba(246, 241, 231, 0.75);
   font-size: 0.65rem;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -854,38 +982,38 @@ const shareText = () =>
 }
 .animal-estimate:hover,
 .animal-estimate:focus-visible {
-  background: #ffe8a3;
-  color: #6b4a00;
+  border-color: #ffb37a;
+  color: #ffb37a;
   text-decoration: none;
 }
+/* The smaller figures sit side by side under the big one */
 .animal-card-stats {
   display: flex;
-  flex-direction: column;
-  align-items: stretch;
+  gap: 2rem;
+  flex-wrap: wrap;
+  padding-top: 0.9rem;
+  border-top: 1px solid rgba(246, 241, 231, 0.1);
 }
 .animal-stat {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.45rem 0;
-  border-top: 1px solid #f1f3f5;
+  flex-direction: column;
+  gap: 0.15rem;
 }
 .animal-stat-label {
-  font-size: 0.7rem;
-  color: #6c757d;
+  font-size: 0.68rem;
+  color: rgba(246, 241, 231, 0.5);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.14em;
 }
 .animal-stat-value {
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: 0.9rem;
-  letter-spacing: -0.01em;
+  font-size: 1.05rem;
+  letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
-.animal-stat-value--danger { color: #e74c3c; }
+.animal-stat-value--danger { color: #ffb37a; }
 
 
 
@@ -894,35 +1022,35 @@ const shareText = () =>
   align-items: center;
   justify-content: space-between;
   min-height: 2.5rem;
-  padding: 0 1.25rem 0.75rem;
+  padding: 0.35rem 1.75rem 0.75rem;
   gap: 0.75rem;
   flex-wrap: wrap;
 }
-.animal-card-since { color: #6c757d; font-size: 0.85rem; }
-.text-killed { color: #e74c3c; font-weight: 700; }
+.animal-card-since { color: rgba(246, 241, 231, 0.6); font-size: 0.85rem; }
+.text-killed { color: #ffb37a; font-weight: 700; }
 .btn-children {
   background: none;
-  border: 1px solid #dee2e6;
-  border-radius: 6px;
-  padding: 0.25rem 0.75rem;
+  border: 1px solid rgba(246, 241, 231, 0.25);
+  border-radius: 999px;
+  padding: 0.35rem 0.85rem;
   font-size: 0.75rem;
-  color: #6c757d;
+  color: rgba(246, 241, 231, 0.75);
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.15s;
 }
-.btn-children:hover { background: #f1f3f5; border-color: #adb5bd; color: #333; }
+.btn-children:hover { border-color: #ffb37a; color: #ffb37a; }
 .animal-card-emojis {
-  padding: 0 1.25rem 0.75rem;
+  padding: 0 1.75rem 1rem;
   font-size: 0.85rem;
 }
-.animal-children { border-top: 1px solid #f1f3f5; background: #fafbfc; }
+.animal-children { border-top: 1px solid rgba(246, 241, 231, 0.1); background: rgba(14, 33, 20, 0.35); }
 .animal-child {
   display: flex;
   align-items: center;
-  padding: 0.5rem 1.25rem 0.5rem 2.5rem;
+  padding: 0.5rem 1.75rem 0.5rem 2.5rem;
   font-size: 0.9rem;
-  color: #495057;
+  color: rgba(246, 241, 231, 0.8);
 }
 .animal-child-name { flex: 2; }
 .animal-child-stat { flex: 1; text-align: right; font-variant-numeric: tabular-nums; }
@@ -1107,7 +1235,7 @@ const shareText = () =>
   }
   /* Animal cards: one column on phones */
   .animals-section {
-    padding: 0 0 3.5rem;
+    padding: 3.5rem 0;
   }
   .animal-grid {
     grid-template-columns: 1fr;
@@ -1120,10 +1248,15 @@ const shareText = () =>
     border-radius: 16px;
   }
   .animal-card-main {
-    padding: 0.85rem 1rem 0.25rem;
+    padding: 1.1rem 1.1rem 0.4rem;
   }
-  .recent-grid {
-    grid-template-columns: 1fr;
+  .animal-card-footer,
+  .animal-card-emojis {
+    padding-left: 1.1rem;
+    padding-right: 1.1rem;
+  }
+  .animal-card-stats {
+    gap: 1.25rem;
   }
   .sheet {
     border-radius: 28px 28px 0 0;

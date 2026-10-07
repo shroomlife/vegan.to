@@ -132,3 +132,30 @@ test.describe('hero cards across page changes', () => {
     expect(delays.filter((delay) => delay >= 0).length).toBeLessThanOrEqual(1)
   })
 })
+
+test.describe('hero backdrop', () => {
+  test('the poster paints first, the clip joins only on a wide screen', async ({ page, isMobile }) => {
+    await page.goto('/')
+    const poster = page.locator('.backdrop-poster img')
+    await expect.poll(() => poster.evaluate((el) => (el as HTMLImageElement).complete && (el as HTMLImageElement).naturalWidth > 0)).toBe(true)
+    await expect(page.locator('.hero-ecg')).toBeVisible()
+    if (isMobile) {
+      await page.waitForTimeout(5000)
+      await expect(page.locator('.backdrop-clip')).toHaveCount(0)
+      return
+    }
+    const clip = page.locator('.backdrop-clip')
+    await expect(clip).toHaveCount(1, { timeout: 10_000 })
+    await expect.poll(() => clip.evaluate((el) => (el as HTMLVideoElement).currentSrc), { timeout: 10_000 }).toMatch(/\/video\/start\/fireflies-\d+\.(av1|h264)\.mp4$/)
+    await expect.poll(() => clip.evaluate((el) => !(el as HTMLVideoElement).paused), { timeout: 10_000 }).toBe(true)
+  })
+
+  test('the torch follows the pointer across the hero', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'no pointer on a phone')
+    await page.goto('/')
+    await page.mouse.move(200, 400)
+    await page.waitForTimeout(200)
+    const spot = await page.locator('.hero').evaluate((el) => el.style.getPropertyValue('--spot-x'))
+    expect(Number.parseFloat(spot)).toBeLessThan(30)
+  })
+})
