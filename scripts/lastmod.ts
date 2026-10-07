@@ -79,23 +79,22 @@ function git(args: readonly string[]): string {
   return execFileSync('git', args, { cwd: ROOT, encoding: 'utf-8' }).trim()
 }
 
-/** Fails early when the checkout has no history: every file would then carry the date of HEAD */
+/**
+ * Fails early when the checkout has no history: every route would then carry
+ * the date of the boundary commit. The message names what the runner holds,
+ * so a failing build can be read without a second run.
+ */
 export function assertFullHistory(): void {
   const shallow = git(['rev-parse', '--is-shallow-repository'])
   if (shallow === 'false') return
   const commits = git(['rev-list', '--count', 'HEAD'])
-  const mainCommits = git(['rev-list', '--count', 'origin/main'])
-  const head = git(['log', '-1', '--format=%H parents: %P', 'HEAD'])
-  const shallowFile = existsSync(resolve(ROOT, '.git/shallow')) ? readFileSync(resolve(ROOT, '.git/shallow'), 'utf-8').trim().split('\n').join(' ') : '(no .git/shallow)'
-  const config = git(['config', '--list', '--show-origin'])
-    .split('\n')
-    .filter((line) => /depth|shallow|bundle|filter|partial|protocol|fetch|clone|remote\.origin/i.test(line))
-    .join(' | ')
-  const remoteHeads = git(['ls-remote', '--heads', 'origin']).split('\n').length
+  const boundary = existsSync(resolve(ROOT, '.git/shallow'))
+    ? readFileSync(resolve(ROOT, '.git/shallow'), 'utf-8').trim().split('\n').join(' ')
+    : '(no .git/shallow)'
   throw new Error(
-    `lastmod: the sitemap needs the full history (actions/checkout with fetch-depth: 0). ` +
-      `is-shallow-repository: "${shallow}", commits reachable from HEAD: ${commits}, from origin/main: ${mainCommits}, HEAD ${head}, shallow boundary: ${shallowFile}, ` +
-      `remote heads: ${remoteHeads}, config: ${config}, root: ${ROOT}, ${git(['--version'])}`,
+    `lastmod: the sitemap needs the full history, but the checkout is shallow: ` +
+      `${commits} commits reachable from HEAD, shallow boundary ${boundary}, ${git(['--version'])}. ` +
+      `Complete it first (git fetch --unshallow) or check out with the full history.`,
   )
 }
 
