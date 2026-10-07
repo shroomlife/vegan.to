@@ -26,15 +26,13 @@ import SceneImage from '@/components/SceneImage.vue'
         >
           <span class="life-fact-figure">{{ fact.figure }}</span>
           <span class="life-fact-unit">{{ fact.unit }}</span>
-          <p class="life-fact-text">{{ fact.text }}</p>
-          <SourceLinks :ids="fact.sources" />
+          <p class="life-fact-text">{{ fact.text }}<SourceLinks :ids="fact.sources" /></p>
         </div>
       </div>
 
       <blockquote class="life-quote">
         <p class="life-quote-text">„{{ schweitzerQuote.text }}“</p>
-        <footer class="life-quote-author">{{ schweitzerQuote.author }}</footer>
-        <SourceLinks :ids="schweitzerQuote.sources" />
+        <footer class="life-quote-author">{{ schweitzerQuote.author }}<SourceLinks :ids="schweitzerQuote.sources" /></footer>
       </blockquote>
     </div>
   </section>

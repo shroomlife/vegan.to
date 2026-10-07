@@ -1,4 +1,12 @@
-import { test, expect } from '@playwright/test'
+import { test, expect, type Locator, type Page } from '@playwright/test'
+
+/** The card cites by number, and the number leads to a list entry with the real link */
+async function expectCitation(page: Page, card: Locator): Promise<void> {
+  const note = card.locator('.source-note').first()
+  await expect(note).toHaveAttribute('href', /^#quelle-\d+$/)
+  const anchor = (await note.getAttribute('href')) ?? ''
+  await expect(page.locator(anchor).locator('a[href^="https://"]')).toHaveCount(1)
+}
 
 test.describe('editorial chapters', () => {
   test('the chapters follow the story in reading order', async ({ page }) => {
@@ -15,21 +23,40 @@ test.describe('editorial chapters', () => {
       'Was du bewirkst',
       'Die Fragen davor',
       'Mach mit',
+      'Quellen',
     ])
   })
 
-  test('every species fact and every condition names a linked source', async ({ page }) => {
+  test('every species fact and every condition cites a source by number', async ({ page }) => {
     await page.goto('/')
     const facts = page.locator('.species-fact')
     await expect(facts).toHaveCount(10)
     for (const card of await facts.all()) {
-      await expect(card.locator('.source-links a').first()).toHaveAttribute('href', /^https?:\/\//)
+      await expectCitation(page, card)
     }
     const conditions = page.locator('.life-fact')
     await expect(conditions).toHaveCount(9)
     for (const card of await conditions.all()) {
-      await expect(card.locator('.source-links a').first()).toHaveAttribute('href', /^https?:\/\//)
+      await expectCitation(page, card)
     }
+  })
+
+  test('a number in the text opens and highlights its source in the list', async ({ page }) => {
+    await page.goto('/')
+    const first = page.locator('.species-fact').first()
+    await first.scrollIntoViewIfNeeded()
+    const note = first.locator('.source-note').first()
+    const anchor = (await note.getAttribute('href')) ?? ''
+    await note.click()
+    const item = page.locator(anchor)
+    await expect(item).toBeInViewport()
+    await expect(item.locator('details')).toHaveAttribute('open', '')
+    await expect(item).toHaveClass(/source-list-item--target/)
+    await expect(item.locator('a[href^="https://"]')).toHaveCount(1)
+    // one source, one number: the list holds no duplicates
+    const labels = await page.locator('.source-list-label').allInnerTexts()
+    expect(new Set(labels).size).toBe(labels.length)
+    await expect(page.locator('.source-list .chapter-lead')).toContainText(`${labels.length} Quellen`)
   })
 
   test('the questions open, answer and cite', async ({ page }) => {
@@ -39,7 +66,7 @@ test.describe('editorial chapters', () => {
     await expect(first.locator('.faq-answer')).toBeHidden()
     await first.locator('summary').click()
     await expect(first.locator('.faq-answer p').first()).toBeVisible()
-    await expect(first.locator('.source-links a').first()).toHaveAttribute('href', /^https?:\/\//)
+    await expectCitation(page, first)
   })
 
   test('the live sentence names the newest card', async ({ page }) => {

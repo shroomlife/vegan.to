@@ -4,9 +4,9 @@ import { ref, computed, useTemplateRef, watch } from 'vue'
 import { useTransition, TransitionPresets, useElementVisibility } from '@vueuse/core'
 import { type ComputedAnimal } from '@/composables/useAnimalData'
 import { useLiveState } from '@/composables/useLiveState'
+import { provideCitations } from '@/composables/useCitations'
 import { animals } from '@/data/animals'
 import { slugBySpecies } from '@/data/species'
-import { sources } from '@/data/sources'
 import { useAnchorNavigation } from '@/composables/useAnchorNavigation'
 import { replacesSnapshot } from '@/utils/prerendered'
 import { formatNumber } from '@/utils/formatNumber'
@@ -26,8 +26,12 @@ import ChapterExit from '@/components/ChapterExit.vue'
 import FaqChapter from '@/components/FaqChapter.vue'
 import ImpactChapter from '@/components/ImpactChapter.vue'
 import ActionChapter from '@/components/ActionChapter.vue'
+import SourceLinks from '@/components/SourceLinks.vue'
+import SourceList from '@/components/SourceList.vue'
 
 const { timer, animalData, totalDeathCount, victims, latest, heroVisible } = useLiveState()
+// Every chapter cites by number; the list at the end of the page resolves them
+provideCitations()
 const { onNavClick } = useAnchorNavigation()
 
 /** The hero rises into view on a client-side visit; when it was already on screen as a snapshot it just stays */
@@ -217,7 +221,7 @@ const shareText = () =>
       <span class="chapter">Wie viele</span>
       <div class="section-head">
         <h2 class="chapter-title">Heute in Deutschland</h2>
-        <span class="section-note">Jedes Emoji ein Tier, seit du hier bist. Destatis 2025.</span>
+        <span class="section-note">Jedes Emoji ein Tier, seit du hier bist. Destatis 2025.<SourceLinks :ids="['destatisSlaughter', 'destatisPoultry']" /></span>
       </div>
 
       <div class="animal-grid">
@@ -391,10 +395,7 @@ const shareText = () =>
       </p>
 
       <p class="growth-source">
-        Quellen:
-        <a :href="sources.skopos.url" target="_blank" rel="noopener">NVS II (2008) und SKOPOS (2016)</a>,
-        <a :href="sources.vebu.url" target="_blank" rel="noopener">VEBU (2015)</a>,
-        <a :href="sources.awa.url" target="_blank" rel="noopener">IfD Allensbach AWA (2018 bis 2025)</a>
+        Erhebungen von NVS II (2008), SKOPOS (2016), VEBU (2015) und IfD Allensbach AWA (2018 bis 2025)<SourceLinks :ids="['skopos', 'vebu', 'awa']" />
       </p>
     </div>
   </section>
@@ -413,6 +414,8 @@ const shareText = () =>
   <FaqChapter />
 
   <ActionChapter />
+
+  <SourceList />
 
   <!-- Share -->
   <section class="share-section chapter-section">

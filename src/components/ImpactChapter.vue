@@ -153,7 +153,7 @@ const metrics: readonly { key: MetricKey; icon: string; label: string; unit: str
           <h2 class="chapter-title impact-title">Ein Mensch. {{ activeItem.label }}.</h2>
           <p class="chapter-lead impact-lead">
             So viel spart eine einzige Person, die vegan statt mit mittlerem Fleischkonsum isst.
-            Wähle den Zeitraum, die Karten rechnen mit.
+            Wähle den Zeitraum, die Karten rechnen mit.<SourceLinks :ids="['scarborough', 'destatisPopulation', 'uba', 'myclimate']" class="impact-source" />
           </p>
         </div>
         <div class="impact-tabs" role="group" aria-label="Zeitraum">
@@ -188,8 +188,6 @@ const metrics: readonly { key: MetricKey; icon: string; label: string; unit: str
           </ul>
         </div>
       </div>
-
-      <SourceLinks :ids="['scarborough', 'destatisPopulation', 'uba', 'myclimate']" class="impact-source" />
 
       <!-- Personal tracker -->
       <div
@@ -412,9 +410,6 @@ const metrics: readonly { key: MetricKey; icon: string; label: string; unit: str
   left: 0;
   font-weight: 700;
   color: #b8b0a0;
-}
-.impact-source {
-  margin-top: 0.9rem;
 }
 
 /* Personal tracker: a dark card that turns the period numbers into the visitor's own */
