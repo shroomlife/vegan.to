@@ -25,14 +25,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      # Seen 2026-10-07 with git 2.55 on the runner: the checkout came back shallow although it fetched without a depth.
-      # The sitemap refuses a shallow checkout (scripts/lastmod.ts), so the history is completed here.
-      - name: Complete the history
-        run: |
-          if [ "$(git rev-parse --is-shallow-repository)" = true ]; then
-            git fetch --prune --unshallow
-          fi
-
       # Reads the bun version from the packageManager field in package.json
       - uses: oven-sh/setup-bun@v2
 

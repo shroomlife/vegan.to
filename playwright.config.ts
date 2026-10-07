@@ -11,6 +11,9 @@ export default defineConfig({
   fullyParallel: true,
   retries: process.env.CI ? 2 : 0,
   reporter: process.env.CI ? 'github' : 'list',
+  // No diff in the report metadata: on a pull request Playwright would fetch the base commit with
+  // --depth=1 to compute it, which turns the checkout shallow and the sitemap dates routes by commit
+  captureGitInfo: { commit: true, diff: false },
   use: {
     baseURL: BASE_URL,
     trace: 'on-first-retry',
