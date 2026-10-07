@@ -1,8 +1,19 @@
 /**
- * Where visitors go next. Every link here is a deliberate hand-off:
- * the three core questions first, then places to start, learn, act and live.
- * Every URL was opened and read before it was added.
+ * Where visitors go next. Every link here is a deliberate hand-off: the main
+ * one into Veganstart, the three core questions as a small line, then places
+ * to start, learn, act and live. Every URL was opened and read before it was added.
  */
+
+/** The main hand-off of the page, in the header and in the "Mach mit" chapter */
+export const handOff = {
+  url: 'https://veganstart.de/',
+  domain: 'veganstart.de',
+  kicker: 'Der erste Schritt',
+  title: 'Go vegan. Mit Veganstart an deiner Seite.',
+  // Wording checked against veganstart.de on 2026-10-07: PETA's free 30-day programme, app or e-mail, recipes, tips, support
+  description: 'Das kostenlose 30-Tage-Programm von PETA: jeden Tag Tipps und Rezepte per App oder E-Mail, dazu ein Einkaufsguide und ein Team, das Fragen beantwortet. Schritt für Schritt, ohne Druck.',
+  label: '#GoVegan',
+} as const
 
 export interface CoreQuestion {
   key: 'why' | 'how' | 'who'
