@@ -10,6 +10,8 @@ import { citationAnchor, useCitations } from '@/composables/useCitations'
  */
 const props = defineProps<{
   ids: readonly SourceId[]
+  /** On a dark chapter the number pills lighten instead of using the accent */
+  onDark?: boolean
 }>()
 
 const citations = useCitations()
@@ -29,6 +31,7 @@ const notes = computed(() => {
       :key="note.id"
       :href="`#${citationAnchor(note.number)}`"
       class="source-note"
+      :class="{ 'source-note--on-dark': onDark }"
       :aria-label="`Quelle ${note.number}: ${note.label}`"
       :title="note.label"
     >{{ note.number }}</a>
@@ -72,10 +75,14 @@ const notes = computed(() => {
   text-decoration: none;
 }
 /* On a dark chapter the pill lightens instead */
-:global(.chapter-title--on-dark) ~ .source-notes .source-note,
-:global(.on-dark) .source-note {
+.source-note--on-dark {
   background: rgba(255, 179, 122, 0.18);
   color: #ffb37a;
+}
+.source-note--on-dark:hover,
+.source-note--on-dark:focus-visible {
+  background: #ffb37a;
+  color: var(--brand-green-deep);
 }
 
 .source-links {

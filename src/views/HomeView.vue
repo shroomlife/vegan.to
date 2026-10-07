@@ -259,7 +259,7 @@ const shareText = () =>
       <span class="chapter chapter--on-dark">Wie viele</span>
       <div class="section-head">
         <h2 class="chapter-title chapter-title--on-dark">Heute in Deutschland</h2>
-        <span class="section-note on-dark">Jedes Emoji ein Tier, seit du hier bist. Destatis 2025.<SourceLinks :ids="['destatisSlaughter', 'destatisPoultry']" /></span>
+        <span class="section-note">Jedes Emoji ein Tier, seit du hier bist. Destatis 2025.<SourceLinks :ids="['destatisSlaughter', 'destatisPoultry']" on-dark /></span>
       </div>
 
       <div class="animal-grid">
