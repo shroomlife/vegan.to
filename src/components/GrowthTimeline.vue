@@ -11,8 +11,11 @@ const props = withDefaults(defineProps<{
   points: readonly TimelinePoint[]
   /** Years that get an axis label; all points still get a marker */
   labelYears?: readonly number[]
+  /** Show the first and the last value next to their markers */
+  endValues?: boolean
 }>(), {
   labelYears: () => [],
+  endValues: false,
 })
 
 /** Percentage of vertical space kept free above the highest point */
@@ -51,6 +54,14 @@ const areaPath = computed(() => {
   const last = plotted.value[plotted.value.length - 1]
   if (!first || !last) return ''
   return `${linePath.value} L${last.x} 100 L${first.x} 100 Z`
+})
+
+/** The first and the last point, when their values are shown next to them */
+const endPoints = computed(() => {
+  if (!props.endValues) return []
+  const first = plotted.value[0]
+  const last = plotted.value[plotted.value.length - 1]
+  return first && last && first !== last ? [first, last] : []
 })
 
 const axisLabels = computed(() =>
@@ -92,6 +103,15 @@ const activePoint = computed(() =>
         @focus="activeIndex = p.index"
         @blur="activeIndex = null"
       />
+
+      <span
+        v-for="p in endPoints"
+        :key="`value-${p.year}`"
+        class="timeline-value"
+        :class="{ 'timeline-value--end': p.x > 50 }"
+        :style="{ left: `${p.x}%`, top: `${p.y}%` }"
+        aria-hidden="true"
+      >{{ formatNumber(p.count) }}</span>
 
       <span
         v-if="activePoint"
@@ -186,6 +206,20 @@ const activePoint = computed(() =>
 .timeline-marker:focus-visible {
   outline: 2px solid var(--timeline-focus-ring, rgba(20, 54, 31, 0.55));
   outline-offset: 2px;
+}
+/* The first and the last value, printed above their marker, the last one right-aligned so it stays inside */
+.timeline-value {
+  position: absolute;
+  transform: translate(0, calc(-100% - 12px));
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+  color: var(--timeline-value-text, var(--brand-green, #14361f));
+  pointer-events: none;
+}
+.timeline-value--end {
+  transform: translate(-100%, calc(-100% - 12px));
 }
 .timeline-tooltip {
   position: absolute;

@@ -21,6 +21,7 @@ import GrowthTimeline from '@/components/GrowthTimeline.vue'
 import HeroSky from '@/components/HeroSky.vue'
 import HeroBackdrop from '@/components/HeroBackdrop.vue'
 import VictimCard from '@/components/VictimCard.vue'
+import PauseButton from '@/components/PauseButton.vue'
 import SpeciesFactsChapter from '@/components/SpeciesFactsChapter.vue'
 import LifeFactsChapter from '@/components/LifeFactsChapter.vue'
 import BackgroundsChapter from '@/components/BackgroundsChapter.vue'
@@ -230,17 +231,23 @@ const shareText = () =>
   <!-- Sheet: light surface sliding over the hero -->
   <section id="wer" class="sheet">
     <div class="container">
-      <h2 class="chapter">Wer sie waren</h2>
-      <p class="live-sentence">
-        Während du diesen Satz liest, sind
-        <span class="live-number"><AnimatedNumber :value="totalDeathCount" /></span>
-        Tiere gestorben. Eins davon hieß
-        <span class="live-name">{{ latest.name }}</span>.
-      </p>
-      <p class="chapter-lead">
-        Die Zahlen im Text laufen live, sie sind keine Beispiele. Jede Linie ist ein mögliches Leben, der rote Anteil das gelebte.
-        Die Namen stehen stellvertretend, das Alter entspricht der üblichen Schlachtreife, die Lebenserwartung dem, was diese Tiere ohne uns hätten.
-      </p>
+      <div class="sheet-head">
+        <div class="sheet-head-copy">
+          <h2 class="chapter">Wer sie waren</h2>
+          <p class="live-sentence">
+            Während du diesen Satz liest, sind
+            <span class="live-number"><AnimatedNumber :value="totalDeathCount" /></span>
+            Tiere gestorben. Eins davon hieß
+            <span class="live-name">{{ latest.name }}</span>.
+          </p>
+          <p class="chapter-lead">
+            Die Zahlen im Text laufen live, sie sind keine Beispiele. Jede Linie ist ein mögliches Leben, der rote Anteil das gelebte.
+            Die Namen stehen stellvertretend, das Alter entspricht der üblichen Schlachtreife, die Lebenserwartung dem, was diese Tiere ohne uns hätten.
+          </p>
+        </div>
+        <!-- The pause button: it cannot stop the count, and says so when pressed -->
+        <PauseButton v-reveal="{ scale: 0.8, duration: 0.5, delay: 0.2, y: 0 }" class="sheet-head-pause" />
+      </div>
       <div class="recent-list">
         <VictimCard
           v-for="(victim, index) in recentVictims"
@@ -383,7 +390,7 @@ const shareText = () =>
     </div>
   </section>
 
-  <!-- Vegan Growth: Full-Width Progress Bar -->
+  <!-- Vegan Growth: two figures, the share as a thin bar, the curve -->
   <section class="growth-section chapter-section">
     <div class="growth-inner">
       <span class="chapter chapter--center">Die anderen</span>
@@ -395,32 +402,24 @@ const shareText = () =>
       </h2>
 
       <div class="growth-stats">
-        <div class="growth-stat">
+        <div v-reveal="{ y: 20, duration: 0.5, amount: 0.3 }" class="growth-stat">
           <span class="growth-stat-number growth-stat-number--green">{{ awaLatestMillions }} Millionen</span>
           <span class="growth-stat-label">Veganer*innen in Deutschland (Allensbach, {{ awaLatest.year }})</span>
         </div>
-        <div class="growth-stat">
+        <div v-reveal="{ y: 20, duration: 0.5, delay: 0.08, amount: 0.3 }" class="growth-stat">
           <span class="growth-stat-number">{{ formatNumber(POPULATION_DE) }}</span>
           <span class="growth-stat-label">Menschen in Deutschland (Destatis, Ende 2025)</span>
         </div>
       </div>
 
-      <!-- Full-width progress bar -->
-      <div class="growth-progress">
-        <div
-          class="growth-progress-fill"
-          :style="{ width: veganSharePercent.toFixed(4) + '%' }"
-        >
-          <span class="growth-progress-label">
-            {{ formatNumber(veganSharePercent, 2) }}%
-          </span>
-        </div>
+      <!-- The share as a thin bar across the content width, its figure below the filled part -->
+      <div class="growth-progress" role="img" :aria-label="`${formatNumber(veganSharePercent, 2)} Prozent der Menschen in Deutschland leben vegan`">
+        <span class="growth-progress-fill" :style="{ width: veganSharePercent.toFixed(4) + '%' }"></span>
+        <span class="growth-progress-label" :style="{ left: veganSharePercent.toFixed(4) + '%' }" aria-hidden="true">{{ formatNumber(veganSharePercent, 2) }} %</span>
       </div>
 
-      <div
-        v-reveal="{ y: 12, duration: 0.6, delay: 0.1 }"
-      >
-        <GrowthTimeline :points="veganTimeline" :label-years="veganTimelineAxisYears" />
+      <div v-reveal="{ y: 12, duration: 0.6, delay: 0.1 }" class="growth-curve">
+        <GrowthTimeline :points="veganTimeline" :label-years="veganTimelineAxisYears" end-values />
       </div>
       <p class="growth-note">Verschiedene Erhebungen (NVS II, VEBU, SKOPOS, Allensbach), nicht direkt vergleichbar.</p>
 
@@ -815,6 +814,20 @@ const shareText = () =>
   background: rgba(20, 54, 31, 0.15);
   margin: -1.25rem auto 1.5rem;
 }
+/* The sheet head: the live sentence on the left, the pause button on the right */
+.sheet-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 3rem;
+  align-items: center;
+  margin-bottom: 2.25rem;
+}
+.sheet-head .chapter-lead {
+  margin-bottom: 0;
+}
+.sheet-head-pause {
+  padding-right: clamp(0rem, 6vw, 6rem);
+}
 .live-sentence {
   margin: 0 0 0.9rem;
   max-width: 820px;
@@ -1102,106 +1115,115 @@ const shareText = () =>
   color: #e74c3c;
 }
 
-/* ── Vegan Growth — Full Width ─────────────────────── */
+/* ── Vegan Growth ─────────────────────────────────── */
 .growth-section {
   background: var(--brand-cream);
   color: var(--brand-green);
+  /* The curve, sized and coloured for this chapter */
+  --timeline-max-width: 960px;
+  --timeline-plot-height: 200px;
+  --timeline-line: var(--brand-fall);
+  --timeline-area: rgba(31, 122, 69, 0.14);
+  --timeline-marker-core: var(--brand-cream);
 }
 .growth-inner {
-  max-width: 100%;
-  padding: 0 1.5rem;
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 2.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.75rem;
+}
+.growth-inner > .chapter,
+.growth-inner > .chapter-title {
+  margin: 0;
 }
 .growth-stats {
-  display: flex;
-  justify-content: center;
-  gap: 3rem;
-  flex-wrap: wrap;
-  margin-bottom: 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
+  gap: 1.5rem;
+  width: 100%;
+  margin-top: 0.75rem;
 }
 .growth-stat {
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 1.75rem;
+  border-radius: 22px;
+  background: var(--brand-surface);
+  border: 1px solid rgba(20, 54, 31, 0.08);
+  text-align: left;
 }
 .growth-stat-number {
   display: block;
-  font-size: clamp(1.5rem, 5vw, 2.5rem);
-  font-weight: 700;
   font-family: var(--font-display);
-  letter-spacing: -0.03em;
+  font-weight: 800;
+  font-size: clamp(1.75rem, 3.2vw, 2.75rem);
+  line-height: 1;
+  letter-spacing: -0.04em;
   font-variant-numeric: tabular-nums;
-  line-height: 1.1;
-  color: var(--brand-faint);
+  white-space: nowrap;
+  color: var(--brand-green);
 }
 .growth-stat-number--green {
-  color: var(--brand-green);
+  color: var(--brand-fall);
 }
 .growth-stat-label {
   display: block;
-  font-size: 0.82rem;
+  font-size: 0.875rem;
   color: var(--brand-muted);
-  margin-top: 0.35rem;
 }
 
-/* Progress bar — full viewport width */
+/* The share: a thin line across the content width, the figure sits below the filled part */
 .growth-progress {
-  width: 100%;
-  height: 48px;
-  background: rgba(20, 54, 31, 0.08);
-  border-radius: 24px;
-  overflow: hidden;
   position: relative;
+  width: 100%;
+  height: 14px;
   margin-bottom: 1.5rem;
+  border-radius: 7px;
+  background: rgba(20, 54, 31, 0.08);
 }
 .growth-progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--brand-green-soft), #2f8f57);
-  border-radius: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  padding-right: 0.75rem;
-  min-width: 60px;
-  transition: width 0.5s ease-out;
-  box-shadow: 0 8px 24px rgba(20, 54, 31, 0.25);
-  position: relative;
-}
-.growth-progress-fill::after {
-  content: '';
   position: absolute;
-  right: 0;
+  left: 0;
   top: 0;
-  bottom: 0;
-  width: 40px;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2));
-  border-radius: 0 24px 24px 0;
-  animation: progressShimmer 2s infinite;
-}
-@keyframes progressShimmer {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 0.8; }
+  height: 100%;
+  min-width: 22px;
+  border-radius: 7px;
+  background: linear-gradient(90deg, var(--brand-fall), #7fe0a5);
 }
 .growth-progress-label {
-  font-size: 0.85rem;
+  position: absolute;
+  top: 22px;
+  margin-left: 4px;
+  font-family: var(--font-display);
   font-weight: 700;
-  color: #fff;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  font-size: 0.8rem;
   white-space: nowrap;
-  z-index: 1;
+  color: var(--brand-fall);
+}
+.growth-curve {
+  width: 100%;
+  margin-top: 0.5rem;
 }
 .growth-note {
+  margin: 0;
   text-align: center;
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   color: var(--brand-faint);
-  margin: 0.5rem auto 1.25rem;
 }
 .growth-message {
+  margin: 0;
+  max-width: 720px;
   text-align: center;
   font-size: 1.05rem;
-  color: var(--brand-muted);
-  max-width: 520px;
-  margin: 0 auto 1rem;
   line-height: 1.65;
+  color: var(--brand-muted);
 }
 .growth-source {
+  margin: 0;
   text-align: center;
   font-size: 0.75rem;
   color: var(--brand-faint);
@@ -1264,6 +1286,13 @@ const shareText = () =>
   .sheet {
     border-radius: 28px 28px 0 0;
     padding-top: 2.25rem;
+  }
+  .sheet-head {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  .sheet-head-pause {
+    padding-right: 0;
   }
   .victim-lane {
     width: 48%;
@@ -1333,23 +1362,16 @@ const shareText = () =>
   /* Growth section */
   .growth-inner {
     padding: 0 1rem;
+    gap: 1.25rem;
   }
   .growth-stats {
-    gap: 1.5rem;
+    gap: 0.75rem;
+  }
+  .growth-stat {
+    padding: 1.25rem;
   }
   .growth-stat-number {
-    font-size: clamp(1.2rem, 6vw, 2rem);
-  }
-  .growth-progress {
-    height: 36px;
-    border-radius: 18px;
-  }
-  .growth-progress-fill {
-    border-radius: 18px;
-    min-width: 50px;
-  }
-  .growth-progress-label {
-    font-size: 0.7rem;
+    font-size: clamp(1.5rem, 8vw, 2rem);
   }
 
 
