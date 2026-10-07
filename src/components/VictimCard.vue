@@ -33,7 +33,7 @@ const rowNote = computed(() => {
 <template>
   <div
     class="victim-card"
-    :class="[`victim-card--${variant}`, { 'victim-card--hot': hot }]"
+    :class="[`victim-card--${variant}`, { 'victim-card--hot': hot, 'victim-card--lived': livedPercent !== null }]"
   >
     <div class="victim-card-head">
       <span class="victim-card-name">
@@ -201,7 +201,11 @@ const rowNote = computed(() => {
   .victim-card--row {
     grid-template-columns: 1fr;
     gap: 14px;
-    padding: 18px 4px 30px;
+    padding: 18px 4px 22px;
+  }
+  /* Stacked, the lived label under the bar gets its own line before the note */
+  .victim-card--row.victim-card--lived .victim-card-line {
+    margin-bottom: 18px;
   }
   .victim-card--row .victim-card-note {
     text-align: left;
