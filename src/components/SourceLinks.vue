@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import { sources, type SourceId } from '@/data/sources'
 import { citationAnchor, useCitations } from '@/composables/useCitations'
+import AnchorLink from '@/components/AnchorLink.vue'
 
 /**
  * The sources behind a figure or a sentence. On a page that provides a
@@ -26,15 +27,15 @@ const notes = computed(() => {
 
 <template>
   <sup v-if="citations" class="source-notes">
-    <a
+    <AnchorLink
       v-for="note in notes"
       :key="note.id"
-      :href="`#${citationAnchor(note.number)}`"
+      :hash="`#${citationAnchor(note.number)}`"
       class="source-note"
       :class="{ 'source-note--on-dark': onDark }"
       :aria-label="`Quelle ${note.number}: ${note.label}`"
       :title="note.label"
-    >{{ note.number }}</a>
+    >{{ note.number }}</AnchorLink>
   </sup>
   <p v-else class="source-links">
     <span class="source-links-label">{{ entries.length > 1 ? 'Quellen' : 'Quelle' }}:</span>

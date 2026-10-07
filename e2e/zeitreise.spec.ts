@@ -74,11 +74,23 @@ test.describe('zeitreise', () => {
 
   test('the chapter list reaches every act', async ({ page }) => {
     await page.goto('/zeitreise')
-    const links = await page.locator('.journey-acts a').evaluateAll((anchors) => anchors.map((a) => a.getAttribute('href') ?? ''))
+    const links = await page.locator('.journey-acts a').evaluateAll((anchors) => (anchors as HTMLAnchorElement[]).map((a) => new URL(a.href).hash))
     expect(links.length).toBeGreaterThan(5)
-    for (const href of links) {
-      await expect(page.locator(href)).toHaveCount(1)
+    for (const hash of links) {
+      await expect(page.locator(hash)).toHaveCount(1)
     }
+  })
+
+  test('a chapter dot scrolls to its act on this page, below the header', async ({ page, isMobile }) => {
+    test.skip(isMobile, 'the dots are hidden on small screens')
+    await page.goto('/zeitreise')
+    await page.locator('.journey-acts a[href="/zeitreise#akt-3"]').click()
+    await expect(page).toHaveURL(/\/zeitreise#akt-3$/)
+    // the smooth scroll takes a moment; the act then starts right under the sticky header
+    const actTop = () => page.evaluate(() => Math.round(document.getElementById('akt-3')?.getBoundingClientRect().top ?? -1))
+    await expect.poll(actTop).toBeLessThan(120)
+    expect(await actTop()).toBeGreaterThanOrEqual(60)
+    await expect(page.locator('h1')).toHaveCount(1)
   })
 })
 

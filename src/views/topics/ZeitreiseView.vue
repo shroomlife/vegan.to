@@ -21,6 +21,7 @@ import { formatNumber } from '@/utils/formatNumber'
 import { SITE_URL } from '@/utils/documentMeta'
 import SourceLinks from '@/components/SourceLinks.vue'
 import SceneImage from '@/components/SceneImage.vue'
+import AnchorLink from '@/components/AnchorLink.vue'
 import SceneVideo from '@/components/SceneVideo.vue'
 import BrightSpots from '@/components/BrightSpots.vue'
 import QuickAnswers from '@/components/QuickAnswers.vue'
@@ -303,10 +304,10 @@ useJsonLd('page-breadcrumb', {
     <div v-show="chromeVisible" class="journey-progress" aria-hidden="true"><span :style="{ width: `${(page * 100).toFixed(2)}%` }"></span></div>
     <div v-show="chromeVisible" class="journey-badge" aria-hidden="true">{{ badge }}</div>
     <nav v-show="chromeVisible" class="journey-acts" aria-label="Kapitel">
-      <a v-for="act in acts" :key="act.id" :href="`#${act.id}`" :class="{ 'is-active': activeAct === act.id }" :aria-current="activeAct === act.id ? 'true' : undefined">
+      <AnchorLink v-for="act in acts" :key="act.id" :hash="`#${act.id}`" :class="{ 'is-active': activeAct === act.id }" :aria-current="activeAct === act.id ? 'true' : undefined">
         <span class="journey-acts-dot"></span>
         <span class="journey-acts-label">{{ act.label }}</span>
-      </a>
+      </AnchorLink>
     </nav>
 
     <!-- Prolog: das Lichtfeld -->

@@ -1,11 +1,16 @@
 import { test, expect, type Locator, type Page } from '@playwright/test'
 
+/** The hash of a link to a section of the start page: the router renders it as /#quelle-3 */
+export async function hashOf(link: Locator): Promise<string> {
+  const href = (await link.getAttribute('href')) ?? ''
+  return href.slice(href.indexOf('#'))
+}
+
 /** The card cites by number, and the number leads to a list entry with the real link */
 async function expectCitation(page: Page, card: Locator): Promise<void> {
   const note = card.locator('.source-note').first()
-  await expect(note).toHaveAttribute('href', /^#quelle-\d+$/)
-  const anchor = (await note.getAttribute('href')) ?? ''
-  await expect(page.locator(anchor).locator('a[href^="https://"]')).toHaveCount(1)
+  await expect(note).toHaveAttribute('href', /^\/#quelle-\d+$/)
+  await expect(page.locator(await hashOf(note)).locator('a[href^="https://"]')).toHaveCount(1)
 }
 
 test.describe('editorial chapters', () => {
@@ -46,8 +51,9 @@ test.describe('editorial chapters', () => {
     const first = page.locator('.species-fact').first()
     await first.scrollIntoViewIfNeeded()
     const note = first.locator('.source-note').first()
-    const anchor = (await note.getAttribute('href')) ?? ''
+    const anchor = await hashOf(note)
     await note.click()
+    await expect(page).toHaveURL(new RegExp(`/${anchor}$`))
     const item = page.locator(anchor)
     await expect(item).toBeInViewport()
     await expect(item.locator('details')).toHaveAttribute('open', '')
@@ -86,9 +92,9 @@ test.describe('editorial chapters', () => {
     expect(later).toBeGreaterThan(first)
     const ways = dialog.locator('.pause-way')
     await expect(ways).toHaveCount(3)
-    await expect(ways.nth(0)).toHaveAttribute('href', '#mitmachen')
+    await expect(ways.nth(0)).toHaveAttribute('href', '/#mitmachen')
     await expect(ways.nth(1)).toHaveAttribute('href', /^https:\/\/www\.veganstart\.de\/\?utm_source=vegan\.to.*utm_content=pause$/)
-    await expect(ways.nth(2)).toHaveAttribute('href', '#impact')
+    await expect(ways.nth(2)).toHaveAttribute('href', '/#impact')
     await page.keyboard.press('Escape')
     await expect(dialog).toBeHidden()
   })

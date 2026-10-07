@@ -24,8 +24,8 @@ test.describe('impact section', () => {
     await page.goto('/')
     const notes = page.locator('.impact-source .source-note')
     await expect(notes).toHaveCount(4)
-    const anchor = (await notes.first().getAttribute('href')) ?? ''
-    const item = page.locator(anchor)
+    const href = (await notes.first().getAttribute('href')) ?? ''
+    const item = page.locator(href.slice(href.indexOf('#')))
     await expect(item).toContainText('Scarborough')
     await expect(item.locator('a[href^="https://"]')).toHaveCount(1)
   })

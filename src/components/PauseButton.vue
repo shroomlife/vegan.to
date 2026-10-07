@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, useTemplateRef } from 'vue'
+import AnchorLink from '@/components/AnchorLink.vue'
 import AnimatedNumber from '@/components/AnimatedNumber.vue'
 import { useLiveState } from '@/composables/useLiveState'
 import { handOffUrl } from '@/data/actions'
@@ -53,11 +54,11 @@ function close() {
         </p>
         <ul class="pause-ways">
           <li v-for="way in ways" :key="way.href">
-            <a
-              :href="way.href"
+            <!-- Out to Veganstart as a plain link, down the page through the router (smooth, header clear) -->
+            <component
+              :is="way.external ? 'a' : AnchorLink"
+              v-bind="way.external ? { href: way.href, target: '_blank', rel: 'noopener' } : { hash: way.href }"
               class="pause-way"
-              :target="way.external ? '_blank' : undefined"
-              :rel="way.external ? 'noopener' : undefined"
               @click="close"
             >
               <span class="pause-way-emoji" aria-hidden="true">{{ way.emoji }}</span>
@@ -66,7 +67,7 @@ function close() {
                 <span class="pause-way-note">{{ way.note }}</span>
               </span>
               <span class="pause-way-arrow" aria-hidden="true">{{ way.external ? '↗' : '→' }}</span>
-            </a>
+            </component>
           </li>
         </ul>
       </div>

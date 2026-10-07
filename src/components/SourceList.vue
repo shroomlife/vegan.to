@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { sources } from '@/data/sources'
 import { citationAnchor, useCitations } from '@/composables/useCitations'
 
@@ -9,6 +10,7 @@ import { citationAnchor, useCitations } from '@/composables/useCitations'
  * the text is clicked. The clicked source opens and is highlighted (CSS
  * :target), and the list keeps working without JavaScript as plain anchors.
  */
+const route = useRoute()
 const citations = useCitations()
 const items = computed(() =>
   (citations?.order ?? []).map((id, index) => ({
@@ -22,18 +24,16 @@ const items = computed(() =>
 
 /** The list stays folded; it unfolds as a whole on request and for the source a number points at */
 const expanded = ref(false)
-/** The number the hash points at, so its entry is open */
+/** The number the route's hash points at, so its entry is open */
 const targeted = ref<string | null>(null)
-
-function readHash() {
-  const hash = window.location.hash.replace(/^#/, '')
-  targeted.value = /^quelle-\d+$/.test(hash) ? hash : null
-}
-onMounted(() => {
-  readHash()
-  window.addEventListener('hashchange', readHash)
-})
-onUnmounted(() => window.removeEventListener('hashchange', readHash))
+watch(
+  () => route.hash,
+  (hash) => {
+    const anchor = hash.replace(/^#/, '')
+    targeted.value = /^quelle-\d+$/.test(anchor) ? anchor : null
+  },
+  { immediate: true },
+)
 </script>
 
 <template>
