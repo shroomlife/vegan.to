@@ -81,9 +81,13 @@ function git(args: readonly string[]): string {
 
 /** Fails early when the checkout has no history: every file would then carry the date of HEAD */
 export function assertFullHistory(): void {
-  if (git(['rev-parse', '--is-shallow-repository']) === 'true') {
-    throw new Error('lastmod: shallow checkout, the sitemap needs the full history (actions/checkout with fetch-depth: 0)')
-  }
+  const shallow = git(['rev-parse', '--is-shallow-repository'])
+  if (shallow === 'false') return
+  const commits = git(['rev-list', '--count', 'HEAD'])
+  throw new Error(
+    `lastmod: the sitemap needs the full history (actions/checkout with fetch-depth: 0). ` +
+      `is-shallow-repository: "${shallow}", commits reachable from HEAD: ${commits}, root: ${ROOT}, ${git(['--version'])}`,
+  )
 }
 
 /** ISO date (YYYY-MM-DD) of the last commit that touched any of the files */
