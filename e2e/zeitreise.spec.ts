@@ -81,3 +81,22 @@ test.describe('zeitreise', () => {
     }
   })
 })
+
+test.describe('zeitreise cage', () => {
+  test('the hen square covers the share of the A4 sheet that 450 cm² really are', async ({ page }) => {
+    await page.goto('/zeitreise')
+    // The track's bottom edge at 40 % of the viewport: progress is 1 whether the scene is pinned or in the flow
+    await page.evaluate(() => {
+      const track = document.getElementById('akt-3')
+      if (!track) throw new Error('cage track missing')
+      window.scrollTo(0, track.offsetTop + track.offsetHeight - window.innerHeight * 0.4)
+    })
+    await page.waitForTimeout(500)
+    const sheet = await page.locator('.cage-a4:not(.cage-a4--blank)').boundingBox()
+    const hen = await page.locator('.cage-hen').boundingBox()
+    if (!sheet || !hen) throw new Error('cage art not rendered')
+    const share = (hen.width * hen.height) / (sheet.width * sheet.height)
+    expect(share).toBeGreaterThan(450 / (21 * 29.7) - 0.02)
+    expect(share).toBeLessThan(450 / (21 * 29.7) + 0.02)
+  })
+})
