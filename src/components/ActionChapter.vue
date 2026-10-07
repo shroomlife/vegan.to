@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { coreQuestions, entrySteps, actionCategories } from '@/data/actions'
+import { handOff, coreQuestions, entrySteps, actionCategories } from '@/data/actions'
 import ClipVideo from '@/components/ClipVideo.vue'
 </script>
 
@@ -34,35 +34,28 @@ import ClipVideo from '@/components/ClipVideo.vue'
         <figcaption>Es liegt in deiner Hand. Jede Mahlzeit.</figcaption>
       </figure>
 
-      <!-- The three core questions: why, how, with whom -->
-      <div class="why-how">
-        <a
-          v-for="(question, index) in coreQuestions"
-          :key="question.key"
-          v-reveal="{ y: 24, duration: 0.45, delay: index * 0.08, amount: 0.3 }"
-          :href="question.url"
-          target="_blank"
-          rel="noopener"
-          class="why-how-card"
-          :class="`why-how-card--${question.key}`"
-        >
-          <span class="why-how-kicker">{{ question.kicker }}</span>
-          <span class="why-how-title">{{ question.title }}</span>
-          <span class="why-how-desc">{{ question.description }}</span>
-          <span class="why-how-domain">{{ question.domain }} <span aria-hidden="true">↗</span></span>
-        </a>
-      </div>
-
+      <!-- The main hand-off: Veganstart, one block, one button -->
       <a
-        v-reveal="{ scale: 0.95, duration: 0.4, delay: 0.1, y: 0 }"
-        href="https://veganuary.com/de/"
-        class="cta-button"
+        v-reveal="{ y: 24, duration: 0.5, amount: 0.3 }"
+        :href="handOff.url"
         target="_blank"
         rel="noopener"
+        class="hand-off"
       >
-        <span class="cta-text">#GoVegan</span>
-        <span class="cta-sub">Heute anfangen, mit Veganuary</span>
+        <span class="hand-off-copy">
+          <span class="hand-off-kicker">{{ handOff.kicker }}</span>
+          <span class="hand-off-title">{{ handOff.title }}</span>
+          <span class="hand-off-desc">{{ handOff.description }}</span>
+        </span>
+        <span class="cta-button">{{ handOff.label }} <span aria-hidden="true">↗</span></span>
       </a>
+      <!-- The three core questions, as a line of small links -->
+      <p class="why-how">
+        <span class="why-how-label">Mehr lesen:</span>
+        <template v-for="(question, index) in coreQuestions" :key="question.key">
+          <a :href="question.url" target="_blank" rel="noopener" class="why-how-link" :title="question.title">{{ question.domain }}</a><span v-if="index < coreQuestions.length - 1" aria-hidden="true"> · </span>
+        </template>
+      </p>
 
       <div class="motivation">
         <div class="motivation-fact">
@@ -176,90 +169,93 @@ import ClipVideo from '@/components/ClipVideo.vue'
 .action-intro p:last-child {
   margin-bottom: 0;
 }
-.why-how {
+/* The hand-off: one dark block, the whole of it a link, the button inside it */
+.hand-off {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.9rem;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2.5rem;
+  align-items: center;
+  padding: 2.75rem 3rem;
+  border-radius: 28px;
+  background: var(--brand-green);
+  color: var(--brand-cream);
+  text-decoration: none;
+  box-shadow: 0 30px 70px rgba(20, 54, 31, 0.22);
+  transition: transform 0.3s, box-shadow 0.3s;
 }
-.why-how-card {
+.hand-off:hover,
+.hand-off:focus-visible {
+  transform: translateY(-3px);
+  box-shadow: 0 40px 80px rgba(20, 54, 31, 0.3);
+  color: var(--brand-cream);
+  text-decoration: none;
+}
+.hand-off:focus-visible {
+  outline: 2px solid var(--brand-accent);
+  outline-offset: 4px;
+}
+.hand-off-copy {
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
-  padding: 1.5rem 1.5rem 1.3rem;
-  border-radius: 20px;
-  border: 1.5px solid rgba(20, 54, 31, 0.08);
-  background: #fff;
-  color: var(--brand-ink);
-  text-decoration: none;
-  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+  gap: 0.75rem;
 }
-.why-how-card:hover,
-.why-how-card:focus-visible {
-  transform: translateY(-3px);
-  border-color: var(--brand-accent);
-  box-shadow: 0 16px 40px rgba(20, 54, 31, 0.1);
-  color: var(--brand-ink);
-  text-decoration: none;
-}
-.why-how-kicker {
-  font-size: 0.68rem;
+.hand-off-kicker {
+  font-size: 0.7rem;
   font-weight: 700;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--brand-faint);
+  color: #7fe0a5;
 }
-.why-how-title {
+.hand-off-title {
   font-family: var(--font-display);
-  font-size: 1.35rem;
-  letter-spacing: -0.02em;
-  line-height: 1.15;
-  color: var(--brand-green);
+  font-weight: 800;
+  font-size: clamp(1.5rem, 2.8vw, 2.25rem);
+  line-height: 1.08;
+  letter-spacing: -0.035em;
 }
-.why-how-desc {
-  font-size: 0.92rem;
-  line-height: 1.55;
-  color: var(--brand-muted);
-}
-.why-how-domain {
-  margin-top: auto;
-  padding-top: 0.8rem;
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: var(--brand-accent-text);
+.hand-off-desc {
+  max-width: 620px;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: rgba(246, 241, 231, 0.8);
 }
 .cta-button {
-  display: flex;
-  flex-direction: column;
+  display: inline-flex;
   align-items: center;
-  gap: 0.2rem;
-  max-width: 520px;
-  margin: 2rem auto 0;
-  padding: 1.35rem 2rem;
+  gap: 0.5rem;
+  height: 60px;
+  padding: 0 2.1rem;
   border-radius: 999px;
   background: var(--brand-accent);
   color: var(--brand-green);
-  text-decoration: none;
-  transition: transform 0.15s, box-shadow 0.15s;
-}
-.cta-button:hover,
-.cta-button:focus-visible {
-  transform: translateY(-2px);
-  box-shadow: 0 14px 40px rgba(255, 106, 61, 0.35);
-  color: var(--brand-green);
-  text-decoration: none;
-}
-.cta-text {
   font-family: var(--font-display);
-  font-size: clamp(1.5rem, 4vw, 2.1rem);
-  letter-spacing: -0.03em;
-  line-height: 1;
+  font-size: 1rem;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  box-shadow: 0 16px 40px rgba(255, 106, 61, 0.35);
+  transition: transform 0.15s;
 }
-.cta-sub {
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  opacity: 0.8;
+.hand-off:hover .cta-button {
+  transform: translateY(-2px);
+}
+/* The three questions, one small line under the block */
+.why-how {
+  margin: 0.9rem 0 0;
+  font-size: 0.9rem;
+  color: var(--brand-faint);
+}
+.why-how-label {
+  margin-right: 0.3em;
+}
+.why-how-link {
+  color: var(--brand-green);
+  text-decoration: underline;
+  text-decoration-color: rgba(20, 54, 31, 0.3);
+  text-underline-offset: 3px;
+}
+.why-how-link:hover,
+.why-how-link:focus-visible {
+  color: var(--brand-accent-text);
 }
 .motivation {
   display: grid;
@@ -421,8 +417,15 @@ a.entry-step-label:focus-visible {
   .motivation {
     gap: 1.25rem;
   }
+  .hand-off {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    padding: 1.75rem 1.5rem;
+    border-radius: 22px;
+  }
   .cta-button {
-    padding: 1.1rem 1.5rem;
+    height: 52px;
+    padding: 0 1.5rem;
   }
 }
 </style>

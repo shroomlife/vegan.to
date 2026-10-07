@@ -2,13 +2,18 @@ import { test, expect } from '@playwright/test'
 import { routePaths } from '../src/data/routes'
 
 test.describe('outbound links and sources', () => {
-  test('the three core question cards link to the partner domains', async ({ page }) => {
+  test('the hand-off leads to Veganstart, header and chapter alike, the three questions stay as small links', async ({ page }) => {
     await page.goto('/')
-    const cards = page.locator('.why-how-card')
-    await expect(cards).toHaveCount(3)
-    await expect(cards.nth(0)).toHaveAttribute('href', 'https://warum-vegan.com/')
-    await expect(cards.nth(1)).toHaveAttribute('href', 'https://wie-vegan.com/')
-    await expect(cards.nth(2)).toHaveAttribute('href', 'https://vegan-community.de/')
+    await expect(page.locator('.site-header-cta')).toHaveAttribute('href', 'https://veganstart.de/')
+    await expect(page.locator('.site-header-cta')).toHaveAttribute('rel', /noopener/)
+    const handOff = page.locator('.hand-off')
+    await expect(handOff).toHaveAttribute('href', 'https://veganstart.de/')
+    await expect(handOff).toContainText('PETA')
+    const links = page.locator('.why-how-link')
+    await expect(links).toHaveCount(3)
+    await expect(links.nth(0)).toHaveAttribute('href', 'https://warum-vegan.com/')
+    await expect(links.nth(1)).toHaveAttribute('href', 'https://wie-vegan.com/')
+    await expect(links.nth(2)).toHaveAttribute('href', 'https://vegan-community.de/')
   })
 
   // Nothing checked internal targets before, so a link to a route that was
