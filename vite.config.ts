@@ -5,6 +5,8 @@ import { fileURLToPath } from 'node:url'
 import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname } from 'node:path'
 import { routePaths } from './src/data/routes.ts'
+import { topicPages } from './src/data/topics.ts'
+import { assertFullHistory, contentFiles, lastCommitDate, routeEntryFiles } from './scripts/lastmod.ts'
 
 const pkg = JSON.parse(readFileSync('./package.json', 'utf-8')) as { version: string }
 
@@ -31,16 +33,21 @@ function spaFallback(outDir: string, paths: readonly string[]): Plugin {
   }
 }
 
+/**
+ * Every route with the date of the last commit that touched what it renders
+ * (scripts/lastmod.ts), so lastmod means something and Google keeps reading it.
+ */
 function sitemap(outDir: string, paths: readonly string[]): Plugin {
   return {
     name: 'sitemap',
     apply: 'build',
     closeBundle() {
-      const today = new Date().toISOString().slice(0, 10)
+      assertFullHistory()
+      const topicNameByPath = new Map(topicPages.map((topic) => [topic.path, topic.name]))
       const urls = paths.map((path) => [
         '  <url>',
         `    <loc>${SITE_URL}${path}</loc>`,
-        `    <lastmod>${today}</lastmod>`,
+        `    <lastmod>${lastCommitDate(contentFiles(routeEntryFiles(path, topicNameByPath)))}</lastmod>`,
         '  </url>',
       ].join('\n'))
       const xml = [

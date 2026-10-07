@@ -20,7 +20,10 @@ jobs:
     name: Lint, types, end-to-end
     runs-on: ubuntu-latest
     steps:
+      # Full history: the sitemap dates every route by the last commit that touched it
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       # Reads the bun version from the packageManager field in package.json
       - uses: oven-sh/setup-bun@v2
