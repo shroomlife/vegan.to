@@ -4,6 +4,7 @@ import { animals } from '@/data/animals'
 import { slugBySpecies } from '@/data/species'
 import SourceLinks from '@/components/SourceLinks.vue'
 import SpeciesPortrait from '@/components/SpeciesPortrait.vue'
+import ClipVideo from '@/components/ClipVideo.vue'
 
 /** The species page slug behind a fact, found by the plural name the fact carries */
 function speciesSlug(plural: string): string | undefined {
@@ -21,12 +22,21 @@ function speciesPath(plural: string): string | undefined {
   <section id="wer-sie-sind" class="species-facts chapter-section">
     <div class="container">
       <div class="species-facts-head">
-        <span class="chapter">Wer sie sind</span>
-        <h2 class="chapter-title">Keine Nummern. Jemand.</h2>
-        <p class="chapter-lead">
-          Was die Forschung über diese Tiere weiß, passt nicht zu dem, wie wir sie behandeln.
-          Jeder Satz hier hat eine Quelle, du kannst sie nachlesen.
-        </p>
+        <div>
+          <span class="chapter">Wer sie sind</span>
+          <h2 class="chapter-title">Keine Nummern. Jemand.</h2>
+          <p class="chapter-lead">
+            Was die Forschung über diese Tiere weiß, passt nicht zu dem, wie wir sie behandeln.
+            Jeder Satz hier hat eine Quelle, du kannst sie nachlesen.
+          </p>
+        </div>
+        <!-- The eye: the clip opens like a lid while it scrolls into view, then blinks now and then -->
+        <figure class="species-facts-eye">
+          <div class="species-facts-lid">
+            <ClipVideo folder="start" name="calf-eyes" :widths="[1920, 1280]" label="Ein braunes Kalb, ganz nah, es sieht in die Kamera und blinzelt" class="species-facts-clip" />
+          </div>
+          <figcaption>Ein Kalb sieht dich an. Es blinzelt. Du auch.</figcaption>
+        </figure>
       </div>
       <div class="species-facts-grid">
         <article
@@ -57,11 +67,61 @@ function speciesPath(plural: string): string | undefined {
   background: var(--brand-mint);
 }
 .species-facts-head {
-  max-width: 760px;
-  margin-bottom: 2rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 520px);
+  gap: 3rem;
+  align-items: center;
+  margin-bottom: 2.5rem;
 }
 .species-facts-head .chapter-lead {
   margin-bottom: 0;
+}
+.species-facts-eye {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+/* The lid: an ellipse that is almost shut when the chapter enters and open when it has arrived */
+.species-facts-lid {
+  aspect-ratio: 4 / 3;
+  clip-path: ellipse(56% 50% at 54% 50%);
+  background: var(--brand-night);
+}
+.species-facts-clip {
+  height: 100%;
+  animation: eye-blink 7s ease-in-out infinite;
+  clip-path: ellipse(60% 54% at 54% 50%);
+}
+.species-facts-clip :deep(video) {
+  transform: scale(1.12);
+  transform-origin: 50% 50%;
+}
+@keyframes eye-blink {
+  0%, 92%, 100% { clip-path: ellipse(60% 54% at 54% 50%); }
+  95% { clip-path: ellipse(60% 3% at 54% 50%); }
+}
+@supports (animation-timeline: view()) {
+  .species-facts-lid {
+    animation: eye-open linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 90%;
+  }
+  @keyframes eye-open {
+    from { clip-path: ellipse(56% 6% at 54% 50%); }
+    to { clip-path: ellipse(56% 50% at 54% 50%); }
+  }
+}
+.species-facts-eye figcaption {
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--brand-muted);
+}
+@media (prefers-reduced-motion: reduce) {
+  .species-facts-lid,
+  .species-facts-clip {
+    animation: none;
+  }
 }
 .species-facts-grid {
   display: grid;
@@ -130,6 +190,10 @@ function speciesPath(plural: string): string | undefined {
 }
 
 @media (max-width: 991px) {
+  .species-facts-head {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
   .species-facts-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

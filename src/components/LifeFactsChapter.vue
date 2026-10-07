@@ -69,26 +69,29 @@ import SceneImage from '@/components/SceneImage.vue'
   line-height: 1.45;
   color: var(--brand-cream);
 }
+/* Nine figures on one grid of rows, no cards: a rule above each, the figure big, the text under it */
 .life-facts-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.9rem;
+  gap: 0 2.5rem;
 }
 .life-fact {
   display: flex;
   flex-direction: column;
-  padding: 1.35rem 1.35rem 1.1rem;
-  border-radius: 20px;
-  border: 1.5px solid rgba(20, 54, 31, 0.08);
-  background: #fff;
+  padding: 1.75rem 0;
+  border-top: 1px solid rgba(20, 54, 31, 0.2);
+}
+.life-fact:nth-child(-n + 3) {
+  border-top: 2px solid var(--brand-green);
 }
 .life-fact-figure {
   font-family: var(--font-display);
-  font-size: clamp(1.6rem, 2.6vw, 2.1rem);
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  line-height: 1.05;
+  font-size: clamp(2rem, 3.2vw, 2.75rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
   color: var(--brand-accent-text);
+  white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
 .life-fact-unit {
@@ -136,12 +139,32 @@ import SceneImage from '@/components/SceneImage.vue'
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+@media (max-width: 991px) {
+  .life-facts-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .life-fact:nth-child(-n + 3) {
+    border-top: 1px solid rgba(20, 54, 31, 0.2);
+  }
+  .life-fact:nth-child(-n + 2) {
+    border-top: 2px solid var(--brand-green);
+  }
+}
 @media (max-width: 767px) {
   .life-facts-band :deep(img) {
     aspect-ratio: 4 / 3;
   }
   .life-facts-grid {
     grid-template-columns: 1fr;
+  }
+  .life-fact {
+    padding: 1.25rem 0;
+  }
+  .life-fact:nth-child(-n + 3) {
+    border-top: 1px solid rgba(20, 54, 31, 0.2);
+  }
+  .life-fact:first-child {
+    border-top: 2px solid var(--brand-green);
   }
 }
 </style>
