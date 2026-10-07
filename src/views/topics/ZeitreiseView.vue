@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, useTemplateRef, watch, type ComponentPublicInstance } from 'vue'
-import { useWindowSize } from '@vueuse/core'
 import { useJsonLd } from '@/composables/useJsonLd'
-import { span, useSceneProgress } from '@/composables/useSceneProgress'
+import { span, useSceneProgress, type SceneMode } from '@/composables/useSceneProgress'
 import { topicByName } from '@/data/topics'
 import {
   cageStations,
@@ -31,9 +30,9 @@ const topic = topicByName('Timeline')
 const { register, progress, page, reducedMotion } = useSceneProgress()
 const still = computed(() => reducedMotion.value === 'reduce')
 
-/** Template ref callback that hands the track element to the scene tracker */
-function track(id: string) {
-  return (el: Element | ComponentPublicInstance | null) => register(id, el instanceof HTMLElement ? el : null)
+/** Template ref callback that hands the element to the scene tracker, see SceneMode for how its progress is read */
+function track(id: string, mode: SceneMode = 'scene') {
+  return (el: Element | ComponentPublicInstance | null) => register(id, el instanceof HTMLElement ? el : null, mode)
 }
 const p = (id: string) => progress[id] ?? 0
 
@@ -129,9 +128,8 @@ watch(
 )
 
 /* ── Akt I: eine Station nach der anderen ────────────────── */
-const { width: viewportWidth } = useWindowSize()
-/** On a phone the scenes are not pinned (see the styles), so every slide simply stays in the flow */
-const earlyPinned = computed(() => viewportWidth.value >= 760 && !still.value)
+/** With reduced motion the scenes are not pinned (see the styles), so every slide simply stays in the flow */
+const earlyPinned = computed(() => !still.value)
 /** The intro counts as the first slide */
 const EARLY_SLIDES = earlyStations.length + 1
 /** Where the scroll stands, in slides: 0.5 is the middle of the first, EARLY_SLIDES - 0.5 the middle of the last */
@@ -169,10 +167,10 @@ const CAGE_CM2 = 450
 const cageShare = CAGE_CM2 / A4_CM2
 const cageHeightCm = CAGE_CM2 / A4_WIDTH_CM
 const CLOCK_LENGTH = 804.2
-const clockHours = computed(() => Math.round(span(p('transport'), 0.1, 0.9) * 24))
+const clockHours = computed(() => Math.round(span(p('transport'), 0.05, 0.9) * 24))
 /** BZL figure for the years before the ban; the ministry says about 40 million, see /kueken-und-legehennen */
 const CHICKS_BEFORE_BAN = 45_000_000
-const countdown = computed(() => (still.value ? CHICKS_BEFORE_BAN : Math.round(CHICKS_BEFORE_BAN * (1 - span(p('countdown'), 0.15, 0.85)))))
+const countdown = computed(() => (still.value ? CHICKS_BEFORE_BAN : Math.round(CHICKS_BEFORE_BAN * (1 - span(p('countdown'), 0.05, 0.85)))))
 
 /* ── Deutschland heute: Exporte ──────────────────────────── */
 const exportsMax = Math.max(...thirdCountryExports.map((entry) => entry.cattle))
@@ -392,8 +390,8 @@ useJsonLd('page-breadcrumb', {
       </div>
     </section>
 
-    <section :ref="track('foundation')" class="flow flow--band" aria-label="1972 bis 1980">
-      <figure class="band band--eye" :style="{ '--p': p('foundation') }" aria-hidden="true">
+    <section class="flow flow--band" aria-label="1972 bis 1980">
+      <figure :ref="track('foundation', 'pass')" class="band band--eye" :style="{ '--p': p('foundation') }" aria-hidden="true">
         <SceneImage name="cow-eye" alt="" />
       </figure>
       <div class="flow-inner">
@@ -467,7 +465,7 @@ useJsonLd('page-breadcrumb', {
         <div class="clock">
           <svg class="clock-ring" viewBox="0 0 300 300" aria-hidden="true">
             <circle cx="150" cy="150" r="128" class="clock-track" />
-            <circle cx="150" cy="150" r="128" class="clock-arc" :style="{ strokeDasharray: CLOCK_LENGTH, strokeDashoffset: CLOCK_LENGTH * (1 - span(p('transport'), 0.1, 0.9)) }" transform="rotate(-90 150 150)" />
+            <circle cx="150" cy="150" r="128" class="clock-arc" :style="{ strokeDasharray: CLOCK_LENGTH, strokeDashoffset: CLOCK_LENGTH * (1 - span(p('transport'), 0.05, 0.9)) }" transform="rotate(-90 150 150)" />
           </svg>
           <div class="clock-copy">
             <h2 class="kicker">Akt IV · 2005 · Unterwegs</h2>
@@ -535,10 +533,10 @@ useJsonLd('page-breadcrumb', {
     </section>
 
     <!-- Deutschland heute -->
-    <section :ref="track('today')" class="flow" aria-label="Deutschland heute">
+    <section class="flow" aria-label="Deutschland heute">
       <div class="flow-inner">
         <h2 class="kicker">Deutschland heute</h2>
-        <figure class="exports" :style="{ '--p': p('today') }">
+        <figure :ref="track('today', 'enter')" class="exports" :style="{ '--p': p('today') }">
           <div class="exports-media">
             <SceneVideo name="truck" poster="truck-video" label="Ein Lastwagen mit Rindern bei Sonnenuntergang" />
           </div>
@@ -570,7 +568,7 @@ useJsonLd('page-breadcrumb', {
 
     <!-- Akt VII: heute legal -->
     <section id="akt-7" :ref="track('legal')" class="flow flow--split flow--band" aria-label="Akt VII: Heute legal">
-      <figure class="band" :style="{ '--p': p('legal') }">
+      <figure :ref="track('legalBand', 'pass')" class="band" :style="{ '--p': p('legalBand') }">
         <SceneVideo name="piglets-straw" poster="piglets-straw-video" label="Ferkel drängen sich auf Stroh" />
       </figure>
       <div class="flow-inner flow-inner--split flow-inner--swap">
@@ -1713,31 +1711,35 @@ useJsonLd('page-breadcrumb', {
     display: none;
   }
 }
-/* Small screens: no pinning, every scene is as tall as its content and animates while it scrolls through */
+/* Small screens: the scenes pin like on a desktop, the slides and the rail just take less room */
 @media (max-width: 759px) {
-  .track {
-    height: auto;
-  }
-  .stage {
-    position: relative;
-    top: auto;
-    height: auto;
-    min-height: 72svh;
-    padding-block: 12vh;
-  }
-  .early-slides {
-    display: grid;
-    gap: 3rem;
+  /* Room above for the fixed year badge, the picture a little lower so the slide and the rail fit one screen */
+  .early--pinned {
+    gap: 2vh;
+    padding-block: 8vh 3vh;
   }
   .early-slide--pictured {
     grid-template-columns: 1fr;
-    gap: 1.25rem;
+    gap: 1rem;
   }
   .early-picture {
     order: -1;
     aspect-ratio: 16 / 10;
-    max-height: none;
+    max-height: 26vh;
     border-radius: 20px;
+  }
+  /* The rail keeps its five years on one line, the titles go */
+  .early-rail {
+    grid-template-columns: repeat(5, auto);
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .early-rail-year {
+    font-size: 0.78rem;
+    white-space: nowrap;
+  }
+  .early-rail-title {
+    display: none;
   }
   .flow-inner--split,
   .cage,
