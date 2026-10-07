@@ -4,10 +4,10 @@ import { routePaths } from '../src/data/routes'
 test.describe('outbound links and sources', () => {
   test('the hand-off leads to Veganstart, header and chapter alike, the three questions stay as small links', async ({ page }) => {
     await page.goto('/')
-    await expect(page.locator('.site-header-cta')).toHaveAttribute('href', 'https://veganstart.de/')
+    await expect(page.locator('.site-header-cta')).toHaveAttribute('href', 'https://www.veganstart.de/?utm_source=vegan.to&utm_medium=referral&utm_campaign=govegan&utm_content=header')
     await expect(page.locator('.site-header-cta')).toHaveAttribute('rel', /noopener/)
     const handOff = page.locator('.hand-off')
-    await expect(handOff).toHaveAttribute('href', 'https://veganstart.de/')
+    await expect(handOff).toHaveAttribute('href', 'https://www.veganstart.de/?utm_source=vegan.to&utm_medium=referral&utm_campaign=govegan&utm_content=mach-mit')
     await expect(handOff).toContainText('PETA')
     const links = page.locator('.why-how-link')
     await expect(links).toHaveCount(3)

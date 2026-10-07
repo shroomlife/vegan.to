@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { handOff, coreQuestions, entrySteps, actionCategories } from '@/data/actions'
+import { handOff, handOffUrl, coreQuestions, entrySteps, actionCategories } from '@/data/actions'
 import ClipVideo from '@/components/ClipVideo.vue'
 </script>
 
@@ -37,7 +37,7 @@ import ClipVideo from '@/components/ClipVideo.vue'
       <!-- The main hand-off: Veganstart, one block, one button -->
       <a
         v-reveal="{ y: 24, duration: 0.5, amount: 0.3 }"
-        :href="handOff.url"
+        :href="handOffUrl('mach-mit')"
         target="_blank"
         rel="noopener"
         class="hand-off"

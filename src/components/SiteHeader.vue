@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { handOff } from '@/data/actions'
+import { handOff, handOffUrl } from '@/data/actions'
 import { useRoute } from 'vue-router'
 import BrandWordmark from '@/components/BrandWordmark.vue'
 import CounterPill from '@/components/CounterPill.vue'
@@ -54,7 +54,7 @@ const light = computed(() => route.name === 'Home' && !live.heroVisible.value)
             {{ link.label }}
           </a>
         </RouterLink>
-        <a :href="handOff.url" class="site-header-cta" target="_blank" rel="noopener">{{ handOff.label }}</a>
+        <a :href="handOffUrl('header')" class="site-header-cta" target="_blank" rel="noopener">{{ handOff.label }}</a>
       </nav>
     </div>
   </header>
