@@ -147,7 +147,8 @@ import ClipVideo from '@/components/ClipVideo.vue'
   width: 100%;
   aspect-ratio: 21 / 9;
 }
-.action-clip :deep(video) {
+.action-clip :deep(video),
+.action-clip :deep(img) {
   object-position: 50% 45%;
 }
 .action-figure figcaption {

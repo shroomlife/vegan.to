@@ -10,7 +10,8 @@ import { useMediaQuery, usePreferredReducedMotion } from '@vueuse/core'
  * eagerly. The clip itself is a treat for wide screens: it is attached only on
  * desktop, never with reduced motion, and not before the browser is idle after
  * the load, so the lights and the counter never wait for it. It plays only
- * while the hero is on screen.
+ * while the hero is on screen. The prerender drops it from the snapshot
+ * (data-client-only), otherwise every phone would download it with the html.
  */
 const props = defineProps<{
   /** False while the hero is scrolled away; the clip then pauses */
@@ -58,12 +59,12 @@ watch([() => props.active, video], play, { flush: 'post' })
       v-if="ready && wide && reducedMotion !== 'reduce'"
       ref="video"
       class="backdrop-clip"
+      data-client-only
       muted
       playsinline
       loop
       preload="auto"
       disablepictureinpicture
-      poster="/img/start/fireflies-video-1280.webp"
     >
       <source src="/video/start/fireflies-1920.av1.mp4" type="video/mp4; codecs=av01.0.08M.10" media="(min-width: 1500px)">
       <source src="/video/start/fireflies-1280.av1.mp4" type="video/mp4; codecs=av01.0.08M.10">

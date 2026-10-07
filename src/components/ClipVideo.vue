@@ -7,8 +7,11 @@ import { usePreferredReducedMotion } from '@vueuse/core'
  * scripts/clip-video.sh writes /video/<folder>/<name>-<width>.av1.mp4 and
  * .h264.mp4 plus the poster <name>-video under /img/<folder>.
  *
- * Nothing loads before the clip is near the viewport, it plays only while
- * visible, and with reduced motion the poster stays as a still picture.
+ * The poster is a lazy <picture> under the clip, so it is the still picture
+ * in the prerendered snapshot and for reduced motion, and nothing of the clip
+ * loads before it is near the viewport. The <video> itself stays out of the
+ * snapshot (data-client-only) and carries no poster attribute, which a browser
+ * would fetch at once.
  */
 const props = withDefaults(
   defineProps<{
@@ -55,15 +58,20 @@ onUnmounted(() => observer?.disconnect())
 
 <template>
   <div class="clip">
+    <picture class="clip-poster">
+      <source type="image/avif" :srcset="`/img/${folder}/${name}-video-640.avif 640w, /img/${folder}/${name}-video-1280.avif 1280w`" sizes="(min-width: 1320px) 1200px, 100vw">
+      <source type="image/webp" :srcset="`/img/${folder}/${name}-video-640.webp 640w, /img/${folder}/${name}-video-1280.webp 1280w`" sizes="(min-width: 1320px) 1200px, 100vw">
+      <img :src="`/img/${folder}/${name}-video-1280.jpg`" :srcset="`/img/${folder}/${name}-video-640.jpg 640w, /img/${folder}/${name}-video-1280.jpg 1280w`" sizes="(min-width: 1320px) 1200px, 100vw" :alt="label" loading="lazy" decoding="async">
+    </picture>
     <video
       ref="video"
       class="clip-video"
+      data-client-only
       muted
       playsinline
       loop
       preload="none"
       disablepictureinpicture
-      :poster="`/img/${folder}/${name}-video-1280.webp`"
       :aria-label="label"
     >
       <source :src="`/video/${folder}/${name}-${large()}.av1.mp4`" type="video/mp4; codecs=av01.0.08M.10" media="(min-width: 700px)">
@@ -78,8 +86,19 @@ onUnmounted(() => observer?.disconnect())
 <style scoped>
 .clip {
   position: relative;
+  overflow: hidden;
 }
+.clip-poster,
+.clip-poster img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+/* The clip lies over the still and is transparent until its first frame */
 .clip-video {
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
   height: 100%;

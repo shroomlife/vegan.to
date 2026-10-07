@@ -93,7 +93,8 @@ function speciesPath(plural: string): string | undefined {
   animation: eye-blink 7s ease-in-out infinite;
   clip-path: ellipse(60% 54% at 54% 50%);
 }
-.species-facts-clip :deep(video) {
+.species-facts-clip :deep(video),
+.species-facts-clip :deep(img) {
   transform: scale(1.12);
   transform-origin: 50% 50%;
 }
