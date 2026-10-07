@@ -32,7 +32,7 @@ import ActionChapter from '@/components/ActionChapter.vue'
 import SourceLinks from '@/components/SourceLinks.vue'
 import SourceList from '@/components/SourceList.vue'
 
-const { timer, animalData, totalDeathCount, victims, latest, heroVisible } = useLiveState()
+const { timer, isMobile, animalData, totalDeathCount, victims, latest, heroVisible } = useLiveState()
 // Every chapter cites by number; the list at the end of the page resolves them
 provideCitations()
 const { onNavClick } = useAnchorNavigation()
@@ -158,6 +158,7 @@ const shareText = () =>
     <HeroSky :count="totalDeathCount" :active="heroInView" />
     <div class="hero-vignette" aria-hidden="true"></div>
 
+    <!-- On a phone every card hugs its lane's edge (no random offset), so the middle stays free for the words -->
     <div class="victim-lane victim-lane--left" aria-hidden="true">
       <VictimCard
         v-for="victim in leftLane"
@@ -166,7 +167,7 @@ const shareText = () =>
         :hot="victim.id === latest.id"
         class="victim-rise"
         :style="{
-          left: victim.left,
+          left: isMobile ? '0' : victim.left,
           animationDuration: victim.duration + 's',
           animationDelay: riseDelay(victim),
         }"
@@ -180,7 +181,8 @@ const shareText = () =>
         :hot="victim.id === latest.id"
         class="victim-rise"
         :style="{
-          left: victim.left,
+          left: isMobile ? 'auto' : victim.left,
+          right: isMobile ? '0' : 'auto',
           animationDuration: victim.duration + 's',
           animationDelay: riseDelay(victim),
         }"
@@ -212,20 +214,23 @@ const shareText = () =>
       </div>
     </div>
 
-    <RouterLink to="/#wer" custom v-slot="{ href, navigate }">
-      <a :href="href" class="hero-scroll" @click="navigate($event); onNavClick('/#wer')">
-        <span class="hero-scroll-label">Wer sie waren</span>
-        <span class="hero-scroll-badge" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="20" height="20" focusable="false">
-            <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14m7-7l-7 7l-7-7" />
-          </svg>
-        </span>
-      </a>
-    </RouterLink>
-    <RouterLink :to="timelineTopic.path" class="hero-side-link">
-      <span class="hero-side-link-kicker">Zeitreise</span>
-      <span class="hero-side-link-label">Von 1867 bis heute <span aria-hidden="true">&rarr;</span></span>
-    </RouterLink>
+    <!-- The two doors out of the hero: on a desktop pinned to the corners, on a phone one row under the counter -->
+    <div class="hero-doors">
+      <RouterLink to="/#wer" custom v-slot="{ href, navigate }">
+        <a :href="href" class="hero-scroll" aria-label="Wer sie waren" @click="navigate($event); onNavClick('/#wer')">
+          <span class="hero-scroll-label">Wer sie waren</span>
+          <span class="hero-scroll-badge" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="20" height="20" focusable="false">
+              <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14m7-7l-7 7l-7-7" />
+            </svg>
+          </span>
+        </a>
+      </RouterLink>
+      <RouterLink :to="timelineTopic.path" class="hero-side-link">
+        <span class="hero-side-link-kicker">Zeitreise</span>
+        <span class="hero-side-link-label">Von 1867 bis heute <span aria-hidden="true">&rarr;</span></span>
+      </RouterLink>
+    </div>
   </section>
 
   <!-- Sheet: light surface sliding over the hero -->
@@ -493,6 +498,10 @@ const shareText = () =>
     radial-gradient(720px 420px at 50% 40%, rgba(63, 120, 82, 0.26) 0%, rgba(63, 120, 82, 0) 70%),
     radial-gradient(1100px 760px at 50% 50%, rgba(14, 33, 20, 0) 55%, rgba(6, 15, 9, 0.75) 100%);
   pointer-events: none;
+}
+/* The doors keep their corner positions on a desktop: the wrapper is only there for the phone row */
+.hero-doors {
+  display: contents;
 }
 /* Two lanes for the cards, the middle stays free for text and counter */
 .victim-lane {
@@ -1258,6 +1267,63 @@ const shareText = () =>
   .hero-counter {
     text-shadow: 0 2px 14px rgba(0, 0, 0, 0.45);
   }
+  /* A dark pool behind the words: the lights and the cards stay, the text sits on calm ground */
+  .hero-inner::before {
+    content: '';
+    position: absolute;
+    inset: -14% -32%;
+    z-index: -1;
+    background: radial-gradient(ellipse at center, rgba(14, 33, 20, 0.85) 0%, rgba(14, 33, 20, 0.6) 42%, rgba(14, 33, 20, 0) 72%);
+    pointer-events: none;
+  }
+  .hero-label {
+    max-width: 34ch;
+    margin-inline: auto;
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+  }
+  /* The doors in one row under the counter instead of two corners that cannot both fit */
+  .hero {
+    flex-direction: column;
+  }
+  .hero-doors {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    max-width: 720px;
+    margin-top: 1.5rem;
+    position: relative;
+    z-index: 1;
+  }
+  .hero-scroll {
+    position: static;
+    transform: none;
+    flex-direction: row;
+    gap: 10px;
+  }
+  .hero-scroll-label,
+  .hero-side-link-label {
+    white-space: nowrap;
+  }
+  .hero-side-link {
+    position: static;
+    flex: 0 0 auto;
+  }
+  .hero-side-link-label {
+    font-size: 0.8rem;
+  }
+}
+@media (max-width: 419px) {
+  .hero-scroll-label {
+    display: none;
+  }
+  /* The cards fly at the edges and fainter, so they never carry the eye away from the words */
+  .victim-lane {
+    width: 34%;
+    opacity: 0.6;
+  }
   /* Animal cards: one column on phones */
   .animals-section {
     padding: 3.5rem 0;
@@ -1294,11 +1360,12 @@ const shareText = () =>
   .sheet-head-pause {
     padding-right: 0;
   }
-  .victim-lane {
-    width: 48%;
-  }
   .victim-lane .victim-card {
-    width: 176px;
+    width: 100%;
+  }
+  /* Narrow tickets keep name, place and the lifeline; the note would wrap into three lines */
+  .victim-lane :deep(.victim-card-note) {
+    display: none;
   }
   .animal-emoji {
     font-size: 1.6rem;
