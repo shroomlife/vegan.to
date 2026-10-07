@@ -84,9 +84,13 @@ export function assertFullHistory(): void {
   const shallow = git(['rev-parse', '--is-shallow-repository'])
   if (shallow === 'false') return
   const commits = git(['rev-list', '--count', 'HEAD'])
+  const mainCommits = git(['rev-list', '--count', 'origin/main'])
+  const head = git(['log', '-1', '--format=%H parents: %P', 'HEAD'])
+  const shallowFile = existsSync(resolve(ROOT, '.git/shallow')) ? readFileSync(resolve(ROOT, '.git/shallow'), 'utf-8').trim().split('
+').join(' ') : '(no .git/shallow)'
   throw new Error(
     `lastmod: the sitemap needs the full history (actions/checkout with fetch-depth: 0). ` +
-      `is-shallow-repository: "${shallow}", commits reachable from HEAD: ${commits}, root: ${ROOT}, ${git(['--version'])}`,
+      `is-shallow-repository: "${shallow}", commits reachable from HEAD: ${commits}, from origin/main: ${mainCommits}, HEAD ${head}, shallow boundary: ${shallowFile}, root: ${ROOT}, ${git(['--version'])}`,
   )
 }
 
