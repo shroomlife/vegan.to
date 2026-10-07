@@ -20,10 +20,13 @@ test.describe('impact section', () => {
     }
   })
 
-  test('sources are linked below the cards', async ({ page }) => {
+  test('sources are cited below the cards and resolve in the list', async ({ page }) => {
     await page.goto('/')
-    const source = page.locator('.impact-source')
-    await expect(source).toContainText('Scarborough')
-    expect(await source.locator('a[href^="https://"]').count()).toBeGreaterThan(0)
+    const notes = page.locator('.impact-source .source-note')
+    await expect(notes).toHaveCount(4)
+    const anchor = (await notes.first().getAttribute('href')) ?? ''
+    const item = page.locator(anchor)
+    await expect(item).toContainText('Scarborough')
+    await expect(item.locator('a[href^="https://"]')).toHaveCount(1)
   })
 })

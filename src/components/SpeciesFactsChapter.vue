@@ -40,8 +40,7 @@ function speciesPath(plural: string): string | undefined {
             <span class="species-fact-emoji" aria-hidden="true">{{ fact.emoji }}</span>
             <h3 class="species-fact-name">{{ fact.species }}</h3>
           </div>
-          <p class="species-fact-text">{{ fact.text }}</p>
-          <SourceLinks :ids="fact.sources" />
+          <p class="species-fact-text">{{ fact.text }}<SourceLinks :ids="fact.sources" /></p>
           <RouterLink v-if="speciesPath(fact.species)" :to="speciesPath(fact.species) ?? '/tiere'" class="species-fact-link">
             Mehr über {{ fact.species }} <span aria-hidden="true">&rarr;</span>
           </RouterLink>
