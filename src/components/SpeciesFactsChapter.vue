@@ -3,12 +3,16 @@ import { speciesFacts } from '@/data/facts'
 import { animals } from '@/data/animals'
 import { slugBySpecies } from '@/data/species'
 import SourceLinks from '@/components/SourceLinks.vue'
-import SceneImage from '@/components/SceneImage.vue'
+import SpeciesPortrait from '@/components/SpeciesPortrait.vue'
 
-/** The species page behind a fact, found by the plural name the fact carries */
-function speciesPath(plural: string): string | undefined {
+/** The species page slug behind a fact, found by the plural name the fact carries */
+function speciesSlug(plural: string): string | undefined {
   const animal = animals.find((entry) => entry.names.plural === plural)
-  const slug = animal ? slugBySpecies(animal.names.single) : undefined
+  return animal ? slugBySpecies(animal.names.single) : undefined
+}
+
+function speciesPath(plural: string): string | undefined {
+  const slug = speciesSlug(plural)
   return slug ? `/tiere/${slug}` : undefined
 }
 </script>
@@ -17,18 +21,12 @@ function speciesPath(plural: string): string | undefined {
   <section id="wer-sie-sind" class="species-facts chapter-section">
     <div class="container">
       <div class="species-facts-head">
-        <div>
-          <span class="chapter">Wer sie sind</span>
-          <h2 class="chapter-title">Keine Nummern. Jemand.</h2>
-          <p class="chapter-lead">
-            Was die Forschung über diese Tiere weiß, passt nicht zu dem, wie wir sie behandeln.
-            Jeder Satz hier hat eine Quelle, du kannst sie nachlesen.
-          </p>
-        </div>
-        <figure v-reveal="{ x: 24, duration: 0.6, amount: 0.3 }" class="species-facts-portrait">
-          <SceneImage name="pig-eye" alt="Das Auge eines Schweins hinter einem Gatter" sizes="(max-width: 991px) 100vw, 480px" />
-          <figcaption>Ein Schwein sieht dich an. Es erkennt Gesichter, auch deins.</figcaption>
-        </figure>
+        <span class="chapter">Wer sie sind</span>
+        <h2 class="chapter-title">Keine Nummern. Jemand.</h2>
+        <p class="chapter-lead">
+          Was die Forschung über diese Tiere weiß, passt nicht zu dem, wie wir sie behandeln.
+          Jeder Satz hier hat eine Quelle, du kannst sie nachlesen.
+        </p>
       </div>
       <div class="species-facts-grid">
         <article
@@ -37,6 +35,7 @@ function speciesPath(plural: string): string | undefined {
           v-reveal="{ y: 24, duration: 0.45, delay: (index % 3) * 0.08, amount: 0.3 }"
           class="species-fact"
         >
+          <SpeciesPortrait v-if="speciesSlug(fact.species)" :slug="speciesSlug(fact.species) ?? ''" sizes="(max-width: 767px) 100vw, (max-width: 991px) 50vw, 400px" class="species-fact-portrait" />
           <div class="species-fact-head">
             <span class="species-fact-emoji" aria-hidden="true">{{ fact.emoji }}</span>
             <h3 class="species-fact-name">{{ fact.species }}</h3>
@@ -59,34 +58,11 @@ function speciesPath(plural: string): string | undefined {
   background: var(--brand-mint);
 }
 .species-facts-head {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 480px);
-  gap: 2.5rem;
-  align-items: end;
+  max-width: 760px;
   margin-bottom: 2rem;
 }
 .species-facts-head .chapter-lead {
   margin-bottom: 0;
-}
-.species-facts-portrait {
-  margin: 0;
-  border-radius: 24px;
-  overflow: hidden;
-  background: #fff;
-  border: 1.5px solid rgba(20, 54, 31, 0.08);
-}
-.species-facts-portrait :deep(img) {
-  width: 100%;
-  aspect-ratio: 16 / 10;
-  object-fit: cover;
-  object-position: 50% 40%;
-  display: block;
-}
-.species-facts-portrait figcaption {
-  padding: 0.75rem 1rem 0.85rem;
-  font-size: 0.88rem;
-  line-height: 1.45;
-  color: var(--brand-muted);
 }
 .species-facts-grid {
   display: grid;
@@ -101,6 +77,11 @@ function speciesPath(plural: string): string | undefined {
   background: #fff;
   border: 1.5px solid rgba(20, 54, 31, 0.08);
   border-radius: 20px;
+}
+/* The portrait bleeds to the card's edges, the text keeps its padding */
+.species-fact-portrait {
+  margin: -1.25rem -1.35rem 0.4rem;
+  border-radius: 18px 18px 0 0;
 }
 .species-fact-head {
   display: flex;
@@ -150,10 +131,6 @@ function speciesPath(plural: string): string | undefined {
 }
 
 @media (max-width: 991px) {
-  .species-facts-head {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
   .species-facts-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
