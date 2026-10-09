@@ -5,8 +5,6 @@ import { useAnchorNavigation } from '@/composables/useAnchorNavigation'
 defineProps<{
   count: number
 }>()
-// The custom RouterLink renders no element of its own, so a class from the parent goes onto the <a>
-defineOptions({ inheritAttrs: false })
 
 // The pill only shows on the start page, where a plain RouterLink to "/" would ignore the tap
 const { onNavClick } = useAnchorNavigation()
@@ -15,13 +13,8 @@ const { onNavClick } = useAnchorNavigation()
 <template>
   <!-- The counter follows the visitor once the hero has scrolled away; a tap brings the big counter back -->
   <RouterLink to="/" custom v-slot="{ href, navigate }">
-    <a
-      v-bind="$attrs"
-      :href="href"
-      class="counter-pill"
-      :aria-label="`${formatNumber(count)} seit du hier bist, zurück zum Zähler`"
-      @click="navigate($event); onNavClick('/')"
-    >
+    <!-- A fixed name: the figure changes every second and would be announced again and again -->
+    <a :href="href" class="counter-pill" aria-label="seit du hier bist, zurück zum Zähler" @click="navigate($event); onNavClick('/')">
       <span class="counter-pill-dot" aria-hidden="true"></span>
       <span class="counter-pill-number">{{ formatNumber(count) }}</span>
       <span class="counter-pill-label">seit du hier bist</span>
