@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { POPULATION_DE } from '@/data/population'
 import { ref, computed, useTemplateRef, watch } from 'vue'
-import { useTransition, TransitionPresets, useElementVisibility } from '@vueuse/core'
+import { useElementVisibility } from '@vueuse/core'
 import { type ComputedAnimal } from '@/composables/useAnimalData'
 import { useLiveState } from '@/composables/useLiveState'
 import type { Victim } from '@/composables/useVictimTicker'
@@ -9,6 +9,7 @@ import { provideCitations } from '@/composables/useCitations'
 import { animals } from '@/data/animals'
 import { slugBySpecies } from '@/data/species'
 import { useAnchorNavigation } from '@/composables/useAnchorNavigation'
+import { useEasedNumber } from '@/composables/useEasedNumber'
 import { replacesSnapshot } from '@/utils/prerendered'
 import { formatNumber } from '@/utils/formatNumber'
 import { WORLD_YEAR, worldTotal } from '@/data/topics/world'
@@ -140,12 +141,7 @@ function isChildViewOpen(animal: ComputedAnimal): boolean {
   return childViewState.value[animal.names.single] ?? false
 }
 
-const animatedTotalDeaths = useTransition(totalDeathCount, {
-  duration: 369,
-  transition: TransitionPresets.easeOutCubic,
-  // Off screen the figure follows the count directly, nobody sees the easing
-  disabled: computed(() => !heroInView.value),
-})
+const animatedTotalDeaths = useEasedNumber(totalDeathCount, heroInView)
 
 const shareText = () =>
   `In nur ${timer.elapsedFormatted.value}, in denen ich auf https://vegan.to war, sind in Deutschland schon ${formatNumber(totalDeathCount.value)} Tiere getötet worden…\n\n#vegan\n\n🐷🐮🐔`
