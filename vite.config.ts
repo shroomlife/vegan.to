@@ -70,6 +70,8 @@ export default defineConfig({
       manifest: false,
       // Deferred, so the registration script no longer blocks the first paint
       injectRegister: 'script-defer',
+      // The service worker goes, every visit loads the latest build: with injectRegister other than 'auto' the plugin sets no skipWaiting, so each new version waited until every vegan.to tab was closed and phones kept showing old builds. The self-destroying sw.js replaces it under the same name, clears its caches, unregisters and reloads open pages; keep every other option as it is, the plugin docs require it
+      selfDestroying: true,
     }),
     spaFallback('docs', routePaths),
     sitemap('docs', routePaths),
