@@ -66,10 +66,17 @@ test.describe('outbound links and sources', () => {
     }
   })
 
-  test('header and footer carry the brand, the partner links and the sources page', async ({ page }) => {
+  test('header and footer carry the brand, the partner links and the sources page', async ({ page, isMobile }) => {
     await page.goto('/')
     await expect(page.locator('.site-header .wordmark')).toHaveText(/vegan\s*to/)
-    await expect(page.locator('.site-header').getByRole('link', { name: 'Quellen' })).toHaveAttribute('href', '/quellen')
+    if (isMobile) {
+      // The phone bar has no room for the page links, the menu carries them
+      await page.getByRole('button', { name: 'Menü', exact: true }).click()
+      await expect(page.getByRole('dialog', { name: 'Menü' }).getByRole('link', { name: 'Quellen und Methodik' })).toHaveAttribute('href', '/quellen')
+      await page.keyboard.press('Escape')
+    } else {
+      await expect(page.locator('.site-header').getByRole('link', { name: 'Quellen' })).toHaveAttribute('href', '/quellen')
+    }
     const footer = page.locator('.site-footer')
     await expect(footer.locator('.wordmark')).toBeVisible()
     await expect(footer.locator('.pride-flag')).toBeVisible()

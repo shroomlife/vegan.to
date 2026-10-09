@@ -4,15 +4,17 @@ import { handOff, handOffUrl } from '@/data/actions'
 import { useRoute } from 'vue-router'
 import BrandWordmark from '@/components/BrandWordmark.vue'
 import CounterPill from '@/components/CounterPill.vue'
+import MobileMenu from '@/components/MobileMenu.vue'
 import { useAnchorNavigation } from '@/composables/useAnchorNavigation'
 import { useLiveState } from '@/composables/useLiveState'
 
+// Phones get these (and every background page) from the menu instead
 const navLinks = [
-  { label: 'Zahlen', to: '/#zahlen', mobile: false },
-  { label: 'Tiere', to: '/tiere', mobile: false },
-  { label: 'Zeitreise', to: '/zeitreise', mobile: false },
-  { label: 'Impact', to: '/#impact', mobile: false },
-  { label: 'Quellen', to: '/quellen', mobile: true },
+  { label: 'Zahlen', to: '/#zahlen' },
+  { label: 'Tiere', to: '/tiere' },
+  { label: 'Zeitreise', to: '/zeitreise' },
+  { label: 'Impact', to: '/#impact' },
+  { label: 'Quellen', to: '/quellen' },
 ]
 
 const { onNavClick, isPageLink } = useAnchorNavigation()
@@ -44,10 +46,7 @@ const light = computed(() => route.name === 'Home' && !live.heroVisible.value)
           <a
             :href="href"
             class="site-header-link"
-            :class="{
-              'site-header-link--desktop': !link.mobile,
-              'site-header-link--active': isExactActive && isPageLink(link.to),
-            }"
+            :class="{ 'site-header-link--active': isExactActive && isPageLink(link.to) }"
             :aria-current="isExactActive && isPageLink(link.to) ? 'page' : undefined"
             @click="navigate($event); onNavClick(link.to)"
           >
@@ -56,6 +55,7 @@ const light = computed(() => route.name === 'Home' && !live.heroVisible.value)
         </RouterLink>
         <a :href="handOffUrl('header')" class="site-header-cta" target="_blank" rel="noopener">{{ handOff.label }}</a>
       </nav>
+      <MobileMenu class="site-header-menu" />
     </div>
   </header>
 </template>
@@ -75,7 +75,8 @@ const light = computed(() => route.name === 'Home' && !live.heroVisible.value)
   transition: background 0.25s, border-color 0.25s, color 0.25s;
 }
 .site-header--light {
-  background: rgba(246, 241, 231, 0.82);
+  /* Nearly opaque: over the dark species section a thinner cream turns muddy grey */
+  background: rgba(246, 241, 231, 0.94);
   border-bottom-color: rgba(20, 54, 31, 0.1);
   color: var(--brand-green);
 }
@@ -105,6 +106,8 @@ const light = computed(() => route.name === 'Home' && !live.heroVisible.value)
 }
 .site-header-brand {
   font-size: 20px;
+  /* 44 px tall with the 20 px glyphs, a full touch target */
+  padding-block: 12px;
 }
 .site-header-pill {
   margin-left: auto;
@@ -181,6 +184,9 @@ const light = computed(() => route.name === 'Home' && !live.heroVisible.value)
   outline: 2px solid var(--brand-cream);
   outline-offset: 3px;
 }
+.site-header-menu {
+  display: none;
+}
 
 @media (max-width: 991px) {
   .site-header-nav {
@@ -188,21 +194,30 @@ const light = computed(() => route.name === 'Home' && !live.heroVisible.value)
   }
 }
 @media (max-width: 767px) {
+  .site-header-inner {
+    gap: 10px;
+  }
   .site-header-brand {
     font-size: 18px;
+    padding-block: 13px;
   }
   .site-header-nav {
-    gap: 16px;
+    margin-left: auto;
   }
+  /* The bar keeps brand, hand-off and menu; every link lives in the menu, so the bar fits 320 px */
   .site-header-link {
-    font-size: 11px;
-  }
-  .site-header-link--desktop {
     display: none;
   }
   .site-header-cta {
-    font-size: 11px;
-    padding: 10px 14px;
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    padding: 0 14px;
+  }
+  .site-header-menu {
+    display: block;
   }
 }
 </style>

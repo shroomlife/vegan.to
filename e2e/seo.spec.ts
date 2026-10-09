@@ -9,7 +9,8 @@ test.describe('on-page seo', () => {
     const homeDescription = await page.locator('meta[name="description"]').getAttribute('content')
     expect(homeDescription).toContain('Destatis')
 
-    await page.getByRole('link', { name: 'Quellen' }).first().click()
+    // The footer link exists on every viewport; on phones the header keeps its page links in the menu
+    await page.locator('.site-footer').getByRole('link', { name: 'Quellen und Methodik' }).click()
     await expect(page).toHaveTitle(/Quellen und Methodik/)
     await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', 'https://vegan.to/quellen')
     await expect(page.locator('meta[property="og:url"]')).toHaveAttribute('content', 'https://vegan.to/quellen')

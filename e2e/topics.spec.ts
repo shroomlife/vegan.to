@@ -97,9 +97,15 @@ test.describe('topic pages', () => {
   })
 
   test('the header links the Zeitreise', async ({ page, isMobile }) => {
-    test.skip(isMobile, 'The phone header keeps only the sources link')
     await page.goto('/')
-    await page.getByRole('navigation', { name: 'Hauptnavigation' }).getByRole('link', { name: 'Zeitreise' }).click()
+    if (isMobile) {
+      // On phones the page links live in the menu, which closes on the way
+      await page.getByRole('button', { name: 'Menü', exact: true }).click()
+      await page.getByRole('dialog', { name: 'Menü' }).getByRole('link', { name: /Zeitreise/ }).click()
+      await expect(page.getByRole('dialog', { name: 'Menü' })).toBeHidden()
+    } else {
+      await page.getByRole('navigation', { name: 'Hauptnavigation' }).getByRole('link', { name: 'Zeitreise' }).click()
+    }
     await expect(page).toHaveURL('/zeitreise')
   })
 
