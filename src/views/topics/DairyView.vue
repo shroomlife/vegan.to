@@ -77,7 +77,7 @@ const answers = [
         { value: formatNumber(cattleStock.dairyCowsMay2026), label: 'Milchkühe, Mai 2026', note: `In ${formatNumber(dairyHoldingsMay2026)} Haltungen.`, sources: ['destatisCattleStock'] },
         { value: formatNumber(cows), label: 'geschlachtete Kühe, 2025', sources: ['destatisSlaughter'] },
         { value: formatNumber(calves), label: 'geschlachtete Kälber, 2025', sources: ['destatisSlaughter'] },
-        { value: '5,5 Jahre', label: 'Durchschnittsalter einer Milchkuh bei der Schlachtung', note: 'Möglich wären bis zu 25 Jahre.', sources: ['bzlAges', 'vierPfotenRinder'] },
+        { value: '5,5\u00A0Jahre', label: 'Durchschnittsalter einer Milchkuh bei der Schlachtung', note: 'Möglich wären bis zu 25 Jahre.', sources: ['bzlAges', 'vierPfotenRinder'] },
       ]"
     />
 

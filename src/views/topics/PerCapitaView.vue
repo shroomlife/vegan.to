@@ -54,7 +54,7 @@ const tableRows = [
     row.animal.names.plural,
     formatNumber(row.animal.deaths.year),
     perPerson(row.produced),
-    row.share ? `${formatNumber(row.share, 1)} %` : 'keine Angabe',
+    row.share ? `${formatNumber(row.share, 1)}\u00A0%` : 'keine Angabe',
     perPerson(row.used),
   ]),
   ['Zusammen', formatNumber(landAnimals.reduce((sum, animal) => sum + animal.deaths.year, 0)), perPerson(producedTotal), '', perPerson(usedTotal)],
@@ -74,7 +74,7 @@ const lifetime = {
 const consumptionBars = meatConsumption.map((entry) => ({
   label: String(entry.year),
   value: entry.total,
-  display: `${formatNumber(entry.total, 1)} kg`,
+  display: `${formatNumber(entry.total, 1)}\u00A0kg`,
 }))
 
 const pork = selfSufficiency2025.Schwein ?? 0
@@ -129,8 +129,8 @@ const brightSpots = [
     </p>
     <FigureGrid
       :items="[
-        { value: `${formatNumber(latest?.total ?? 0, 1)} kg`, label: 'Fleischverzehr pro Kopf, 2025', note: `Davon ${formatNumber(latest?.pork ?? 0, 1)} kg Schwein, ${formatNumber(latest?.poultry ?? 0, 1)} kg Geflügel, ${formatNumber(latest?.beef ?? 0, 1)} kg Rind und Kalb.`, sources: ['bleMeatBalance'] },
-        { value: `${formatNumber(meatUsePerCapita2025, 1)} kg`, label: 'Fleischverbrauch pro Kopf, 2025', note: 'Mit Knochen, Verlusten, industrieller Verwendung und Heimtiernahrung.', sources: ['bleMeatBalance', 'bleMeatPress'] },
+        { value: `${formatNumber(latest?.total ?? 0, 1)}\u00A0kg`, label: 'Fleischverzehr pro Kopf, 2025', note: `Davon ${formatNumber(latest?.pork ?? 0, 1)} kg Schwein, ${formatNumber(latest?.poultry ?? 0, 1)} kg Geflügel, ${formatNumber(latest?.beef ?? 0, 1)} kg Rind und Kalb.`, sources: ['bleMeatBalance'] },
+        { value: `${formatNumber(meatUsePerCapita2025, 1)}\u00A0kg`, label: 'Fleischverbrauch pro Kopf, 2025', note: 'Mit Knochen, Verlusten, industrieller Verwendung und Heimtiernahrung.', sources: ['bleMeatBalance', 'bleMeatPress'] },
       ]"
     />
 
@@ -152,6 +152,7 @@ const brightSpots = [
       caption="Geschlachtete Tiere pro Kopf, 2025"
       :head="['Art', 'geschlachtet in Deutschland', 'pro Kopf', 'Selbstversorgungsgrad', 'pro Kopf, nach Verbrauch']"
       :rows="tableRows"
+      layout="stack"
       note="Pro Kopf: geteilt durch 83,5 Millionen Menschen. Verbrauch: Schlachtzahl geteilt durch den Selbstversorgungsgrad der jeweiligen Fleischart, eine Näherung. Schafe und Ziegen teilen sich einen Selbstversorgungsgrad. Rinder, Schweine, Schafe, Ziegen, Pferde: gewerbliche Schlachtungen inländischer Herkunft; Geflügel: alle Schlachtungen in deutschen Geflügelschlachtereien."
       :sources="['destatisSlaughter', 'destatisPoultry', 'bleMeatBalance', 'destatisPopulation']"
     />
@@ -196,7 +197,7 @@ const brightSpots = [
     <FigureGrid
       :items="[
         { value: formatNumber(eggsPerCapita2025), label: 'Eier pro Kopf, 2025', note: `Selbstversorgungsgrad ${formatNumber(eggSelfSufficiency2025)} Prozent.`, sources: ['bleEggBalance'] },
-        { value: `${formatNumber(fishUsePerCapita2025)} kg`, label: 'Fisch pro Kopf (Fanggewicht), 2025, vorläufig', note: `Selbstversorgungsgrad ${formatNumber(fishSelfSufficiency2025)} Prozent.`, sources: ['bleFishBalance'] },
+        { value: `${formatNumber(fishUsePerCapita2025)}\u00A0kg`, label: 'Fisch pro Kopf (Fanggewicht), 2025, vorläufig', note: `Selbstversorgungsgrad ${formatNumber(fishSelfSufficiency2025)} Prozent.`, sources: ['bleFishBalance'] },
       ]"
     />
 

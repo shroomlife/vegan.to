@@ -91,6 +91,7 @@ function width(value: number): string {
   min-width: 5.5rem;
   text-align: right;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
   color: var(--brand-ink);
 }
 .bar-list-note {
@@ -99,14 +100,27 @@ function width(value: number): string {
   line-height: 1.55;
   color: var(--brand-muted);
 }
+/* Label and value on one line, the bar as a thin rule below */
 @media (max-width: 767px) {
+  .bar-list {
+    padding: 1rem 1rem 0.9rem;
+  }
+  .bar-list-items {
+    gap: 0.55rem;
+  }
   .bar-list-item {
-    grid-template-columns: 1fr auto;
-    gap: 0.25rem 0.75rem;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.2rem 0.75rem;
+    font-size: 0.85rem;
   }
   .bar-list-track {
     grid-column: 1 / -1;
     grid-row: 2;
+    height: 6px;
+    border-radius: 3px;
+  }
+  .bar-list-value {
+    min-width: 0;
   }
 }
 </style>

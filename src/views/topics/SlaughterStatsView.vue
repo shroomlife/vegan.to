@@ -35,11 +35,13 @@ const originRows = [
 
 const pigs = byOrigin2025.find((row) => row.name === 'Schweine')
 const cattle = byOrigin2025.find((row) => row.name === 'Rinder')
+/** Both sources hold for all four cards, so the grid names them once */
+const weightSources = ['destatisSlaughter', 'destatisPoultry'] as const
 const weightFigures = [
-  { value: `${formatNumber(((pigs?.domesticTonnes ?? 0) * 1000) / (pigs?.domestic ?? 1))} kg`, label: 'Schlachtgewicht je Schwein', sources: ['destatisSlaughter'] as const },
-  { value: `${formatNumber(((cattle?.domesticTonnes ?? 0) * 1000) / (cattle?.domestic ?? 1))} kg`, label: 'Schlachtgewicht je Rind, Kälber eingerechnet', sources: ['destatisSlaughter'] as const },
-  { value: `${formatNumber(poultry2025.turkeysKg / poultry2025.turkeys, 1)} kg`, label: 'Schlachtgewicht je Pute', sources: ['destatisPoultry'] as const },
-  { value: `${formatNumber(poultry2025.broilersKg / poultry2025.broilers, 2)} kg`, label: 'Schlachtgewicht je Masthuhn', sources: ['destatisPoultry'] as const },
+  { value: `${formatNumber(((pigs?.domesticTonnes ?? 0) * 1000) / (pigs?.domestic ?? 1))}\u00A0kg`, label: 'Schlachtgewicht je Schwein' },
+  { value: `${formatNumber(((cattle?.domesticTonnes ?? 0) * 1000) / (cattle?.domestic ?? 1))}\u00A0kg`, label: 'Schlachtgewicht je Rind, Kälber eingerechnet' },
+  { value: `${formatNumber(poultry2025.turkeysKg / poultry2025.turkeys, 1)}\u00A0kg`, label: 'Schlachtgewicht je Pute' },
+  { value: `${formatNumber(poultry2025.broilersKg / poultry2025.broilers, 2)}\u00A0kg`, label: 'Schlachtgewicht je Masthuhn' },
 ]
 
 const monthBars = (values: readonly number[]) => values.map((value, index) => ({ label: MONTHS[index] ?? '', value }))
@@ -133,6 +135,7 @@ const brightSpots = [
       caption="Geschlachtete Tiere 2025 nach Herkunft"
       :head="['Art', 'aus Deutschland', 'aus dem Ausland', 'Hausschlachtung', 'zusammen']"
       :rows="originRows"
+      layout="stack"
       note="Rinder einschließlich Kälbern und Jungrindern."
       :sources="['destatisSlaughter']"
     />
@@ -153,7 +156,7 @@ const brightSpots = [
       2010, wie die Seite <RouterLink to="/tiere/huehner">Hühner</RouterLink> zeigt. Wie viel Fleisch ein einzelnes Tier
       ergibt, ist sehr unterschiedlich:
     </p>
-    <FigureGrid :items="weightFigures" />
+    <FigureGrid :items="weightFigures" :sources="weightSources" />
 
     <h2>Monat für Monat</h2>
     <p>

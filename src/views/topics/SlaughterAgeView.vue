@@ -24,13 +24,13 @@ function lived(maxDays: number, species: string): number | undefined {
 }
 function percent(value: number | undefined): string {
   if (value === undefined) return 'keine Angabe'
-  return `${formatNumber(value, value < 10 ? 1 : 0)} %`
+  return `${formatNumber(value, value < 10 ? 1 : 0)}\u00A0%`
 }
 
 const rows = usageAges.map((entry) => [
   entry.use,
   entry.ageText,
-  lifespan(entry.species) ? `bis ${lifespan(entry.species)} Jahre` : 'keine Angabe',
+  lifespan(entry.species) ? `bis ${lifespan(entry.species)}\u00A0Jahre` : 'keine Angabe',
   percent(lived(entry.maxDays, entry.species)),
 ])
 
@@ -93,6 +93,7 @@ const brightSpots = [
       caption="Alter bei der Schlachtung und mögliche Lebenserwartung"
       :head="['Tier', 'Alter bei der Schlachtung', 'mögliches Alter', 'Anteil am möglichen Leben']"
       :rows="rows"
+      layout="stack"
       note="Für Pferde und Fische gibt es keine aktuelle, belastbare Quelle zum typischen Schlachtalter in Deutschland, deshalb fehlen sie hier. Milchziege: Nutzungsdauer laut BZL, nicht Lebensalter."
       :sources="['bzlAges']"
     />

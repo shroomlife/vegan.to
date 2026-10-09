@@ -156,6 +156,7 @@ const brightSpots = [
       caption="Legehennen nach Haltungsform, Jahresdurchschnitt"
       :head="['Haltungsform', '2015', '2025', 'Veränderung']"
       :rows="henRows"
+      layout="stack"
       note="Betriebe von Unternehmen mit mindestens 3.000 Hennenplätzen."
       :sources="['destatisLayingHens', 'destatisFarmCensus', 'destatisEggPress', 'tierSchNutztV45', 'bverfg2010']"
     />
@@ -167,7 +168,7 @@ const brightSpots = [
     </p>
     <FigureGrid
       :items="[
-        { value: 'rund 16 Monate', label: 'Alter von Legehennen bei der Schlachtung', sources: ['bzlAges'] },
+        { value: 'rund 16\u00A0Monate', label: 'Alter von Legehennen bei der Schlachtung', sources: ['bzlAges'] },
         { value: formatNumber(boilingHens), label: 'geschlachtete Suppenhühner 2025', sources: ['destatisPoultry'] },
       ]"
     />

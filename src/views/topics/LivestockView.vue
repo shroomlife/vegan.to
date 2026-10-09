@@ -135,6 +135,7 @@ const brightSpots = [
       caption="Bestand und Schlachtungen im Vergleich"
       :head="['Art', 'Bestand', 'geschlachtet 2025', 'geschlachtet je Tier im Bestand']"
       :rows="turnoverRows"
+      layout="stack"
       note="Bestand von Schweinen, Schafen und Rindern im November 2025, von Masthühnern am 1. März 2023, weil Masthühner nur bei den Agrarstrukturerhebungen gezählt werden. Geschlachtet: Rinder, Schweine und Schafe inländischer Herkunft, Masthühner aus deutschen Geflügelschlachtereien, die auch Tiere aus dem Ausland schlachten."
       :sources="['destatisPigStock', 'destatisCattleStock', 'destatisSheepStock', 'destatisFarmCensus', 'destatisSlaughter', 'destatisPoultry', 'thuenenPigs', 'thuenenPoultry']"
     />
@@ -155,6 +156,7 @@ const brightSpots = [
       caption="Bestand im Mai 2010 und im Mai 2026"
       :head="['', 'Mai 2010', 'Mai 2026', 'Veränderung']"
       :rows="changeRows"
+      layout="stack"
       :sources="['destatisPigStock', 'destatisCattleStock']"
     />
 

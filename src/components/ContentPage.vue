@@ -81,12 +81,16 @@ if (props.crumbs?.length) {
 .content-page-crumbs {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 1.75rem;
+  align-items: center;
+  gap: 0 0.5rem;
+  margin-bottom: 1.25rem;
   font-size: 0.8rem;
   color: var(--brand-faint);
 }
+/* Inline-block with some padding so each crumb is a tap target of about 32px */
 .content-page-crumbs a {
+  display: inline-block;
+  padding-block: 0.35rem;
   color: inherit;
 }
 .content-page-kicker {
