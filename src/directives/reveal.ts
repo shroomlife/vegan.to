@@ -43,8 +43,11 @@ const MAX_STAGGER = 0.28
 /** Reveals an element after the given stagger in seconds, or without a transition for null */
 const pending = new Map<Element, (stagger: number | null) => void>()
 
+/** Scrolling quiet for this long counts as settled */
+const SETTLE_MS = 150
+
 let lineObserver: IntersectionObserver | undefined
-let endObserver: IntersectionObserver | undefined
+let settleTimer = 0
 
 function start(targets: Element[], animate = true) {
   targets.forEach((target, index) => {
@@ -52,48 +55,57 @@ function start(targets: Element[], animate = true) {
     if (!show) return
     pending.delete(target)
     lineObserver?.unobserve(target)
-    endObserver?.unobserve(target)
     show(animate ? Math.min(index * STAGGER, MAX_STAGGER) : null)
   })
 }
 
 /** Top to bottom, then left to right: the order a row is read in */
-function byReadingOrder(a: IntersectionObserverEntry, b: IntersectionObserverEntry): number {
-  return a.boundingClientRect.top - b.boundingClientRect.top || a.boundingClientRect.left - b.boundingClientRect.left
+function byReadingOrder(a: { rect: DOMRectReadOnly }, b: { rect: DOMRectReadOnly }): number {
+  return a.rect.top - b.rect.top || a.rect.left - b.rect.left
 }
 
 function onLine(entries: IntersectionObserverEntry[]) {
-  start(entries.filter((entry) => entry.isIntersecting).sort(byReadingOrder).map((entry) => entry.target))
+  const arrived = entries.filter((entry) => entry.isIntersecting).map((entry) => ({ target: entry.target, rect: entry.boundingClientRect }))
+  start(arrived.sort(byReadingOrder).map((item) => item.target))
   // Already above the viewport (a jump to an anchor, a restored scroll position): nobody watched it arrive.
   // A box without height has no layout yet (a content-visibility section not rendered), not a place above.
-  start(entries.filter(isAboveViewport).map((entry) => entry.target), false)
-}
-
-function isAboveViewport(entry: IntersectionObserverEntry): boolean {
-  const rect = entry.boundingClientRect
-  return !entry.isIntersecting && rect.height > 0 && rect.bottom <= 0
+  start(entries.filter((entry) => !entry.isIntersecting && entry.boundingClientRect.height > 0 && entry.boundingClientRect.bottom <= 0).map((entry) => entry.target), false)
 }
 
 /**
- * A short element at the very end of the page may never reach the line, the
- * page ends before. Fully in view is enough for such an element; any other
- * waits for the line, or a short title would start at the bottom edge.
+ * What the line cannot catch, checked once scrolling has settled: an element
+ * a fast scroll carried past the viewport within one frame (the observer only
+ * reports changes, it never saw it intersect), and a short element at the
+ * very end of the page that the line never reaches because the page ends first.
  */
-function onEnd(entries: IntersectionObserverEntry[]) {
-  const lowestLine = document.documentElement.scrollHeight - window.innerHeight * (1 - ENTER_LINE)
-  start(
-    entries
-      .filter((entry) => entry.intersectionRatio >= 1 && entry.boundingClientRect.top + window.scrollY > lowestLine)
-      .sort(byReadingOrder)
-      .map((entry) => entry.target),
-  )
+function sweep() {
+  const viewport = window.innerHeight
+  const lowestLine = document.documentElement.scrollHeight - viewport * (1 - ENTER_LINE)
+  const passed: Element[] = []
+  const atEnd: { target: Element; rect: DOMRect }[] = []
+  for (const target of pending.keys()) {
+    const rect = target.getBoundingClientRect()
+    if (rect.height === 0) continue
+    if (rect.bottom <= 0) passed.push(target)
+    else if (rect.top >= 0 && rect.bottom <= viewport && rect.top + window.scrollY > lowestLine) atEnd.push({ target, rect })
+  }
+  start(passed, false)
+  start(atEnd.sort(byReadingOrder).map((item) => item.target))
+}
+
+function settleLater() {
+  window.clearTimeout(settleTimer)
+  settleTimer = window.setTimeout(sweep, SETTLE_MS)
 }
 
 function observe(el: Element) {
-  lineObserver ??= new IntersectionObserver(onLine, { rootMargin: `0px 0px -${Math.round((1 - ENTER_LINE) * 100)}% 0px` })
-  endObserver ??= new IntersectionObserver(onEnd, { threshold: 1 })
+  if (!lineObserver) {
+    lineObserver = new IntersectionObserver(onLine, { rootMargin: `0px 0px -${Math.round((1 - ENTER_LINE) * 100)}% 0px` })
+    window.addEventListener('scroll', settleLater, { passive: true })
+  }
   lineObserver.observe(el)
-  endObserver.observe(el)
+  // One sweep after mounting too: a short page that never scrolls still shows its end
+  settleLater()
 }
 
 export const reveal: Directive<HTMLElement, RevealOptions | undefined> = {
@@ -116,7 +128,13 @@ export const reveal: Directive<HTMLElement, RevealOptions | undefined> = {
       }
       const timing = `${options.duration}s cubic-bezier(0.25, 0.1, 0.25, 1) ${stagger}s`
       el.style.transition = `opacity ${timing}, transform ${timing}`
-      el.addEventListener('transitionend', () => el.style.removeProperty('transition'), { once: true })
+      // Only the element's own opacity transition ends the reveal, not one bubbling up from a child
+      const done = (event: TransitionEvent) => {
+        if (event.target !== el || event.propertyName !== 'opacity') return
+        el.style.removeProperty('transition')
+        el.removeEventListener('transitionend', done)
+      }
+      el.addEventListener('transitionend', done)
       // Next frame, so the start state has been painted and the transition has something to run from
       requestAnimationFrame(() => {
         el.style.removeProperty('opacity')
@@ -128,6 +146,5 @@ export const reveal: Directive<HTMLElement, RevealOptions | undefined> = {
   unmounted(el) {
     pending.delete(el)
     lineObserver?.unobserve(el)
-    endObserver?.unobserve(el)
   },
 }
