@@ -25,7 +25,7 @@ function saveDate(date: string | null) {
 
 /**
  * A number of days in dative case, as it reads after "seit" or "in"
- * ("2 Jahren", "1 Monat", "5 Tagen"); zero days are "heute".
+ * ("2 Jahren", "1 Monat", "5 Tagen", number and unit joined by a no-break space); zero days are "heute".
  */
 export function formatDurationDative(days: number): string {
   if (days === 0) return 'heute'
@@ -33,9 +33,9 @@ export function formatDurationDative(days: number): string {
   const months = Math.floor((days % 365) / 30)
   const remainingDays = (days % 365) % 30
   const parts: string[] = []
-  if (years > 0) parts.push(`${years} ${years === 1 ? 'Jahr' : 'Jahren'}`)
-  if (months > 0) parts.push(`${months} ${months === 1 ? 'Monat' : 'Monaten'}`)
-  if (remainingDays > 0 && years === 0) parts.push(`${remainingDays} ${remainingDays === 1 ? 'Tag' : 'Tagen'}`)
+  if (years > 0) parts.push(`${years}\u00A0${years === 1 ? 'Jahr' : 'Jahren'}`)
+  if (months > 0) parts.push(`${months}\u00A0${months === 1 ? 'Monat' : 'Monaten'}`)
+  if (remainingDays > 0 && years === 0) parts.push(`${remainingDays}\u00A0${remainingDays === 1 ? 'Tag' : 'Tagen'}`)
   return parts.join(', ')
 }
 
