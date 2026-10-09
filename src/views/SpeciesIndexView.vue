@@ -137,6 +137,7 @@ const rows = computed(() =>
   letter-spacing: -0.03em;
   line-height: 1.1;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 .species-index-card-value small {
   font-family: 'Lato', sans-serif;
@@ -149,6 +150,7 @@ const rows = computed(() =>
 }
 .species-index-card-today {
   font-size: 0.85rem;
+  white-space: nowrap;
   color: var(--brand-death-text);
   font-variant-numeric: tabular-nums;
 }
@@ -178,6 +180,38 @@ const rows = computed(() =>
   .species-index-list {
     padding-bottom: 3rem;
   }
+  /* Two compact cards per row down to 360px, so ten species are five rows
+     instead of ten tall cards; the unit gets its own line under the figure */
+  .species-index-grid {
+    gap: 0.6rem;
+  }
+  .species-index-card {
+    padding: 1rem;
+    border-radius: 16px;
+  }
+  .species-index-card-emoji {
+    font-size: 1.4rem;
+    margin-bottom: 0.35rem;
+  }
+  .species-index-card-name {
+    font-size: 0.95rem;
+  }
+  .species-index-card-value {
+    font-size: clamp(1.1rem, 5.2vw, 1.25rem);
+  }
+  .species-index-card-value small {
+    display: block;
+    margin: 0.15rem 0 0;
+  }
+  .species-index-card-today {
+    font-size: 0.8rem;
+  }
+  .species-index-card-badge {
+    top: 0.85rem;
+    right: 0.85rem;
+  }
+}
+@media (max-width: 359px) {
   .species-index-grid {
     grid-template-columns: 1fr;
   }
