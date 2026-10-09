@@ -36,7 +36,8 @@ watch(
     const duration = props.duration ?? 369
     const start = performance.now()
     const step = (now: number) => {
-      const progress = Math.min(1, (now - start) / duration)
+      // A frame's timestamp can lie a little before the change was seen; never ease backwards
+      const progress = Math.min(1, Math.max(0, (now - start) / duration))
       shown.value = from + (to - from) * easeOutCubic(progress)
       if (progress < 1) frame = requestAnimationFrame(step)
     }
