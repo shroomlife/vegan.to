@@ -3,19 +3,48 @@ import { sourceCategories, sourceList, type SourceCategory } from '@/data/source
 import { POPULATION_DE } from '@/data/population'
 import { formatNumber } from '@/utils/formatNumber'
 import { LAND_ANIMALS_PER_PERSON_YEAR, FISH_PER_PERSON_YEAR } from '@/utils/perCapita'
+import { SITE_URL } from '@/utils/documentMeta'
+import { useJsonLd } from '@/composables/useJsonLd'
+import AnchorLink from '@/components/AnchorLink.vue'
+
+/** "Küken und Legehennen" → "kueken-und-legehennen", the anchor of a category */
+function categoryId(category: SourceCategory): string {
+  return category
+    .toLowerCase()
+    .replace(/ä/g, 'ae')
+    .replace(/ö/g, 'oe')
+    .replace(/ü/g, 'ue')
+    .replace(/ß/g, 'ss')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+}
 
 const grouped = sourceCategories.map((category: SourceCategory) => ({
   category,
+  id: categoryId(category),
   sources: sourceList
     .filter((source) => source.category === category)
     .map((source) => ({ ...source, host: new URL(source.url).hostname })),
 }))
+
+useJsonLd('page-breadcrumb', {
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'vegan.to', item: `${SITE_URL}/` },
+    { '@type': 'ListItem', position: 2, name: 'Quellen', item: `${SITE_URL}/quellen` },
+  ],
+})
 </script>
 
 <template>
   <main class="sources-page">
     <section class="sources-hero">
       <div class="sources-inner">
+        <nav class="sources-crumbs" aria-label="Pfad">
+          <RouterLink to="/">vegan.to</RouterLink>
+          <span aria-hidden="true">/</span>
+          <span aria-current="page">Quellen</span>
+        </nav>
         <p class="sources-kicker">Transparenz</p>
         <h1 class="sources-title">Quellen und Methodik</h1>
         <p class="sources-lead">
@@ -23,13 +52,18 @@ const grouped = sourceCategories.map((category: SourceCategory) => ({
           erfasst wird, steht als Schätzung dabei. Und wie aus Jahreswerten ein Zähler pro Sekunde wird,
           steht darunter.
         </p>
+        <!-- About forty screens of sources on a phone: the chips jump straight to a topic -->
+        <nav class="sources-jump" aria-label="Themen">
+          <AnchorLink v-for="group in grouped" :key="group.id" :hash="`#${group.id}`" class="sources-chip">{{ group.category }}</AnchorLink>
+          <AnchorLink hash="#methodik" class="sources-chip sources-chip--method">So rechnen wir</AnchorLink>
+        </nav>
       </div>
     </section>
 
     <div class="sources-body">
       <div class="sources-inner">
-        <section v-for="group in grouped" :key="group.category" class="sources-group">
-          <h2 class="sources-group-title">{{ group.category }}</h2>
+        <section v-for="group in grouped" :id="group.id" :key="group.category" class="sources-group" :aria-labelledby="`${group.id}-title`">
+          <h2 :id="`${group.id}-title`" class="sources-group-title">{{ group.category }}</h2>
           <ul class="sources-list">
             <li v-for="source in group.sources" :key="source.url" class="sources-item">
               <a :href="source.url" target="_blank" rel="noopener" class="sources-item-label">{{ source.label }}</a>
@@ -115,13 +149,28 @@ const grouped = sourceCategories.map((category: SourceCategory) => ({
   background: var(--brand-mint);
   color: var(--brand-green);
 }
+.sources-crumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 0.5rem;
+  margin-bottom: 1.25rem;
+  font-size: 0.8rem;
+  color: var(--brand-faint);
+}
+/* Inline-block with some padding so each crumb is a tap target of about 32px */
+.sources-crumbs a {
+  display: inline-block;
+  padding-block: 0.35rem;
+  color: inherit;
+}
 .sources-kicker {
   margin: 0 0 0.75rem;
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--brand-accent);
+  color: var(--brand-accent-text);
 }
 .sources-title {
   margin: 0 0 1rem;
@@ -137,6 +186,42 @@ const grouped = sourceCategories.map((category: SourceCategory) => ({
   line-height: 1.6;
   color: var(--brand-muted);
 }
+.sources-jump {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 1.75rem;
+}
+.sources-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0.35rem 0.9rem;
+  border-radius: 999px;
+  border: 1.5px solid rgba(20, 54, 31, 0.1);
+  background: #fff;
+  color: var(--brand-green);
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-decoration: none;
+  transition: border-color 0.15s;
+}
+.sources-chip:hover,
+.sources-chip:focus-visible {
+  border-color: var(--brand-accent);
+  color: var(--brand-green);
+  text-decoration: none;
+}
+.sources-chip--method {
+  background: var(--brand-green);
+  border-color: var(--brand-green);
+  color: var(--brand-cream);
+}
+.sources-chip--method:hover,
+.sources-chip--method:focus-visible {
+  color: var(--brand-cream);
+}
 .sources-body {
   padding: 3rem 0 4rem;
 }
@@ -149,23 +234,25 @@ const grouped = sourceCategories.map((category: SourceCategory) => ({
   font-weight: 800;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--brand-accent);
+  color: var(--brand-accent-text);
 }
+/* One card per category, the sources as rows inside it */
 .sources-list {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: grid;
-  gap: 0.75rem;
+  background: #fff;
+  border-radius: 16px;
+  border: 1px solid rgba(20, 54, 31, 0.08);
 }
 .sources-item {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
   padding: 1rem 1.25rem;
-  background: #fff;
-  border-radius: 14px;
-  border: 1px solid rgba(20, 54, 31, 0.08);
+}
+.sources-item + .sources-item {
+  border-top: 1px solid rgba(20, 54, 31, 0.08);
 }
 .sources-item-label {
   font-weight: 700;
@@ -176,7 +263,7 @@ const grouped = sourceCategories.map((category: SourceCategory) => ({
 }
 .sources-item-label:hover,
 .sources-item-label:focus-visible {
-  color: var(--brand-accent);
+  color: var(--brand-accent-text);
   text-decoration: underline;
 }
 .sources-item-use {
@@ -211,10 +298,27 @@ const grouped = sourceCategories.map((category: SourceCategory) => ({
 }
 @media (max-width: 767px) {
   .sources-hero {
-    padding: 3rem 0 2.25rem;
+    padding: 2rem 0 2.25rem;
   }
   .sources-body {
     padding: 2rem 0 3rem;
+  }
+  .sources-jump {
+    gap: 0.35rem;
+    margin-top: 1.5rem;
+  }
+  .sources-chip {
+    padding-inline: 0.75rem;
+    font-size: 0.78rem;
+  }
+  .sources-group {
+    margin-bottom: 2rem;
+  }
+  .sources-item {
+    padding: 0.85rem 1rem;
+  }
+  .sources-item-use {
+    font-size: 0.86rem;
   }
 }
 </style>
