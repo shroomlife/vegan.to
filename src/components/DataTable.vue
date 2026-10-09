@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, shallowRef, useTemplateRef } from 'vue'
+import { useResizeObserver } from '@vueuse/core'
 import type { SourceId } from '@/data/sources'
 import SourceLinks from '@/components/SourceLinks.vue'
 
@@ -29,16 +30,25 @@ const stackColumns = computed(() => {
   const figures = props.head.length - 1
   return figures === 4 ? 2 : Math.min(3, figures)
 })
+
+/* Only a table that really overflows is a stop for the keyboard and a region for screen readers; on a desktop it simply fits */
+const scroller = useTemplateRef<HTMLElement>('scroller')
+const overflows = shallowRef(false)
+useResizeObserver(scroller, () => {
+  const el = scroller.value
+  overflows.value = props.layout === 'scroll' && el !== null && el.scrollWidth > el.clientWidth
+})
 </script>
 
 <template>
   <figure class="data-table" :class="`data-table--${layout}`" :style="{ '--stack-columns': stackColumns }">
-    <!-- Focusable and named, so a keyboard can scroll it and a screen reader announces it -->
+    <!-- When it scrolls: focusable and named, so a keyboard can scroll it and a screen reader announces it -->
     <div
+      ref="scroller"
       class="data-table-scroll"
-      :tabindex="layout === 'scroll' ? 0 : undefined"
-      :role="layout === 'scroll' ? 'region' : undefined"
-      :aria-label="layout === 'scroll' ? caption : undefined"
+      :tabindex="overflows ? 0 : undefined"
+      :role="overflows ? 'region' : undefined"
+      :aria-label="overflows ? caption : undefined"
     >
       <table>
         <caption>{{ caption }}</caption>
