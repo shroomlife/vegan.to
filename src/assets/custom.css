@@ -87,6 +87,8 @@ html {
   font-size: clamp(1.7rem, 3.4vw, 2.4rem);
   letter-spacing: -0.03em;
   line-height: 1.1;
+  /* No single word left alone on the last line */
+  text-wrap: balance;
   color: var(--brand-green);
 }
 .chapter-lead {
@@ -110,6 +112,7 @@ html {
   }
   .chapter-lead {
     margin-bottom: 1.5rem;
+    line-height: 1.6;
   }
 }
 
@@ -119,6 +122,12 @@ html {
   font-size: 1.02rem;
   line-height: 1.75;
   color: var(--brand-ink);
+}
+/* Narrow lines need less leading than the long desktop measure */
+@media (max-width: 767px) {
+  .prose {
+    line-height: 1.62;
+  }
 }
 .prose h2 {
   margin: 3rem 0 0.9rem;
