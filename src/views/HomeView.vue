@@ -294,7 +294,6 @@ const shareText = () =>
                 v-if="animal.estimate"
                 to="/quellen#methodik"
                 class="animal-estimate"
-                :title="animal.estimate.note"
               >Schätzung</RouterLink>
             </div>
             <div class="animal-stat animal-stat--today">
@@ -311,6 +310,8 @@ const shareText = () =>
                 <span class="animal-stat-value animal-stat-value--danger"><template v-if="animal.estimate">≈ </template><AnimatedNumber :value="animal.currentYear" /></span>
               </div>
             </div>
+            <!-- How the estimate comes about, in the card itself: a tooltip never shows on a touch screen -->
+            <p v-if="animal.estimate" class="animal-estimate-note">{{ animal.estimate.note }}</p>
           </div>
 
           <div class="animal-card-footer">
@@ -408,7 +409,7 @@ const shareText = () =>
 
       <div class="growth-stats">
         <div v-reveal="{ y: 20, duration: 0.5 }" class="growth-stat">
-          <span class="growth-stat-number growth-stat-number--green">{{ awaLatestMillions }} Millionen</span>
+          <span class="growth-stat-number growth-stat-number--green">{{ awaLatestMillions }}&nbsp;Millionen</span>
           <span class="growth-stat-label">Veganer*innen in Deutschland (Allensbach, {{ awaLatest.year }})</span>
         </div>
         <div v-reveal="{ y: 20, duration: 0.5 }" class="growth-stat">
@@ -433,7 +434,7 @@ const shareText = () =>
         class="growth-message"
       >
         {{ nvs2008.year }} waren es weniger als {{ formatNumber(nvs2008.count) }}. Bei Allensbach stieg die Zahl von
-        {{ formatNumber(awaFirst.count) }} im Jahr {{ awaFirst.year }} auf {{ awaLatestMillions }} Millionen im Jahr {{ awaLatest.year }}.
+        {{ formatNumber(awaFirst.count) }} im Jahr {{ awaFirst.year }} auf {{ awaLatestMillions }}&nbsp;Millionen im Jahr {{ awaLatest.year }}.
       </p>
 
       <p class="growth-source">
@@ -789,6 +790,7 @@ const shareText = () =>
   font-variant-numeric: tabular-nums;
 }
 .hero-counter-note {
+  position: relative;
   display: block;
   font-size: 0.75rem;
   opacity: 0.55;
@@ -797,6 +799,12 @@ const shareText = () =>
   text-decoration: underline;
   text-decoration-color: rgba(246, 241, 231, 0.4);
   text-underline-offset: 3px;
+}
+/* A thumb-sized hit area around the small line, the layout stays as it is */
+.hero-counter-note::after {
+  content: '';
+  position: absolute;
+  inset: -12px -6px;
 }
 .hero-counter-note:hover,
 .hero-counter-note:focus-visible {
@@ -889,6 +897,14 @@ const shareText = () =>
   gap: 0.9rem;
 }
 .animal-card--wide { grid-column: span 2; }
+/* Four columns need a desktop: below that a card would be too narrow for its own figures */
+@media (max-width: 1023px) {
+  .animal-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 559px) {
+  .animal-grid { grid-template-columns: minmax(0, 1fr); }
+  .animal-card--wide { grid-column: auto; }
+}
 .animal-card--estimate {
   grid-column: 1 / -1;
   border: 1px dashed rgba(246, 241, 231, 0.22);
@@ -922,15 +938,19 @@ const shareText = () =>
 
 .animal-card {
   position: relative;
+  /* The figures scale with the card, not the window: a card in a grid of two is as narrow as one on a phone */
+  container-type: inline-size;
   background: rgba(246, 241, 231, 0.05);
   border-radius: 22px;
   border: 1px solid rgba(246, 241, 231, 0.1);
   overflow: hidden;
   transition: border-color 0.3s, transform 0.3s;
 }
-.animal-card:hover {
-  border-color: rgba(246, 241, 231, 0.22);
-  transform: translateY(-2px);
+@media (hover: hover) {
+  .animal-card:hover {
+    border-color: rgba(246, 241, 231, 0.22);
+    transform: translateY(-2px);
+  }
 }
 /* The largest group carries a warm glow in its corner */
 .animal-card--wide::before {
@@ -957,15 +977,6 @@ const shareText = () =>
   align-items: baseline;
   gap: 0.9rem;
   flex-wrap: wrap;
-}
-.animal-stat-value--today {
-  font-weight: 800;
-  font-size: clamp(2rem, 3.6vw, 3.4rem);
-  letter-spacing: -0.04em;
-  color: #ff8c64;
-}
-.animal-card--wide .animal-stat-value--today {
-  font-size: clamp(2.2rem, 4.4vw, 4rem);
 }
 .animal-stat--today .animal-stat-label {
   font-size: 0.85rem;
@@ -1005,17 +1016,24 @@ const shareText = () =>
   vertical-align: middle;
   text-decoration: none;
 }
+.animal-estimate-note {
+  max-width: 70ch;
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: rgba(246, 241, 231, 0.6);
+}
 .animal-estimate:hover,
 .animal-estimate:focus-visible {
   border-color: #ffb37a;
   color: #ffb37a;
   text-decoration: none;
 }
-/* The smaller figures sit side by side under the big one */
+/* The smaller figures sit side by side under the big one, in two fixed columns so every card lines them up the same */
 .animal-card-stats {
-  display: flex;
-  gap: 2rem;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(2, max-content);
+  gap: 0.5rem 2rem;
   padding-top: 0.9rem;
   border-top: 1px solid rgba(246, 241, 231, 0.1);
 }
@@ -1039,6 +1057,21 @@ const shareText = () =>
   white-space: nowrap;
 }
 .animal-stat-value--danger { color: #ffb37a; }
+/*
+ * The figure of the day, after the base rule above so it wins the cascade.
+ * Sized by the card's width (cqi): the longest figure, about eleven characters
+ * with the estimate's "≈", always fits on one line.
+ */
+.animal-stat-value--today {
+  font-weight: 800;
+  font-size: clamp(2rem, 12cqi, 3.4rem);
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+  color: #ff8c64;
+}
+.animal-card--wide .animal-stat-value--today {
+  font-size: clamp(2.2rem, 12cqi, 4rem);
+}
 
 
 
@@ -1064,7 +1097,8 @@ const shareText = () =>
   white-space: nowrap;
   transition: all 0.15s;
 }
-.btn-children:hover { border-color: #ffb37a; color: #ffb37a; }
+.btn-children:hover,
+.btn-children:focus-visible { border-color: #ffb37a; color: #ffb37a; }
 .animal-card-emojis {
   padding: 0 1.75rem 1rem;
   font-size: 0.85rem;
@@ -1260,7 +1294,7 @@ const shareText = () =>
     padding: 2rem 1rem 1.5rem;
   }
   .hero-counter-number {
-    font-size: clamp(2rem, 12vw, 3rem);
+    font-size: clamp(3rem, 17vw, 4.25rem);
   }
   .hero-title,
   .hero-subtitle,
@@ -1277,10 +1311,36 @@ const shareText = () =>
     pointer-events: none;
   }
   .hero-label {
-    max-width: 34ch;
+    max-width: 30ch;
     margin-inline: auto;
-    font-size: 0.62rem;
-    letter-spacing: 0.12em;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    line-height: 1.5;
+    text-wrap: balance;
+  }
+  /* The cards rise from the bottom and fade before they reach the words: the text band stays calm */
+  .victim-lane {
+    -webkit-mask-image: linear-gradient(to top, #000 0%, #000 18%, transparent 34%);
+    mask-image: linear-gradient(to top, #000 0%, #000 18%, transparent 34%);
+  }
+  /* Card footer: the sentence first, the sub group button always under it, a full thumb's height */
+  .animal-card-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.6rem;
+  }
+  .btn-children {
+    min-height: 40px;
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
+  }
+  .animal-label {
+    display: inline-block;
+    padding-block: 0.5rem;
+  }
+  .animal-estimate {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.72rem;
   }
   /* The doors in one row under the counter instead of two corners that cannot both fit */
   .hero {
@@ -1324,16 +1384,19 @@ const shareText = () =>
     width: 34%;
     opacity: 0.6;
   }
-  /* Animal cards: one column on phones */
+  .victim-lane .victim-card {
+    width: 100%;
+  }
+  /* Narrow tickets keep name, place and the lifeline; the note would wrap into three lines */
+  .victim-lane :deep(.victim-card-note) {
+    display: none;
+  }
+}
+/* Phones up to the size where the cards stand in one column */
+@media (max-width: 559px) {
+  /* Animal cards in one column (see .animal-grid): tighter, the figures take the room */
   .animals-section {
     padding: 3.5rem 0;
-  }
-  .animal-grid {
-    grid-template-columns: 1fr;
-  }
-  .animal-card--wide,
-  .animal-card--estimate {
-    grid-column: auto;
   }
   .animal-card {
     border-radius: 16px;
@@ -1347,7 +1410,7 @@ const shareText = () =>
     padding-right: 1.1rem;
   }
   .animal-card-stats {
-    gap: 1.25rem;
+    column-gap: 1.25rem;
   }
   .sheet {
     border-radius: 28px 28px 0 0;
@@ -1360,13 +1423,6 @@ const shareText = () =>
   .sheet-head-pause {
     padding-right: 0;
   }
-  .victim-lane .victim-card {
-    width: 100%;
-  }
-  /* Narrow tickets keep name, place and the lifeline; the note would wrap into three lines */
-  .victim-lane :deep(.victim-card-note) {
-    display: none;
-  }
   .animal-emoji {
     font-size: 1.6rem;
   }
@@ -1376,9 +1432,8 @@ const shareText = () =>
   .animal-stat-label {
     font-size: 0.68rem;
   }
-  .animal-stat-value {
+  .animal-card-stats .animal-stat-value {
     font-size: 1rem;
-    white-space: nowrap;
   }
   .animal-card-footer {
     padding: 0.5rem 1rem 0.6rem;
@@ -1386,6 +1441,10 @@ const shareText = () =>
   .animal-card-emojis {
     padding: 0 1rem 0.6rem;
     font-size: 0.75rem;
+  }
+  /* One column of cards: one row of emojis is wall enough, two would leave every slow card half empty */
+  .animal-card-emojis :deep(.animal-card-emojis-wall) {
+    height: 1.8em;
   }
   /* Sub groups: name on its own line, the three values with tiny labels below */
   .animal-children {
@@ -1396,12 +1455,12 @@ const shareText = () =>
     grid-template-columns: repeat(3, 1fr);
     gap: 0.15rem 0.75rem;
     padding: 0.6rem 1rem;
-    border-top: 1px solid #f1f3f5;
+    border-top: 1px solid rgba(246, 241, 231, 0.1);
   }
   .animal-child-name {
     grid-column: 1 / -1;
     font-weight: 600;
-    color: #343a40;
+    color: var(--brand-cream);
   }
   .animal-child-stat,
   .animal-child-stat--wide {
@@ -1414,7 +1473,11 @@ const shareText = () =>
     font-size: 0.6rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: #6c757d;
+    color: rgba(246, 241, 231, 0.5);
+  }
+  .animal-child-stat {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
   }
   .animal-child-stat--wide {
     text-align: right;

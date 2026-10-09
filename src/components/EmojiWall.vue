@@ -53,6 +53,7 @@ watch(
   margin-top: 0.25rem;
   font-size: 0.8rem;
   font-weight: 600;
-  color: #6c757d;
+  /* The wall sits on the dark animal cards */
+  color: rgba(246, 241, 231, 0.6);
 }
 </style>

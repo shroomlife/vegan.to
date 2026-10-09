@@ -38,6 +38,8 @@ const visible = computed(() => y.value > SHOW_AFTER_PX)
   border-radius: 50%;
   background: var(--brand-green);
   color: var(--brand-cream);
+  /* The edge stays visible on the dark chapters and the footer (3:1, WCAG 1.4.11) */
+  border: 1.5px solid rgba(246, 241, 231, 0.35);
   box-shadow: 0 8px 24px rgba(15, 42, 23, 0.35);
   cursor: pointer;
   display: flex;
@@ -49,10 +51,12 @@ const visible = computed(() => y.value > SHOW_AFTER_PX)
   width: 22px;
   height: 22px;
 }
-.back-to-top:hover {
-  background: var(--brand-accent);
-  color: var(--brand-green);
-  transform: translateY(-2px);
+@media (hover: hover) {
+  .back-to-top:hover {
+    background: var(--brand-accent);
+    color: var(--brand-green);
+    transform: translateY(-2px);
+  }
 }
 .back-to-top:focus-visible {
   outline: 2px solid var(--brand-accent);
@@ -70,7 +74,7 @@ const visible = computed(() => y.value > SHOW_AFTER_PX)
 @media (max-width: 767px) {
   .back-to-top {
     right: 14px;
-    bottom: 14px;
+    bottom: calc(14px + env(safe-area-inset-bottom));
     width: 44px;
     height: 44px;
   }

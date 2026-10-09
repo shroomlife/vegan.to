@@ -88,7 +88,8 @@ test.describe('live counters', () => {
     await page.goto('/')
     const card = page.locator('.animal-card', { hasText: 'Fische' })
     await expect(card.locator('.animal-estimate')).toHaveText('Schätzung')
-    await expect(card.locator('.animal-estimate')).toHaveAttribute('title', /Tonnen/)
+    // The method is spelled out in the card, a tooltip would never show on a touch screen
+    await expect(card.locator('.animal-estimate-note')).toContainText('Tonnen')
     for (const value of await card.locator('.animal-stat-value').allInnerTexts()) {
       expect(value.trim()).toMatch(/^≈/)
     }

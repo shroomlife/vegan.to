@@ -52,13 +52,26 @@ test.describe('navigation feels right', () => {
     await expect.poll(() => page.evaluate(() => window.scrollY), { timeout: 4000 }).toBeLessThan(10)
   })
 
-  test('a back-to-top button appears after scrolling and works', async ({ page }) => {
-    await page.goto('/')
+  test('a back-to-top button appears after scrolling and works', async ({ page, isMobile }) => {
+    // On a phone the start page hands this job to the counter pill (next test), every other page keeps the button
+    await page.goto(isMobile ? '/quellen' : '/')
     await expect(page.getByRole('button', { name: 'Nach oben' })).toBeHidden()
     await page.evaluate(() => window.scrollTo(0, 2000))
     const button = page.getByRole('button', { name: 'Nach oben' })
     await expect(button).toBeVisible()
     await button.click()
+    await expect.poll(() => page.evaluate(() => window.scrollY), { timeout: 4000 }).toBeLessThan(10)
+  })
+
+  test('on a phone the counter pill takes the way back to the top of the start page', async ({ page, isMobile }) => {
+    test.skip(!isMobile, 'the floating pill only exists on phones')
+    await page.goto('/')
+    await page.evaluate(() => window.scrollTo(0, 2000))
+    const pill = page.getByRole('link', { name: /seit du hier bist, zurück zum Zähler/ })
+    await expect(pill).toBeVisible()
+    // One floating control is enough: the back-to-top button stays away while the pill shows
+    await expect(page.getByRole('button', { name: 'Nach oben' })).toBeHidden()
+    await pill.click()
     await expect.poll(() => page.evaluate(() => window.scrollY), { timeout: 4000 }).toBeLessThan(10)
   })
 
