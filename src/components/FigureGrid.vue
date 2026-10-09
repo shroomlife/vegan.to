@@ -12,35 +12,27 @@ export interface KeyFigure {
 
 defineProps<{
   items: readonly KeyFigure[]
-  /** Sources that hold for every figure, shown once under the grid instead of in each card */
-  sources?: readonly SourceId[]
 }>()
 </script>
 
 <template>
-  <div class="figure-grid-wrap">
-    <dl class="figure-grid">
-      <div v-for="item in items" :key="item.label" class="figure-grid-item">
-        <dt class="figure-grid-label">{{ item.label }}</dt>
-        <dd class="figure-grid-value">{{ item.value }}</dd>
-        <dd v-if="item.note" class="figure-grid-note">{{ item.note }}</dd>
-        <dd v-if="item.sources?.length" class="figure-grid-sources"><SourceLinks :ids="item.sources" /></dd>
-      </div>
-    </dl>
-    <SourceLinks v-if="sources?.length" :ids="sources" class="figure-grid-foot" />
-  </div>
+  <dl class="figure-grid">
+    <div v-for="item in items" :key="item.label" class="figure-grid-item">
+      <dt class="figure-grid-label">{{ item.label }}</dt>
+      <dd class="figure-grid-value">{{ item.value }}</dd>
+      <dd v-if="item.note" class="figure-grid-note">{{ item.note }}</dd>
+      <dd v-if="item.sources?.length" class="figure-grid-sources"><SourceLinks :ids="item.sources" /></dd>
+    </div>
+  </dl>
 </template>
 
 <style scoped>
-.figure-grid-wrap {
-  margin: 0 0 1.75rem;
-}
 /* Two cards side by side even on a 360px phone */
 .figure-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
   gap: 0.9rem;
-  margin: 0;
+  margin: 0 0 1.75rem;
 }
 .figure-grid-item {
   container-type: inline-size;
@@ -60,9 +52,7 @@ defineProps<{
   line-height: 1.4;
   color: var(--brand-green);
 }
-/* A figure breaks only between words ("mindestens 100 Sekunden"), never
-   inside a number. The cap of 13.5cqi keeps an eleven-character number such
-   as "156.300.900" inside its card at any card width. */
+/* A figure breaks only between words ("10,9 bis 12,5 %" may break after "bis"), never inside a number. The cap of 13.5cqi keeps an eleven-character number such as "156.300.900" inside its card at any card width. */
 .figure-grid-value {
   order: 1;
   margin: 0;
@@ -84,9 +74,6 @@ defineProps<{
 .figure-grid-sources {
   order: 4;
   margin: 0.6rem 0 0;
-}
-.figure-grid-wrap > .figure-grid-foot {
-  margin-top: 0.6rem;
 }
 @media (max-width: 767px) {
   .figure-grid {
