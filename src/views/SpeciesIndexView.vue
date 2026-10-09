@@ -180,8 +180,7 @@ const rows = computed(() =>
   .species-index-list {
     padding-bottom: 3rem;
   }
-  /* Two compact cards per row down to 360px, so ten species are five rows
-     instead of ten tall cards; the unit gets its own line under the figure */
+  /* Two compact cards per row down to 360px, so ten species are five rows instead of ten tall cards; the unit gets its own line under the figure */
   .species-index-grid {
     gap: 0.6rem;
   }

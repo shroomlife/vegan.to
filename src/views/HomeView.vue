@@ -1025,12 +1025,7 @@ const shareText = () =>
   color: #ffb37a;
   text-decoration: none;
 }
-/*
- * The smaller figures sit side by side under the big one. The first one keeps
- * a fixed width so every card lines up "dieses Jahr" the same; a year figure
- * too long for the row (the fish estimate on a small phone) moves to a line
- * of its own as a whole.
- */
+/* The smaller figures sit side by side under the big one. The first one keeps a fixed width so every card lines up "dieses Jahr" the same; a year figure too long for the row (the fish estimate on a small phone) moves to a line of its own as a whole. */
 .animal-card-stats {
   display: flex;
   flex-wrap: wrap;
@@ -1061,11 +1056,7 @@ const shareText = () =>
   white-space: nowrap;
 }
 .animal-stat-value--danger { color: #ffb37a; }
-/*
- * The figure of the day, after the base rule above so it wins the cascade.
- * Sized by the card's width (cqi): the longest figure, about eleven characters
- * with the estimate's "≈", always fits on one line.
- */
+/* The figure of the day, after the base rule above so it wins the cascade. Sized by the card's width (cqi): the longest figure, about eleven characters with the estimate's "≈", always fits on one line. */
 .animal-stat-value--today {
   font-weight: 800;
   font-size: clamp(2rem, 12cqi, 3.4rem);

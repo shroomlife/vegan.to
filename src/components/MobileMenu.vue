@@ -9,11 +9,7 @@ import { animals } from '@/data/animals'
 import { speciesProfiles } from '@/data/species'
 import { topicPages } from '@/data/topics'
 
-/**
- * The phone navigation: a "Menü" button in the header opening a sheet from the
- * right. Native <dialog> via showModal() gives the top layer, the focus trap,
- * Escape and focus return to the button for free, like PauseButton and ImpactChapter.
- */
+/** The phone navigation: a "Menü" button in the header opening a sheet from the right. Native <dialog> via showModal() gives the top layer, the focus trap, Escape and focus return to the button for free, like PauseButton and ImpactChapter. */
 const pageLinks = [
   { label: 'Zahlen', to: '/#zahlen' },
   { label: 'Dein Impact', to: '/#impact' },
@@ -43,10 +39,7 @@ function close() {
   dialog.value?.close()
 }
 
-/**
- * Close before navigating: the page scroll is locked while the sheet is open,
- * and a same-location anchor click has to scroll the page right away.
- */
+/** Close before navigating: the page scroll is locked while the sheet is open, and a same-location anchor click has to scroll the page right away. */
 function follow(navigate: (event?: MouseEvent) => unknown, event: MouseEvent, to: string) {
   close()
   navigate(event)

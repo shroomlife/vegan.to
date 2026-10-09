@@ -75,8 +75,7 @@ const others = computed(() => topicPages.filter((topic) => topic.name !== props.
   line-height: 1.45;
   color: var(--brand-muted);
 }
-/* On a phone eleven cards would fill several screens: one card, one row per
-   page, the teaser cut to a single line */
+/* On a phone eleven cards would fill several screens: one card, one row per page, the teaser cut to a single line */
 @media (max-width: 767px) {
   .related-topics-list {
     display: block;

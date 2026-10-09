@@ -46,13 +46,7 @@ const notes = computed(() => {
 </template>
 
 <style scoped>
-/*
- * The numbers: small pills at the end of the text, no line of their own.
- * Plain inline boxes on purpose: an inline-block or inline-flex box is a break
- * opportunity of its own, so the pills could wrap onto a line without the last
- * word. Inline, they stick to the word they follow (the templates write them
- * without a space).
- */
+/* The numbers: small pills at the end of the text, no line of their own. Plain inline boxes on purpose: an inline-block or inline-flex box is a break opportunity of its own, so the pills could wrap onto a line without the last word. Inline, they stick to the word they follow (the templates write them without a space). */
 .source-notes {
   margin-left: 4px;
   font-size: 0;

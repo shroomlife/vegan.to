@@ -208,11 +208,7 @@ const metrics: readonly { key: MetricKey; icon: string; label: string; shortLabe
   { key: 'land', icon: '🌾', label: 'Land geschont', shortLabel: 'Land', unit: '\u00A0m²', perDay: `${formatNumber(DAILY_LAND_M2, 2)}\u00A0Quadratmeter am Tag` },
 ]
 
-/**
- * The longest figure of a set in characters, its unit counted at the half size
- * it is set in. The cards size their figures from it (container query units),
- * so every figure of a row has the same size and none leaves its card.
- */
+/** The longest figure of a set in characters, its unit counted at the half size it is set in. The cards size their figures from it (container query units), so every figure of a row has the same size and none leaves its card. */
 function figureChars(impact: Record<MetricKey, Metric>): number {
   return Math.max(...metrics.map((metric) => impact[metric.key].value.length + metric.unit.length / 2))
 }

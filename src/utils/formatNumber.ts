@@ -10,10 +10,7 @@ export function formatNumber(value: number, maximumFractionDigits = 0): string {
   return formatter.format(value)
 }
 
-/**
- * "78,5 Mrd.", "1,49 Mrd.", "703,9 Mio.", for figures too long to read digit by digit.
- * A no-break space keeps the unit on the line of its figure.
- */
+/** "78,5 Mrd.", "1,49 Mrd.", "703,9 Mio.", for figures too long to read digit by digit. A no-break space keeps the unit on the line of its figure. */
 export function formatCompact(value: number, maximumFractionDigits = 1): string {
   const abs = Math.abs(value)
   if (abs >= 1e12) return `${formatNumber(value / 1e12, maximumFractionDigits)}\u00A0Billionen`

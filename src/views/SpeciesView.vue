@@ -55,11 +55,7 @@ const rhythm = computed(() => {
   return `eins alle ${formatNumber(seconds / 3600, 1)} Stunden`
 })
 
-/**
- * Characters of the widest figure a live card reaches, today's at midnight and
- * the year's on 31 December. The card sizes its type to fit them, so a figure
- * never wraps and does not jump in size while it counts up.
- */
+/** Characters of the widest figure a live card reaches, today's at midnight and the year's on 31 December. The card sizes its type to fit them, so a figure never wraps and does not jump in size while it counts up. */
 const liveChars = computed(() => {
   const prefix = raw.value?.estimate ? '≈ ' : ''
   return {
@@ -497,8 +493,7 @@ useJsonLd('species-breadcrumb', {
   border-color: var(--brand-green);
   color: var(--brand-cream);
 }
-/* The type size is the smaller of the design size and what lets the widest
-   figure of the card fit its width; a display digit is about 0.68em wide */
+/* The type size is the smaller of the design size and what lets the widest figure of the card fit its width; a display digit is about 0.68em wide */
 .species-live-value {
   --live-size: clamp(1.2rem, 2.4vw, 1.7rem);
   display: block;
@@ -720,8 +715,7 @@ useJsonLd('species-breadcrumb', {
   color: var(--brand-muted);
   margin: 0 0 0.6rem;
 }
-/* Two per row on a phone; the type shrinks with the viewport so the longest
-   peak, eleven digits for chickens, still fits a half-width card at 360px */
+/* Two per row on a phone; the type shrinks with the viewport so the longest peak, eleven digits for chickens, still fits a half-width card at 360px */
 @media (max-width: 767px) {
   .species-trend-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -830,8 +824,7 @@ useJsonLd('species-breadcrumb', {
   text-decoration: none;
 }
 
-/* Beside a 420px portrait a tablet leaves the copy about 250px, too narrow
-   for a ten-digit title and three live cards: the portrait goes on top */
+/* Beside a 420px portrait a tablet leaves the copy about 250px, too narrow for a ten-digit title and three live cards: the portrait goes on top */
 @media (max-width: 991px) {
   .species-hero-grid {
     grid-template-columns: minmax(0, 1fr);
@@ -860,8 +853,7 @@ useJsonLd('species-breadcrumb', {
   .species-conditions {
     grid-template-columns: 1fr;
   }
-  /* Today and since-you-are-here side by side, the year below at full width:
-     it is the longest figure, ten digits for fish */
+  /* Today and since-you-are-here side by side, the year below at full width: it is the longest figure, ten digits for fish */
   .species-live {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.6rem;
@@ -886,9 +878,7 @@ useJsonLd('species-breadcrumb', {
     font-size: 0.85rem;
   }
 }
-/* Four columns do not fit a phone. Each subgroup becomes a block: its name on
-   top, the three figures in a row below, each with its column name. The header
-   row stays in the accessibility tree, only hidden from sight. */
+/* Four columns do not fit a phone. Each subgroup becomes a block: its name on top, the three figures in a row below, each with its column name. The header row stays in the accessibility tree, only hidden from sight. */
 @media (max-width: 599px) {
   .species-table,
   .species-table tbody {

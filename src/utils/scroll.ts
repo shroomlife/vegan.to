@@ -1,8 +1,4 @@
-/**
- * Where an element counts as arrived: this share of the viewport height from
- * the top, 85 % means 15 % above the bottom edge. Reveals (v-reveal) and
- * scroll scenes that settle in (useSceneProgress 'enter') both start here.
- */
+/** Where an element counts as arrived: this share of the viewport height from the top, 85 % means 15 % above the bottom edge. Reveals (v-reveal) and scroll scenes that settle in (useSceneProgress 'enter') both start here. */
 export const ENTER_LINE = 0.85
 
 /** Air between the sticky header and an anchored section */

@@ -58,8 +58,7 @@ const srcset = (format: 'avif' | 'webp' | 'jpg') =>
   height: 100%;
   object-fit: cover;
 }
-/* The note stays small and quiet, but it is always there and always readable.
-   Top corner, like the note on the clips: the floating controls of a phone sit at the bottom. */
+/* The note stays small and quiet, but it is always there and always readable. Top corner, like the note on the clips: the floating controls of a phone sit at the bottom. */
 .portrait-note {
   position: absolute;
   right: 10px;
