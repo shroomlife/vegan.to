@@ -1029,10 +1029,15 @@ const shareText = () =>
   color: #ffb37a;
   text-decoration: none;
 }
-/* The smaller figures sit side by side under the big one, in two fixed columns so every card lines them up the same */
+/*
+ * The smaller figures sit side by side under the big one. The first one keeps
+ * a fixed width so every card lines up "dieses Jahr" the same; a year figure
+ * too long for the row (the fish estimate on a small phone) moves to a line
+ * of its own as a whole.
+ */
 .animal-card-stats {
-  display: grid;
-  grid-template-columns: repeat(2, max-content);
+  display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem 2rem;
   padding-top: 0.9rem;
   border-top: 1px solid rgba(246, 241, 231, 0.1);
@@ -1041,6 +1046,9 @@ const shareText = () =>
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
+}
+.animal-card-stats .animal-stat:first-child {
+  min-width: 7.5rem;
 }
 .animal-stat-label {
   font-size: 0.68rem;
