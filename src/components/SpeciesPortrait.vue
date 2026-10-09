@@ -58,11 +58,12 @@ const srcset = (format: 'avif' | 'webp' | 'jpg') =>
   height: 100%;
   object-fit: cover;
 }
-/* The note stays small and quiet, but it is always there and always readable */
+/* The note stays small and quiet, but it is always there and always readable.
+   Top corner, like the note on the clips: the floating controls of a phone sit at the bottom. */
 .portrait-note {
   position: absolute;
   right: 10px;
-  bottom: 10px;
+  top: 10px;
   padding: 3px 8px;
   border-radius: 999px;
   background: rgba(14, 33, 20, 0.72);
@@ -74,5 +75,14 @@ const srcset = (format: 'avif' | 'webp' | 'jpg') =>
   text-transform: uppercase;
   color: rgba(246, 241, 231, 0.85);
   cursor: help;
+}
+/* On phones a full square fills more than a screen; a landscape cut keeps the head, which sits high in every portrait */
+@media (max-width: 767px) {
+  .portrait {
+    aspect-ratio: 4 / 3;
+  }
+  .portrait img {
+    object-position: 50% 10%;
+  }
 }
 </style>

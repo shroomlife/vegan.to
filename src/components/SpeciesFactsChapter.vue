@@ -174,6 +174,7 @@ function speciesPath(plural: string): string | undefined {
   color: var(--brand-ink);
 }
 .species-fact-link {
+  position: relative;
   align-self: flex-start;
   margin-top: 0.2rem;
   font-size: 0.85rem;
@@ -183,11 +184,23 @@ function speciesPath(plural: string): string | undefined {
   border-bottom: 1.5px solid rgba(20, 54, 31, 0.25);
   transition: border-color 0.15s, color 0.15s;
 }
-.species-fact-link:hover,
+/* A thumb-sized hit area around the short link, without moving its underline */
+.species-fact-link::after {
+  content: '';
+  position: absolute;
+  inset: -12px -8px;
+}
 .species-fact-link:focus-visible {
   color: var(--brand-accent-text);
   border-color: var(--brand-accent);
   text-decoration: none;
+}
+@media (hover: hover) {
+  .species-fact-link:hover {
+    color: var(--brand-accent-text);
+    border-color: var(--brand-accent);
+    text-decoration: none;
+  }
 }
 
 @media (max-width: 991px) {

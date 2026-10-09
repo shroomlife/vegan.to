@@ -71,9 +71,6 @@ defineProps<{
   transform: scale(1.02);
   transition: transform 0.6s ease-out;
 }
-.chapter-exit-link:hover .chapter-exit-picture :deep(img) {
-  transform: scale(1.08);
-}
 .chapter-exit-copy {
   display: flex;
   flex-direction: column;
@@ -124,14 +121,24 @@ defineProps<{
   color: inherit;
   text-decoration: none;
 }
-.chapter-exit-link:hover .chapter-exit-cta,
 .chapter-exit-link:focus-visible .chapter-exit-cta {
   background: var(--brand-accent);
   border-color: var(--brand-accent);
   color: var(--brand-green);
 }
-.chapter-exit-link:hover .chapter-exit-cta svg {
-  transform: translateX(3px);
+/* Hover effects only where a pointer hovers; on touch they would stick after the tap */
+@media (hover: hover) {
+  .chapter-exit-link:hover .chapter-exit-picture :deep(img) {
+    transform: scale(1.08);
+  }
+  .chapter-exit-link:hover .chapter-exit-cta {
+    background: var(--brand-accent);
+    border-color: var(--brand-accent);
+    color: var(--brand-green);
+  }
+  .chapter-exit-link:hover .chapter-exit-cta svg {
+    transform: translateX(3px);
+  }
 }
 .chapter-exit-link:focus-visible {
   outline: 2px solid var(--brand-cream);
@@ -157,6 +164,11 @@ defineProps<{
   }
   .chapter-exit-picture {
     width: 100%;
+    aspect-ratio: 2 / 1;
+  }
+  .chapter-exit-cta {
+    justify-content: center;
+    min-height: 48px;
   }
 }
 </style>
