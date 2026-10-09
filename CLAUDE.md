@@ -46,7 +46,7 @@ Build output goes to `docs/` (configured in `vite.config.ts`) for GitHub Pages d
 - `src/data/sources.ts` — every external figure's source with category; rendered on `/quellen` (`src/views/SourcesView.vue`). `src/data/facts.ts`, `src/data/lifespans.ts` (lifespans and slaughter ages) and `src/data/species.ts` reference sources by id, `SourceLinks.vue` renders them inline. `species.ts` must stay free of runtime imports, the Vite config reads it
 - `src/components/CounterPill.vue` — the running total that follows the visitor (header on desktop, bottom pill on mobile) once the hero is out of view
 - `src/utils/documentMeta.ts` — `applyDocumentMeta()` sets title, description, canonical and Open Graph tags; static routes via `router.afterEach`, dynamic pages (species) call it themselves; `src/composables/useJsonLd.ts` injects schema.org blocks (FAQPage from the FAQ data). Static head tags, WebSite/Organization/WebApplication graph and the OG image (`public/img/og.png`) live in `index.html`
-- Scroll-in animations use the `v-reveal` directive (`src/directives/reveal.ts`, IntersectionObserver plus CSS transition); the hero entrance is CSS keyframes. No animation library
+- Scroll-in animations use the `v-reveal` directive (`src/directives/reveal.ts`, IntersectionObserver plus CSS transition): every element starts when its top crosses `ENTER_LINE` (`src/utils/scroll.ts`, shared with `useSceneProgress`), elements crossing together stagger automatically, so no per-index delays in templates; the hero entrance is CSS keyframes. No animation library
 - `public/` — static assets, CNAME, manifest.json, icons, robots.txt, sitemap.xml
 
 ### Styling

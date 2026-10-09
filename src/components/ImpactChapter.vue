@@ -233,9 +233,9 @@ const metrics: readonly { key: MetricKey; icon: string; label: string; shortLabe
 
       <div class="impact-cards">
         <div
-          v-for="(metric, index) in metrics"
+          v-for="metric in metrics"
           :key="metric.key"
-          v-reveal="{ y: 24, duration: 0.45, delay: index * 0.07, amount: 0.3 }"
+          v-reveal="{ y: 24, duration: 0.45 }"
           class="impact-card"
           :class="`impact-card--${metric.key}`"
         >
@@ -252,7 +252,7 @@ const metrics: readonly { key: MetricKey; icon: string; label: string; shortLabe
 
       <!-- Personal tracker -->
       <div
-        v-reveal="{ y: 24, duration: 0.5, amount: 0.3 }"
+        v-reveal="{ y: 24, duration: 0.5 }"
         class="personal"
       >
         <div v-if="!hasPersonalDate" class="personal-intro">

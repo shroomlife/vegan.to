@@ -40,9 +40,9 @@ function speciesPath(plural: string): string | undefined {
       </div>
       <div class="species-facts-grid">
         <article
-          v-for="(fact, index) in speciesFacts"
+          v-for="fact in speciesFacts"
           :key="fact.species"
-          v-reveal="{ y: 24, duration: 0.45, delay: (index % 3) * 0.08, amount: 0.3 }"
+          v-reveal="{ y: 24, duration: 0.45 }"
           class="species-fact"
         >
           <SpeciesPortrait v-if="speciesSlug(fact.species)" :slug="speciesSlug(fact.species) ?? ''" sizes="(max-width: 767px) 100vw, (max-width: 991px) 50vw, 400px" class="species-fact-portrait" />

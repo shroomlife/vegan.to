@@ -397,7 +397,7 @@ useJsonLd('page-breadcrumb', {
       </figure>
       <div class="flow-inner">
         <h2 class="kicker">Die Antwort des Gesetzgebers</h2>
-        <article v-for="station in foundationStations" :key="station.title" v-reveal="{ y: 36, duration: 0.6, amount: 0.3 }" class="station" :class="`station--${station.kind}`">
+        <article v-for="station in foundationStations" :key="station.title" v-reveal="{ y: 36, duration: 0.6 }" class="station" :class="`station--${station.kind}`">
           <p class="station-year">{{ station.year }}</p>
           <div>
             <span class="tag">{{ kindLabel[station.kind] }}</span>
@@ -444,7 +444,7 @@ useJsonLd('page-breadcrumb', {
         </figure>
         <div class="stations">
           <h2 class="kicker">Vom Käfig vor Gericht</h2>
-          <article v-for="station in cageStations" :key="station.title" v-reveal="{ y: 36, duration: 0.6, amount: 0.3 }" class="station" :class="`station--${station.kind}`">
+          <article v-for="station in cageStations" :key="station.title" v-reveal="{ y: 36, duration: 0.6 }" class="station" :class="`station--${station.kind}`">
             <p class="station-year">{{ station.year }}</p>
             <div>
               <span class="tag">{{ kindLabel[station.kind] }}</span>
@@ -504,7 +504,7 @@ useJsonLd('page-breadcrumb', {
         </figure>
         <div class="stations">
           <h2 class="kicker kicker--hope">Akt VI · Was sich verändert hat</h2>
-          <article v-for="station in turnStations" :key="station.title" v-reveal="{ y: 36, duration: 0.6, amount: 0.3 }" class="station" :class="`station--${station.kind}`">
+          <article v-for="station in turnStations" :key="station.title" v-reveal="{ y: 36, duration: 0.6 }" class="station" :class="`station--${station.kind}`">
             <p class="station-year">{{ station.year }}</p>
             <div>
               <span class="tag">{{ kindLabel[station.kind] }}</span>
@@ -555,7 +555,7 @@ useJsonLd('page-breadcrumb', {
           </figcaption>
         </figure>
 
-        <article v-for="station in todayStations" :key="station.title" v-reveal="{ y: 36, duration: 0.6, amount: 0.3 }" class="station" :class="`station--${station.kind}`">
+        <article v-for="station in todayStations" :key="station.title" v-reveal="{ y: 36, duration: 0.6 }" class="station" :class="`station--${station.kind}`">
           <p class="station-year">{{ station.year }}</p>
           <div>
             <span class="tag">{{ kindLabel[station.kind] }}</span>
@@ -580,7 +580,7 @@ useJsonLd('page-breadcrumb', {
           <p class="kicker">Akt VII · Heute, mitten in Deutschland</p>
           <h2 class="display display--blood">Ohne Betäubung erlaubt.</h2>
           <ul class="legal">
-            <li v-for="(item, index) in legalToday" :key="item.what" v-reveal="{ x: -24, duration: 0.5, delay: index * 0.08, amount: 0.5 }">{{ item.what }}<span>{{ item.who }}</span></li>
+            <li v-for="item in legalToday" :key="item.what" v-reveal="{ x: -24, duration: 0.5 }">{{ item.what }}<span>{{ item.who }}</span></li>
           </ul>
           <p class="who">Das Tierschutzgesetz nimmt diese Eingriffe von der Betäubungspflicht aus, erlaubt sind sie nur unter den Bedingungen von § 5 und § 6. Das Kürzen der Schnabelspitzen bei Legehennenküken, die jünger als zehn Tage sind, dürfen Behörden zusätzlich erlauben.</p>
           <SourceLinks :ids="['tierSchG5', 'tierSchG6']" />

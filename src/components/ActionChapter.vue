@@ -15,7 +15,7 @@ import ClipVideo from '@/components/ClipVideo.vue'
           Deine nächste Mahlzeit zählt mit.
         </h2>
         <div
-          v-reveal="{ y: 16, duration: 0.5, delay: 0.1 }"
+          v-reveal="{ y: 16, duration: 0.5 }"
           class="action-intro"
         >
           <p>
@@ -29,14 +29,14 @@ import ClipVideo from '@/components/ClipVideo.vue'
           </p>
         </div>
       </div>
-      <figure v-reveal="{ y: 24, duration: 0.6, amount: 0.3 }" class="action-figure">
+      <figure v-reveal="{ y: 24, duration: 0.6 }" class="action-figure">
         <ClipVideo folder="start" name="mahlzeit" :widths="[1168, 720]" label="Zwei Hände halten ein gelbes Küken im Abendlicht, KI-generiert" note="KI-generiert" class="action-clip" />
         <figcaption>Es liegt in deiner Hand. Jede Mahlzeit.</figcaption>
       </figure>
 
       <!-- The main hand-off: Veganstart, one block, one button -->
       <a
-        v-reveal="{ y: 24, duration: 0.5, amount: 0.3 }"
+        v-reveal="{ y: 24, duration: 0.5 }"
         :href="handOffUrl('mach-mit')"
         target="_blank"
         rel="noopener"
@@ -91,9 +91,9 @@ import ClipVideo from '@/components/ClipVideo.vue'
 
       <div class="action-grid">
         <article
-          v-for="(category, index) in actionCategories"
+          v-for="category in actionCategories"
           :key="category.title"
-          v-reveal="{ y: 24, duration: 0.45, delay: index * 0.07, amount: 0.2 }"
+          v-reveal="{ y: 24, duration: 0.45 }"
           class="action-category"
         >
           <h3 class="action-category-title">

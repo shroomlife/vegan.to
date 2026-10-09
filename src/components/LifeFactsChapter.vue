@@ -13,15 +13,15 @@ import SceneImage from '@/components/SceneImage.vue'
         Nichts davon ist ein Skandalfall. Es ist der erlaubte Normalfall,
         nachzulesen in Verordnungen, Fachpresse und Behördenseiten.
       </p>
-      <figure v-reveal="{ y: 24, duration: 0.6, amount: 0.3 }" class="life-facts-band">
+      <figure v-reveal="{ y: 24, duration: 0.6 }" class="life-facts-band">
         <SceneImage name="hen-cage" alt="Hennen hinter dem Drahtgitter eines Käfigs" sizes="(min-width: 1320px) 1200px, 100vw" />
         <figcaption>Legehennen im Käfig. In Deutschland bis Ende 2025 erlaubt, in Härtefällen bis 2028.</figcaption>
       </figure>
       <div class="life-facts-grid">
         <div
-          v-for="(fact, index) in lifeFacts"
+          v-for="fact in lifeFacts"
           :key="fact.figure"
-          v-reveal="{ y: 24, duration: 0.45, delay: (index % 3) * 0.08, amount: 0.3 }"
+          v-reveal="{ y: 24, duration: 0.45 }"
           class="life-fact"
         >
           <span class="life-fact-figure">{{ fact.figure }}</span>

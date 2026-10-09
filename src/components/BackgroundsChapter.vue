@@ -36,7 +36,7 @@ const rows = topicGroups.map((group) => ({
       </p>
 
       <RouterLink
-        v-reveal="{ y: 32, duration: 0.6, amount: 0.25 }"
+        v-reveal="{ y: 32, duration: 0.6 }"
         :to="timeline.path"
         class="timeline-feature"
       >
@@ -72,9 +72,9 @@ const rows = topicGroups.map((group) => ({
           <p class="topic-row-lead">{{ row.lead }}</p>
         </div>
         <ul class="topic-grid" :style="{ '--columns': row.topics.length }">
-          <li v-for="(topic, index) in row.topics" :key="topic.path">
+          <li v-for="topic in row.topics" :key="topic.path">
             <RouterLink
-              v-reveal="{ y: 24, duration: 0.45, delay: index * 0.07, amount: 0.3 }"
+              v-reveal="{ y: 24, duration: 0.45 }"
               :to="topic.path"
               class="topic-card"
             >

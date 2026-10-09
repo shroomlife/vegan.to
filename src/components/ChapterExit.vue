@@ -19,7 +19,7 @@ defineProps<{
 
 <template>
   <aside class="chapter-exit" :aria-label="kicker">
-    <RouterLink v-reveal="{ y: 20, duration: 0.5, amount: 0.4 }" :to="to" class="chapter-exit-link">
+    <RouterLink v-reveal="{ y: 20, duration: 0.5 }" :to="to" class="chapter-exit-link">
       <span class="chapter-exit-picture">
         <SceneImage :name="picture" :alt="pictureAlt" sizes="(max-width: 767px) 100vw, 320px" />
       </span>

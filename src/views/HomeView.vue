@@ -251,7 +251,7 @@ const shareText = () =>
           </p>
         </div>
         <!-- The pause button: it cannot stop the count, and says so when pressed -->
-        <PauseButton v-reveal="{ scale: 0.8, duration: 0.5, delay: 0.2, y: 0 }" class="sheet-head-pause" />
+        <PauseButton v-reveal="{ scale: 0.8, duration: 0.5, y: 0 }" class="sheet-head-pause" />
       </div>
       <div class="recent-list">
         <VictimCard
@@ -276,9 +276,9 @@ const shareText = () =>
 
       <div class="animal-grid">
         <div
-          v-for="(animal, index) in animalData"
+          v-for="animal in animalData"
           :key="animal.names.single"
-          v-reveal="{ y: 40, duration: 0.5, delay: index * 0.05, amount: 0.2 }"
+          v-reveal="{ y: 40, duration: 0.5 }"
           class="animal-card"
           :class="{
             'animal-card--wide': animal.perDay >= WIDE_MIN_PER_DAY,
@@ -372,7 +372,7 @@ const shareText = () =>
 
   <!-- Live Death Counter Summary -->
   <section
-    v-reveal="{ duration: 0.8, amount: 0.3, y: 0 }"
+    v-reveal="{ duration: 0.8, y: 0 }"
     class="emoji-section chapter-section"
   >
     <div class="container">
@@ -407,11 +407,11 @@ const shareText = () =>
       </h2>
 
       <div class="growth-stats">
-        <div v-reveal="{ y: 20, duration: 0.5, amount: 0.3 }" class="growth-stat">
+        <div v-reveal="{ y: 20, duration: 0.5 }" class="growth-stat">
           <span class="growth-stat-number growth-stat-number--green">{{ awaLatestMillions }} Millionen</span>
           <span class="growth-stat-label">Veganer*innen in Deutschland (Allensbach, {{ awaLatest.year }})</span>
         </div>
-        <div v-reveal="{ y: 20, duration: 0.5, delay: 0.08, amount: 0.3 }" class="growth-stat">
+        <div v-reveal="{ y: 20, duration: 0.5 }" class="growth-stat">
           <span class="growth-stat-number">{{ formatNumber(POPULATION_DE) }}</span>
           <span class="growth-stat-label">Menschen in Deutschland (Destatis, Ende 2025)</span>
         </div>
@@ -423,13 +423,13 @@ const shareText = () =>
         <span class="growth-progress-label" :style="{ left: veganSharePercent.toFixed(4) + '%' }" aria-hidden="true">{{ formatNumber(veganSharePercent, 2) }} %</span>
       </div>
 
-      <div v-reveal="{ y: 12, duration: 0.6, delay: 0.1 }" class="growth-curve">
+      <div v-reveal="{ y: 12, duration: 0.6 }" class="growth-curve">
         <GrowthTimeline :points="veganTimeline" :label-years="veganTimelineAxisYears" end-values />
       </div>
       <p class="growth-note">Verschiedene Erhebungen (NVS II, VEBU, SKOPOS, Allensbach), nicht direkt vergleichbar.</p>
 
       <p
-        v-reveal="{ duration: 0.6, delay: 0.2, y: 0 }"
+        v-reveal="{ duration: 0.6, y: 0 }"
         class="growth-message"
       >
         {{ nvs2008.year }} waren es weniger als {{ formatNumber(nvs2008.count) }}. Bei Allensbach stieg die Zahl von
