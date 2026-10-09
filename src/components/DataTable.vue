@@ -5,12 +5,9 @@ import type { SourceId } from '@/data/sources'
 import SourceLinks from '@/components/SourceLinks.vue'
 
 /**
- * A plain table of figures: first column is the row label, the rest are
- * numbers that arrive already formatted and are aligned right.
+ * A plain table of figures: first column is the row label, the rest are numbers that arrive already formatted and are aligned right.
  *
- * On a phone, 'scroll' keeps the grid and lets it scroll sideways inside its
- * card; 'stack' turns every row into a small block with labelled figures,
- * meant for tables with few columns and few rows.
+ * On a phone, 'scroll' keeps the grid and lets it scroll sideways inside its card; 'stack' turns every row into a small block with labelled figures, meant for tables with few columns and few rows.
  */
 const props = withDefaults(defineProps<{
   caption: string
@@ -31,17 +28,18 @@ const stackColumns = computed(() => {
   return figures === 4 ? 2 : Math.min(3, figures)
 })
 
-/* Only a table that really overflows is a stop for the keyboard and a region for screen readers; on a desktop it simply fits */
+/* Whether the table is wider than its box, at any width and in any layout (a stacked table is a plain grid above 600px). Only then is it a keyboard stop, a region for screen readers and marked as scrolling. Both boxes are watched: the table can grow (a web font arriving) while its box keeps its size. */
 const scroller = useTemplateRef<HTMLElement>('scroller')
+const table = useTemplateRef<HTMLTableElement>('table')
 const overflows = shallowRef(false)
-useResizeObserver(scroller, () => {
+useResizeObserver(() => [scroller.value, table.value], () => {
   const el = scroller.value
-  overflows.value = props.layout === 'scroll' && el !== null && el.scrollWidth > el.clientWidth
+  overflows.value = el !== null && el.scrollWidth > el.clientWidth
 })
 </script>
 
 <template>
-  <figure class="data-table" :class="`data-table--${layout}`" :style="{ '--stack-columns': stackColumns }">
+  <figure class="data-table" :class="[`data-table--${layout}`, { 'data-table--overflowing': overflows }]" :style="{ '--stack-columns': stackColumns }">
     <!-- When it scrolls: focusable and named, so a keyboard can scroll it and a screen reader announces it -->
     <div
       ref="scroller"
@@ -50,7 +48,7 @@ useResizeObserver(scroller, () => {
       :role="overflows ? 'region' : undefined"
       :aria-label="overflows ? caption : undefined"
     >
-      <table>
+      <table ref="table">
         <caption>{{ caption }}</caption>
         <thead>
           <tr>
@@ -112,10 +110,15 @@ td {
   white-space: nowrap;
 }
 th:first-child {
+  min-width: 0;
   text-align: left;
   white-space: normal;
 }
+/* Header cells break into two lines before they widen the table */
 thead th {
+  min-width: 6.5rem;
+  white-space: normal;
+  vertical-align: bottom;
   font-size: 0.72rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -143,44 +146,30 @@ tbody th {
   }
 }
 
-/* Scroll: the first column stays put, header cells may break into two lines
-   instead of widening the table, and a soft shadow at the right edge shows
-   that more is hidden. The shadow is fixed to the box, its white cover scrolls
-   with the content and slides over it once the end is reached. The left edge
-   needs no shadow, the sticky column marks it. */
-@media (max-width: 767px) {
-  .data-table--scroll .data-table-scroll {
-    background:
-      linear-gradient(to left, #fff 30%, rgba(255, 255, 255, 0)) right center / 2.5rem 100% no-repeat local,
-      radial-gradient(farthest-side at 100% 50%, rgba(20, 54, 31, 0.16), rgba(20, 54, 31, 0)) right center / 0.9rem 100% no-repeat scroll,
-      #fff;
-    /* The caption measures itself against the visible box, not the wide table */
-    container-type: inline-size;
-  }
-  .data-table--scroll thead th {
-    min-width: 6.5rem;
-    white-space: normal;
-    vertical-align: bottom;
-  }
-  .data-table--scroll th:first-child {
-    position: sticky;
-    left: 0;
-    z-index: 1;
-    min-width: 0;
-    background: #fff;
-    box-shadow: 1px 0 0 #f1f3f5;
-  }
-  .data-table--scroll caption {
-    position: sticky;
-    left: 0;
-    box-sizing: border-box;
-    max-width: 100cqi;
-  }
+/* A table wider than its box: the first column stays put and a soft shadow at the right edge shows that more is hidden. The shadow is fixed to the box, its white cover scrolls with the content and slides over it once the end is reached. The left edge needs no shadow, the sticky column marks it. None of this changes the table's width, so it cannot switch itself off. */
+.data-table--overflowing .data-table-scroll {
+  background:
+    linear-gradient(to left, #fff 30%, rgba(255, 255, 255, 0)) right center / 2.5rem 100% no-repeat local,
+    radial-gradient(farthest-side at 100% 50%, rgba(20, 54, 31, 0.16), rgba(20, 54, 31, 0)) right center / 0.9rem 100% no-repeat scroll,
+    #fff;
+  /* The caption measures itself against the visible box, not the wide table */
+  container-type: inline-size;
+}
+.data-table--overflowing th:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  background: #fff;
+  box-shadow: 1px 0 0 #f1f3f5;
+}
+.data-table--overflowing caption {
+  position: sticky;
+  left: 0;
+  box-sizing: border-box;
+  max-width: 100cqi;
 }
 
-/* Stack: below 600px each row is a block, its label on top and the figures
-   in a row below, each with its column name. The header row stays in the
-   accessibility tree, only hidden from sight. */
+/* Stack: below 600px each row is a block, its label on top and the figures in a row below, each with its column name. The header row stays in the accessibility tree, only hidden from sight. */
 @media (max-width: 599px) {
   .data-table--stack table,
   .data-table--stack tbody {
@@ -210,8 +199,7 @@ tbody th {
     border-top: none;
     text-align: left;
   }
-  /* Words may break apart ("meist 10 bis 15 Wochen"), a number has no break
-     opportunity and stays whole */
+  /* Words may break apart ("meist 10 bis 15 Wochen"), a number has no break opportunity and stays whole */
   .data-table--stack td {
     white-space: normal;
   }
