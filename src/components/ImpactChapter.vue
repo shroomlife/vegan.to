@@ -203,9 +203,9 @@ function landComparisons(m2: number): string[] {
 /** Card order, labels and the daily rate behind each, shared by the period cards and the board */
 const metrics: readonly { key: MetricKey; icon: string; label: string; shortLabel: string; unit: string; perDay: string }[] = [
   { key: 'lives', icon: '🐾', label: 'Landtiere gerettet', shortLabel: 'Landtiere', unit: '', perDay: '' },
-  { key: 'water', icon: '💧', label: 'Wasser gespart', shortLabel: 'Wasser', unit: ' L', perDay: `${formatNumber(DAILY_WATER_L)}\u00A0Liter am Tag` },
-  { key: 'co2', icon: '🌿', label: 'CO₂ vermieden', shortLabel: 'CO₂', unit: ' kg', perDay: `${formatNumber(DAILY_CO2_KG, 2)}\u00A0Kilogramm am Tag` },
-  { key: 'land', icon: '🌾', label: 'Land geschont', shortLabel: 'Land', unit: ' m²', perDay: `${formatNumber(DAILY_LAND_M2, 2)}\u00A0Quadratmeter am Tag` },
+  { key: 'water', icon: '💧', label: 'Wasser gespart', shortLabel: 'Wasser', unit: '\u00A0L', perDay: `${formatNumber(DAILY_WATER_L)}\u00A0Liter am Tag` },
+  { key: 'co2', icon: '🌿', label: 'CO₂ vermieden', shortLabel: 'CO₂', unit: '\u00A0kg', perDay: `${formatNumber(DAILY_CO2_KG, 2)}\u00A0Kilogramm am Tag` },
+  { key: 'land', icon: '🌾', label: 'Land geschont', shortLabel: 'Land', unit: '\u00A0m²', perDay: `${formatNumber(DAILY_LAND_M2, 2)}\u00A0Quadratmeter am Tag` },
 ]
 
 /**

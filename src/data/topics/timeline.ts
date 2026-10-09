@@ -107,7 +107,7 @@ export const foundationStations: readonly Station[] = [
   },
   {
     year: '1980',
-    title: '21,45 Milliarden Landtiere',
+    title: '21,45\u00A0Milliarden Landtiere',
     text: 'So viele werden weltweit in einem Jahr geschlachtet. 1961 waren es 8,36 Milliarden.',
     kind: 'number',
     sources: ['faoQcl'],
@@ -187,7 +187,7 @@ export const turnStations: readonly Station[] = [
   },
   {
     year: '2016',
-    title: '8,3 Millionen Tonnen Fleisch',
+    title: '8,3\u00A0Millionen Tonnen Fleisch',
     text: 'Der Höchststand der Fleischproduktion in Deutschland. 2025 waren es 6,9 Millionen Tonnen, 17 Prozent weniger.',
     kind: 'number',
     sources: ['destatisMeatPress2025'],

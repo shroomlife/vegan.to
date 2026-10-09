@@ -161,7 +161,7 @@ const brightSpots = [
       :sources="['destatisLayingHens', 'destatisFarmCensus', 'destatisEggPress', 'tierSchNutztV45', 'bverfg2010']"
     />
 
-    <h2>Nach rund 16 Monaten: Suppenhuhn</h2>
+    <h2>Nach rund 16&nbsp;Monaten: Suppenhuhn</h2>
     <p>
       Legehennen werden nach Angaben des BZL ungefähr 16 Monate alt und dann als Suppenhühner geschlachtet. 2025 waren es
       {{ formatNumber(boilingHens) }} Suppenhühner. Ein Huhn könnte im Schnitt drei bis fünf Jahre alt werden, manche sieben.

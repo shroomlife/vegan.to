@@ -118,7 +118,7 @@ const brightSpots = [
 <template>
   <ContentPage
     kicker="Schlachtzahlen · Destatis"
-    :title="`${formatNumber(mammalsAll / 1e6, 1)} Millionen Säugetiere und ${formatNumber(poultry2025.total / 1e6, 1)} Millionen Stück Geflügel im Jahr 2025.`"
+    :title="`${formatNumber(mammalsAll / 1e6, 1)}\u00A0Millionen Säugetiere und ${formatNumber(poultry2025.total / 1e6, 1)}\u00A0Millionen Stück Geflügel im Jahr 2025.`"
     lead="So viele Tiere wurden 2025 in Deutschland geschlachtet, laut Statistischem Bundesamt. Hier stehen alle Zahlen im Detail: nach Herkunft, Monat für Monat und nach Bundesland."
     :crumbs="[{ label: 'vegan.to', to: '/' }, { label: topic.label }]"
   >

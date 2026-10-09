@@ -317,8 +317,8 @@ useJsonLd('page-breadcrumb', {
         <div class="prolog">
           <p class="kicker">Zeitreise · Wie wir mit Tieren umgehen</p>
           <p class="prolog-year" aria-hidden="true">{{ Math.round(prolog.year) }}</p>
-          <p class="prolog-number"><span class="visually-hidden">Weltweit geschlachtete Landtiere im Jahr {{ Math.round(prolog.year) }}: </span><span class="prolog-value">{{ billions(prolog.billions) }} Mrd.</span></p>
-          <h1 id="journey-title" class="prolog-lede">Von {{ billions(first.billions) }} auf {{ billions(last.billions) }} Milliarden Tiere im Jahr.</h1>
+          <p class="prolog-number"><span class="visually-hidden">Weltweit geschlachtete Landtiere im Jahr {{ Math.round(prolog.year) }}: </span><span class="prolog-value">{{ billions(prolog.billions) }}&nbsp;Mrd.</span></p>
+          <h1 id="journey-title" class="prolog-lede">Von {{ billions(first.billions) }} auf {{ billions(last.billions) }}&nbsp;Milliarden Tiere im Jahr.</h1>
           <p class="prolog-text">
             So viele Landtiere wurden weltweit {{ first.year }} und {{ last.year }} geschlachtet, laut FAO.<template v-if="!still"> Scroll, und die Zahl läuft durch 63 Jahre.</template>
           </p>
@@ -418,12 +418,12 @@ useJsonLd('page-breadcrumb', {
         <div class="cage">
           <div class="cage-art" aria-hidden="true">
             <span class="cage-a3-label">DIN A3 · 42 × 29,7 cm · zwei A4</span>
-            <div class="cage-a4 cage-a4--blank"><span>DIN A4 · {{ formatNumber(A4_CM2) }} cm²</span></div>
+            <div class="cage-a4 cage-a4--blank"><span>DIN A4 · {{ formatNumber(A4_CM2) }}&nbsp;cm²</span></div>
             <div class="cage-a4">
-              <span>DIN A4 · {{ formatNumber(A4_CM2) }} cm²</span>
+              <span>DIN A4 · {{ formatNumber(A4_CM2) }}&nbsp;cm²</span>
               <div class="cage-hen" :style="{ '--share': cageShare }">
                 <span class="cage-hen-size">{{ A4_WIDTH_CM }} × {{ formatNumber(cageHeightCm, 1) }} cm</span>
-                <span>{{ CAGE_CM2 }} cm² · eine Henne</span>
+                <span>{{ CAGE_CM2 }}&nbsp;cm² · eine Henne</span>
               </div>
             </div>
           </div>
@@ -596,7 +596,7 @@ useJsonLd('page-breadcrumb', {
           <p class="display display--small">Und trotz allem: das {{ formatNumber(factor, 1) }}-Fache.</p>
           <p class="curve-intro">Jedes Gesetz, jedes Verbot, jedes Urteil aus dieser Zeitreise. Und die Zahl der Landtiere, die weltweit in einem Jahr geschlachtet werden, steigt trotzdem weiter.</p>
           <div class="curve-head">
-            <span class="curve-now">{{ billions(curve.billions) }} Mrd.</span>
+            <span class="curve-now">{{ billions(curve.billions) }}&nbsp;Mrd.</span>
             <span class="curve-year">geschlachtete Landtiere im Jahr {{ Math.round(curve.year) }}, weltweit</span>
           </div>
           <svg class="curve-svg" :viewBox="`0 0 ${CHART.w} ${CHART.h}`" role="img" :aria-label="`Weltweit geschlachtete Landtiere, von ${billions(first.billions)} Milliarden ${first.year} auf ${billions(last.billions)} Milliarden ${last.year}`">

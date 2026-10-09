@@ -49,6 +49,6 @@ export const usageAges: readonly UsageAge[] = [
   { use: 'Mastbulle', species: 'Rind', ageText: '18 bis 21\u00A0Monate', maxDays: 21 * MONTH, sources: ['bzlAges'] },
   { use: 'Zuchtsau', species: 'Schwein', ageText: '3 bis 4\u00A0Jahre', maxDays: 4 * YEAR, sources: ['bzlAges'] },
   { use: 'Mutterschaf', species: 'Schaf', ageText: 'rund 5\u00A0Jahre', maxDays: 5 * YEAR, sources: ['bzlAges'] },
-  { use: 'Milchziege', species: 'Ziege', ageText: 'rund 5 Jahre genutzt', maxDays: 5 * YEAR, sources: ['bzlAges'] },
+  { use: 'Milchziege', species: 'Ziege', ageText: 'rund 5\u00A0Jahre genutzt', maxDays: 5 * YEAR, sources: ['bzlAges'] },
   { use: 'Milchkuh', species: 'Rind', ageText: 'im Schnitt 5,5\u00A0Jahre', maxDays: 5.5 * YEAR, sources: ['bzlAges'] },
 ]

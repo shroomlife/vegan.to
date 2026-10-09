@@ -349,7 +349,7 @@ useJsonLd('species-breadcrumb', {
           </div>
           <p v-if="lifespanYears" class="species-bar-note">
             <span class="species-bar-lived">gelebt</span>
-            <span>möglich: {{ lifespanYears }} Jahre</span>
+            <span>möglich: {{ lifespanYears }}&nbsp;Jahre</span>
           </p>
           <SourceLinks :ids="profile.lifeSources" />
         </div>

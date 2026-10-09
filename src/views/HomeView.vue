@@ -346,7 +346,7 @@ const shareText = () =>
 
   <ChapterExit
     kicker="Und weltweit?"
-    :title="`${worldBillions} Milliarden Landtiere im Jahr ${WORLD_YEAR}.`"
+    :title="`${worldBillions}\u00A0Milliarden Landtiere im Jahr ${WORLD_YEAR}.`"
     text="Deutschland ist ein Ausschnitt. Der Zähler für die ganze Welt, nach Tierart und mit den Fischen als Schätzung."
     :to="worldTopic.path"
     label="Weltweit zählen"

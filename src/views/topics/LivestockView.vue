@@ -111,7 +111,7 @@ const brightSpots = [
 <template>
   <ContentPage
     kicker="Tierbestand · Destatis"
-    :title="`Rund ${formatNumber(pigStock.may2026 / 1e6)} Millionen Schweine stehen in deutschen Ställen.`"
+    :title="`Rund ${formatNumber(pigStock.may2026 / 1e6)}\u00A0Millionen Schweine stehen in deutschen Ställen.`"
     lead="Dazu kommen über zehn Millionen Rinder (Mai 2026), anderthalb Millionen Schafe (November 2025) und rund 156 Millionen Hühner (zuletzt gezählt am 1. März 2023). Insgesamt werden im Jahr aber viel mehr Tiere geschlachtet, als an einem Tag in den Ställen stehen. Die meisten leben nur Wochen oder Monate."
     :crumbs="[{ label: 'vegan.to', to: '/' }, { label: topic.label }]"
   >

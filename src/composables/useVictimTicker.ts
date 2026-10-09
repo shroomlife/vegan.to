@@ -136,7 +136,7 @@ const SINGULAR_UNIT: Readonly<Record<SlaughterAge['unit'], string>> = { Tage: 'T
 
 /** "1 Jahr", "3 Jahre" */
 function formatAge(value: number, unit: SlaughterAge['unit']): string {
-  return `${value} ${value === 1 ? SINGULAR_UNIT[unit] : unit}`
+  return `${value}\u00A0${value === 1 ? SINGULAR_UNIT[unit] : unit}`
 }
 
 /** A random age within the sourced range, or nothing when there is no sourced range */

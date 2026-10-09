@@ -60,7 +60,7 @@ const answers = [
       :items="[
         { value: '4 bis über 9\u00A0%', label: 'der Rinder brauchen einen zweiten Bolzenschuss', note: 'Spanne aus der Literatur, zitiert von der Bundesregierung 2012.', sources: ['btDrs17_10021'] },
         { value: '10,9 bis 12,5\u00A0%', label: 'Fehlbetäubungen bei Schweinen mit der Elektrozange', note: 'Bei automatischen Anlagen 3,3 Prozent. Nach einer Studie der EFSA.', sources: ['btDrs17_10021'] },
-        { value: 'mindestens 100 Sekunden', label: 'müssen Schweine im CO2 bleiben', note: 'Die EFSA nennt hoch konzentriertes CO2 stark belastend.', sources: ['tierSchlVAnlage1', 'efsaPigs2020'] },
+        { value: '100\u00A0s', label: 'müssen Schweine mindestens im CO2 bleiben', note: 'Die EFSA nennt hoch konzentriertes CO2 stark belastend.', sources: ['tierSchlVAnlage1', 'efsaPigs2020'] },
       ]"
     />
 
