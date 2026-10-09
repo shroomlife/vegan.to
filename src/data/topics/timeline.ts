@@ -64,7 +64,8 @@ export const earlyStations: readonly Station[] = [
   },
   {
     year: '1933',
-    title: 'Ein Reichstierschutzgesetz',
+    // Soft hyphens: the word alone is wider than a phone
+    title: 'Ein Reichs\u00ADtierschutz\u00ADgesetz',
     text: 'Die NS-Regierung erlässt am 24. November 1933 ein reichsweites Tierschutzgesetz. In der Bundesrepublik gilt es bis 1972.',
     kind: 'law',
     sources: ['bgbl1972'],

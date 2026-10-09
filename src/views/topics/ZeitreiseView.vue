@@ -677,7 +677,7 @@ useJsonLd('page-breadcrumb', {
 .kicker {
   margin: 0 0 14px;
   font-family: inherit;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 900;
   letter-spacing: 0.24em;
   text-transform: uppercase;
@@ -990,7 +990,7 @@ useJsonLd('page-breadcrumb', {
 }
 .prolog-hint {
   margin: 28px 0 0;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   letter-spacing: 0.3em;
   text-transform: uppercase;
   color: var(--faint-light);
@@ -1062,6 +1062,7 @@ useJsonLd('page-breadcrumb', {
   line-height: 1.08;
   color: var(--paper);
   text-wrap: balance;
+  overflow-wrap: break-word;
 }
 .early-slide p {
   max-width: 52ch;
@@ -1273,6 +1274,7 @@ useJsonLd('page-breadcrumb', {
   letter-spacing: -0.025em;
   line-height: 1.15;
   color: var(--paper);
+  overflow-wrap: break-word;
 }
 .station p {
   margin: 0 0 10px;
