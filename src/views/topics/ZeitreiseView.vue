@@ -317,8 +317,8 @@ useJsonLd('page-breadcrumb', {
         <div class="prolog">
           <p class="kicker">Zeitreise · Wie wir mit Tieren umgehen</p>
           <p class="prolog-year" aria-hidden="true">{{ Math.round(prolog.year) }}</p>
-          <p class="prolog-number"><span class="visually-hidden">Weltweit geschlachtete Landtiere im Jahr {{ Math.round(prolog.year) }}: </span><span class="prolog-value">{{ billions(prolog.billions) }} Mrd.</span></p>
-          <h1 id="journey-title" class="prolog-lede">Von {{ billions(first.billions) }} auf {{ billions(last.billions) }} Milliarden Tiere im Jahr.</h1>
+          <p class="prolog-number"><span class="visually-hidden">Weltweit geschlachtete Landtiere im Jahr {{ Math.round(prolog.year) }}: </span><span class="prolog-value">{{ billions(prolog.billions) }}&nbsp;Mrd.</span></p>
+          <h1 id="journey-title" class="prolog-lede">Von {{ billions(first.billions) }} auf {{ billions(last.billions) }}&nbsp;Milliarden Tiere im Jahr.</h1>
           <p class="prolog-text">
             So viele Landtiere wurden weltweit {{ first.year }} und {{ last.year }} geschlachtet, laut FAO.<template v-if="!still"> Scroll, und die Zahl läuft durch 63 Jahre.</template>
           </p>
@@ -397,7 +397,7 @@ useJsonLd('page-breadcrumb', {
       </figure>
       <div class="flow-inner">
         <h2 class="kicker">Die Antwort des Gesetzgebers</h2>
-        <article v-for="station in foundationStations" :key="station.title" v-reveal="{ y: 36, duration: 0.6, amount: 0.3 }" class="station" :class="`station--${station.kind}`">
+        <article v-for="station in foundationStations" :key="station.title" v-reveal="{ y: 36, duration: 0.6 }" class="station" :class="`station--${station.kind}`">
           <p class="station-year">{{ station.year }}</p>
           <div>
             <span class="tag">{{ kindLabel[station.kind] }}</span>
@@ -418,12 +418,12 @@ useJsonLd('page-breadcrumb', {
         <div class="cage">
           <div class="cage-art" aria-hidden="true">
             <span class="cage-a3-label">DIN A3 · 42 × 29,7 cm · zwei A4</span>
-            <div class="cage-a4 cage-a4--blank"><span>DIN A4 · {{ formatNumber(A4_CM2) }} cm²</span></div>
+            <div class="cage-a4 cage-a4--blank"><span>DIN A4 · {{ formatNumber(A4_CM2) }}&nbsp;cm²</span></div>
             <div class="cage-a4">
-              <span>DIN A4 · {{ formatNumber(A4_CM2) }} cm²</span>
+              <span>DIN A4 · {{ formatNumber(A4_CM2) }}&nbsp;cm²</span>
               <div class="cage-hen" :style="{ '--share': cageShare }">
                 <span class="cage-hen-size">{{ A4_WIDTH_CM }} × {{ formatNumber(cageHeightCm, 1) }} cm</span>
-                <span>{{ CAGE_CM2 }} cm² · eine Henne</span>
+                <span>{{ CAGE_CM2 }}&nbsp;cm² · eine Henne</span>
               </div>
             </div>
           </div>
@@ -444,7 +444,7 @@ useJsonLd('page-breadcrumb', {
         </figure>
         <div class="stations">
           <h2 class="kicker">Vom Käfig vor Gericht</h2>
-          <article v-for="station in cageStations" :key="station.title" v-reveal="{ y: 36, duration: 0.6, amount: 0.3 }" class="station" :class="`station--${station.kind}`">
+          <article v-for="station in cageStations" :key="station.title" v-reveal="{ y: 36, duration: 0.6 }" class="station" :class="`station--${station.kind}`">
             <p class="station-year">{{ station.year }}</p>
             <div>
               <span class="tag">{{ kindLabel[station.kind] }}</span>
@@ -504,7 +504,7 @@ useJsonLd('page-breadcrumb', {
         </figure>
         <div class="stations">
           <h2 class="kicker kicker--hope">Akt VI · Was sich verändert hat</h2>
-          <article v-for="station in turnStations" :key="station.title" v-reveal="{ y: 36, duration: 0.6, amount: 0.3 }" class="station" :class="`station--${station.kind}`">
+          <article v-for="station in turnStations" :key="station.title" v-reveal="{ y: 36, duration: 0.6 }" class="station" :class="`station--${station.kind}`">
             <p class="station-year">{{ station.year }}</p>
             <div>
               <span class="tag">{{ kindLabel[station.kind] }}</span>
@@ -555,7 +555,7 @@ useJsonLd('page-breadcrumb', {
           </figcaption>
         </figure>
 
-        <article v-for="station in todayStations" :key="station.title" v-reveal="{ y: 36, duration: 0.6, amount: 0.3 }" class="station" :class="`station--${station.kind}`">
+        <article v-for="station in todayStations" :key="station.title" v-reveal="{ y: 36, duration: 0.6 }" class="station" :class="`station--${station.kind}`">
           <p class="station-year">{{ station.year }}</p>
           <div>
             <span class="tag">{{ kindLabel[station.kind] }}</span>
@@ -580,7 +580,7 @@ useJsonLd('page-breadcrumb', {
           <p class="kicker">Akt VII · Heute, mitten in Deutschland</p>
           <h2 class="display display--blood">Ohne Betäubung erlaubt.</h2>
           <ul class="legal">
-            <li v-for="(item, index) in legalToday" :key="item.what" v-reveal="{ x: -24, duration: 0.5, delay: index * 0.08, amount: 0.5 }">{{ item.what }}<span>{{ item.who }}</span></li>
+            <li v-for="item in legalToday" :key="item.what" v-reveal="{ x: -24, duration: 0.5 }">{{ item.what }}<span>{{ item.who }}</span></li>
           </ul>
           <p class="who">Das Tierschutzgesetz nimmt diese Eingriffe von der Betäubungspflicht aus, erlaubt sind sie nur unter den Bedingungen von § 5 und § 6. Das Kürzen der Schnabelspitzen bei Legehennenküken, die jünger als zehn Tage sind, dürfen Behörden zusätzlich erlauben.</p>
           <SourceLinks :ids="['tierSchG5', 'tierSchG6']" />
@@ -596,7 +596,7 @@ useJsonLd('page-breadcrumb', {
           <p class="display display--small">Und trotz allem: das {{ formatNumber(factor, 1) }}-Fache.</p>
           <p class="curve-intro">Jedes Gesetz, jedes Verbot, jedes Urteil aus dieser Zeitreise. Und die Zahl der Landtiere, die weltweit in einem Jahr geschlachtet werden, steigt trotzdem weiter.</p>
           <div class="curve-head">
-            <span class="curve-now">{{ billions(curve.billions) }} Mrd.</span>
+            <span class="curve-now">{{ billions(curve.billions) }}&nbsp;Mrd.</span>
             <span class="curve-year">geschlachtete Landtiere im Jahr {{ Math.round(curve.year) }}, weltweit</span>
           </div>
           <svg class="curve-svg" :viewBox="`0 0 ${CHART.w} ${CHART.h}`" role="img" :aria-label="`Weltweit geschlachtete Landtiere, von ${billions(first.billions)} Milliarden ${first.year} auf ${billions(last.billions)} Milliarden ${last.year}`">
@@ -677,7 +677,7 @@ useJsonLd('page-breadcrumb', {
 .kicker {
   margin: 0 0 14px;
   font-family: inherit;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 900;
   letter-spacing: 0.24em;
   text-transform: uppercase;
@@ -990,7 +990,7 @@ useJsonLd('page-breadcrumb', {
 }
 .prolog-hint {
   margin: 28px 0 0;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   letter-spacing: 0.3em;
   text-transform: uppercase;
   color: var(--faint-light);
@@ -1062,6 +1062,7 @@ useJsonLd('page-breadcrumb', {
   line-height: 1.08;
   color: var(--paper);
   text-wrap: balance;
+  overflow-wrap: break-word;
 }
 .early-slide p {
   max-width: 52ch;
@@ -1273,6 +1274,7 @@ useJsonLd('page-breadcrumb', {
   letter-spacing: -0.025em;
   line-height: 1.15;
   color: var(--paper);
+  overflow-wrap: break-word;
 }
 .station p {
   margin: 0 0 10px;

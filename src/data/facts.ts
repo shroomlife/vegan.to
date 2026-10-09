@@ -36,7 +36,7 @@ export const speciesFacts: readonly SpeciesFact[] = [
   {
     emoji: '🦃',
     species: 'Truthühner',
-    text: 'Für Puten gibt es in Deutschland keine artspezifischen gesetzlichen Tierschutzvorgaben. Freiwillige Eckwerte der Branche von 2013 (kein Gesetz) erlauben 52 bis 58 kg Tier pro Quadratmeter.',
+    text: 'Für Puten gibt es in Deutschland keine artspezifischen gesetzlichen Tierschutzvorgaben. Freiwillige Eckwerte der Branche von 2013 (kein Gesetz) erlauben 52 bis 58\u00A0kg Tier pro Quadratmeter.',
     sources: ['assPuten', 'vdpEckwerte'],
   },
   {
@@ -91,63 +91,63 @@ export interface LifeFact {
 /** Kapitel 4: the conditions, quoted from law texts and documented practice */
 export const lifeFacts: readonly LifeFact[] = [
   {
-    figure: '39 kg',
+    figure: '39\u00A0kg',
     species: ['Huhn'],
     unit: 'Huhn pro Quadratmeter',
-    text: 'So viel erlaubt das Gesetz im Maststall. Bei Kurzmast sind das rund 24 Tiere, jedes mit etwas weniger als einem DIN-A5-Blatt plus Bierdeckel.',
+    text: 'So viel erlaubt das Gesetz im Maststall. Bei Kurzmast sind das rund 24\u00A0Tiere, jedes mit etwas weniger als einem DIN-A5-Blatt plus Bierdeckel.',
     sources: ['tierSchNutztV19', 'assMasthuehner'],
   },
   {
-    figure: '32 Tage',
+    figure: '32\u00A0Tage',
     species: ['Huhn'],
-    unit: 'bis 1,8 kg',
-    text: 'In den 1950er Jahren brauchte ein Masthuhn dafür 101 Tage. Heute reichen 32. Die Mast endet nach 29 bis 42 Tagen.',
+    unit: 'bis 1,8\u00A0kg',
+    text: 'In den 1950er Jahren brauchte ein Masthuhn dafür 101\u00A0Tage. Heute reichen 32. Die Mast endet nach 29 bis 42\u00A0Tagen.',
     sources: ['assMasthuehner'],
   },
   {
-    figure: '0,75 m²',
+    figure: '0,75\u00A0m²',
     species: ['Schwein'],
     unit: 'pro Mastschwein',
-    text: 'So viel Platz steht einem Schwein zwischen 50 und 110 kg zu. 96 Prozent der Mastplätze haben Spaltenboden statt Stroh.',
+    text: 'So viel Platz steht einem Schwein zwischen 50 und 110\u00A0kg zu. 96\u00A0Prozent der Mastplätze haben Spaltenboden statt Stroh.',
     sources: ['tierSchNutztV29', 'assMastschweine'],
   },
   {
-    figure: '5 Tage',
+    figure: '5\u00A0Tage',
     species: ['Schwein'],
     unit: 'fixiert um die Geburt',
     text: 'So lange dürfen Sauen künftig noch im Kastenstand stehen, wenn sie Ferkel bekommen. Die Übergangsfrist dafür läuft bis 2036.',
     sources: ['tierSchNutztV30'],
   },
   {
-    figure: '20 bis 30 s',
+    figure: '20 bis 30\u00A0s',
     species: ['Schwein'],
     unit: 'bis zur Wahrnehmungslosigkeit',
-    text: 'So lange dauert es in der CO2-Betäubung. 90 Prozent der großen Schlachtbetriebe nutzen sie, für geschätzt 34 Millionen Schweine im Jahr.',
+    text: 'So lange dauert es in der CO2-Betäubung. 90\u00A0Prozent der großen Schlachtbetriebe nutzen sie, für geschätzt 34\u00A0Millionen Schweine im Jahr.',
     sources: ['agrarheuteCo2'],
   },
   {
-    figure: '1 Minute',
+    figure: '1\u00A0Minute',
     species: ['Huhn'],
     unit: 'kopfüber bei Bewusstsein',
     text: 'So lange hängen Hühner an den Beinen, bevor sie ins Elektrowasserbad getaucht werden.',
     sources: ['dgsWaterbath'],
   },
   {
-    figure: '8 Stunden',
+    figure: '8\u00A0Stunden',
     species: ['Schwein', 'Rind', 'Schaf', 'Pferd'],
     unit: 'Transport als Grundregel',
-    text: 'Mit zugelassenen Fahrzeugen dürfen Schweine 24 Stunden unterwegs sein, Rinder 14 Stunden, 1 Stunde Pause, weitere 14 Stunden.',
+    text: 'Mit zugelassenen Fahrzeugen dürfen Schweine 24\u00A0Stunden unterwegs sein, Rinder 14\u00A0Stunden, 1\u00A0Stunde Pause, weitere 14\u00A0Stunden.',
     sources: ['euTransport'],
   },
   {
-    figure: '40 Mio.',
+    figure: '40\u00A0Mio.',
     species: ['Huhn'],
     unit: 'Küken pro Jahr',
     text: 'So viele männliche Küken wurden getötet, bis das Verbot 2022 kam. Die Brüder der Legehennen sind seitdem ein Kostenproblem, kein Müllproblem.',
     sources: ['tierSchG4c', 'bmlehInOvo'],
   },
   {
-    figure: '6 bis 7 Wochen',
+    figure: '6 bis 7\u00A0Wochen',
     species: ['Ente'],
     unit: 'Entenleben',
     text: 'So lange lebt eine Pekingente in der Mast, praktisch ohne Zugang zu Badewasser.',
@@ -166,31 +166,31 @@ export const faqs: readonly Faq[] = [
   {
     question: 'Ist vegan überhaupt gesund?',
     answer:
-      'Die Deutsche Gesellschaft für Ernährung sagt seit 2024: Für gesunde Erwachsene kann eine vegane Ernährung gesundheitsfördernd sein, wenn Vitamin B12 ergänzt wird und die Lebensmittelauswahl gut geplant ist. Die Academy of Nutrition and Dietetics hat ihre Position 2025 erneuert und beschränkt sie ausdrücklich auf Erwachsene: gut geplant kann vegetarische und vegane Ernährung nährstoffdeckend sein und langfristig der Gesundheit nützen. Für Kinder und Schwangere gibt die DGE wegen der Datenlage keine Empfehlung für oder gegen ab, die Academy äußert sich dazu nicht.',
+      'Die Deutsche Gesellschaft für Ernährung sagt seit 2024: Für gesunde Erwachsene kann eine vegane Ernährung gesundheitsfördernd sein, wenn Vitamin\u00A0B12 ergänzt wird und die Lebensmittelauswahl gut geplant ist. Die Academy of Nutrition and Dietetics hat ihre Position 2025 erneuert und beschränkt sie ausdrücklich auf Erwachsene: gut geplant kann vegetarische und vegane Ernährung nährstoffdeckend sein und langfristig der Gesundheit nützen. Für Kinder und Schwangere gibt die DGE wegen der Datenlage keine Empfehlung für oder gegen ab, die Academy äußert sich dazu nicht.',
     sources: ['dge2024', 'academyNutrition'],
   },
   {
     question: 'Und meine Kinder?',
     answer:
-      'Für Kinder, Jugendliche, Schwangere und Stillende spricht die DGE wegen der eingeschränkten Datenlage weder eine Empfehlung für noch gegen eine vegane Ernährung aus. Was trotzdem geht: mehr pflanzliche Gerichte für die ganze Familie, ohne dass jemand komplett umstellt. Für Kleinkinder sagt das Netzwerk Gesund ins Leben des Bundesministeriums: Eine ausgewogene vegetarische Ernährung mit Milchprodukten und Eiern kann den Bedarf decken; eine vegane Ernährung braucht Supplemente, vor allem Vitamin B12, die Versorgung soll ärztlich überprüft und die Eltern sollen individuell beraten werden. Die Verbraucherzentrale rät bei Kindern, Schwangeren und Stillenden zu einer Beratung durch eine qualifizierte Ernährungsfachkraft.',
+      'Für Kinder, Jugendliche, Schwangere und Stillende spricht die DGE wegen der eingeschränkten Datenlage weder eine Empfehlung für noch gegen eine vegane Ernährung aus. Was trotzdem geht: mehr pflanzliche Gerichte für die ganze Familie, ohne dass jemand komplett umstellt. Für Kleinkinder sagt das Netzwerk Gesund ins Leben des Bundesministeriums: Eine ausgewogene vegetarische Ernährung mit Milchprodukten und Eiern kann den Bedarf decken; eine vegane Ernährung braucht Supplemente, vor allem Vitamin\u00A0B12, die Versorgung soll ärztlich überprüft und die Eltern sollen individuell beraten werden. Die Verbraucherzentrale rät bei Kindern, Schwangeren und Stillenden zu einer Beratung durch eine qualifizierte Ernährungsfachkraft.',
     sources: ['dge2024', 'gesundInsLebenToddlers', 'vzVegan'],
   },
   {
     question: 'Was hat mein Essen mit dem Klima zu tun?',
     answer:
-      'Die deutsche Landwirtschaft hat 2025 rund 53,3 Millionen Tonnen CO2-Äquivalente verursacht, 8,2 Prozent aller Emissionen des Landes. 64,5 Prozent davon kommen direkt aus der Tierhaltung. Das Methan aus der Verdauung stammt zu 93 Prozent von Rindern und Milchkühen.',
+      'Die deutsche Landwirtschaft hat 2025 rund 53,3\u00A0Millionen Tonnen CO2-Äquivalente verursacht, 8,2\u00A0Prozent aller Emissionen des Landes. 64,5\u00A0Prozent davon kommen direkt aus der Tierhaltung. Das Methan aus der Verdauung stammt zu 93\u00A0Prozent von Rindern und Milchkühen.',
     sources: ['ubaAgriculture'],
   },
   {
     question: 'Wofür wird das Land eigentlich gebraucht?',
     answer:
-      'Auf 9,2 Millionen Hektar, etwa 55 Prozent der landwirtschaftlichen Fläche Deutschlands, wächst Futter für Tiere. Vom Getreide im Land gingen 2024/25 rund 50 Prozent in den Trog, 23 Prozent auf den Teller.',
+      'Auf 9,2\u00A0Millionen Hektar, etwa 55\u00A0Prozent der landwirtschaftlichen Fläche Deutschlands, wächst Futter für Tiere. Vom Getreide im Land gingen 2024/25 rund 50\u00A0Prozent in den Trog, 23\u00A0Prozent auf den Teller.',
     sources: ['bzlFeedArea', 'bleGrain'],
   },
   {
     question: 'Ist Fleisch wirklich ein Gesundheitsrisiko?',
     answer:
-      'Die WHO-Krebsforschungsagentur IARC stuft verarbeitetes Fleisch als krebserregend ein (Gruppe 1) und rotes Fleisch als wahrscheinlich krebserregend (Gruppe 2A). Nach ihrer Auswertung von zehn Studien erhöht jede Portion von 50 Gramm verarbeitetem Fleisch pro Tag das Darmkrebsrisiko um etwa 18 Prozent. Das heißt 18 Prozent mehr als ohne, nicht 18 von 100. Für den einzelnen Menschen bleibt das Risiko laut IARC klein, es steigt aber mit der Menge. Weltweit rechnet die IARC mit rund 34.000 Krebstodesfällen pro Jahr durch Ernährung mit viel verarbeitetem Fleisch, gegenüber etwa einer Million durch Tabak.',
+      'Die WHO-Krebsforschungsagentur IARC stuft verarbeitetes Fleisch als krebserregend ein (Gruppe\u00A01) und rotes Fleisch als wahrscheinlich krebserregend (Gruppe\u00A02A). Nach ihrer Auswertung von zehn Studien erhöht jede Portion von 50\u00A0Gramm verarbeitetem Fleisch pro Tag das Darmkrebsrisiko um etwa 18\u00A0Prozent. Das heißt 18\u00A0Prozent mehr als ohne, nicht 18 von 100. Für den einzelnen Menschen bleibt das Risiko laut IARC klein, es steigt aber mit der Menge. Weltweit rechnet die IARC mit rund 34.000\u00A0Krebstodesfällen pro Jahr durch Ernährung mit viel verarbeitetem Fleisch, gegenüber etwa einer Million durch Tabak.',
     sources: ['whoMeat', 'iarcPressMeat', 'iarcQaMeat'],
   },
   {

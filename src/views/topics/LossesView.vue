@@ -70,9 +70,9 @@ const answers = [
     <FigureGrid
       :items="[
         { value: `etwa ${formatCompact(deadPigsEstimate2016)}`, label: 'Schweine, die 2016 im Stall verendet sind oder getötet wurden', note: 'Eine Schätzung, zitiert im Nationalen Tierwohl-Monitoring. Eine Zählung gibt es nicht.', sources: ['natimonPigs'] },
-        { value: `${modelLosses.pigletsBeforeWeaningPercent} %`, label: 'der Ferkel sterben, bevor sie abgesetzt, also von der Sau getrennt werden', note: `Dazu sterben ${modelLosses.sowMortalityPercent} Prozent der Sauen im Jahr. Kennzahlen 2023.`, sources: ['thuenenPigs'] },
+        { value: `${modelLosses.pigletsBeforeWeaningPercent}\u00A0%`, label: 'der Ferkel sterben, bevor sie abgesetzt, also von der Sau getrennt werden', note: `Dazu sterben ${modelLosses.sowMortalityPercent} Prozent der Sauen im Jahr. Kennzahlen 2023.`, sources: ['thuenenPigs'] },
         { value: formatNumber(lastHit?.count ?? 0), label: `verendete Rinder im Jahr ${lastHit?.year}`, note: `Auf ${formatNumber(slaughteredPerDead)} geschlachtete Rinder kam ${lastHit?.year} ein verendetes.`, sources: ['btDrs18_12519', 'destatisSlaughter'] },
-        { value: `${modelLosses.calfLossPercent} %`, label: 'der Kälber in der Milchviehhaltung sterben', note: `Dazu sterben ${modelLosses.cowLossPercent} Prozent der Kühe im Betrieb. Kennzahlen des Thünen-Instituts.`, sources: ['thuenenDairy'] },
+        { value: `${modelLosses.calfLossPercent}\u00A0%`, label: 'der Kälber in der Milchviehhaltung sterben', note: `Dazu sterben ${modelLosses.cowLossPercent} Prozent der Kühe im Betrieb. Kennzahlen des Thünen-Instituts.`, sources: ['thuenenDairy'] },
       ]"
     />
 

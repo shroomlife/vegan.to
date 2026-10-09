@@ -46,7 +46,7 @@ export function trendSummary(points: readonly TrendPoint[]): TrendSummary | unde
  */
 export function formatPercent(value: number): string {
   const rounded = formatNumber(Math.abs(value), 1)
-  if (rounded === '0') return '0 %'
+  if (rounded === '0') return '0\u00A0%'
   const sign = value < 0 ? '−' : '+'
-  return `${sign}${rounded} %`
+  return `${sign}${rounded}\u00A0%`
 }

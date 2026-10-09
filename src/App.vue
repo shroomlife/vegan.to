@@ -34,7 +34,8 @@ const showMobilePill = computed(() => live.isMobile.value && route.name === 'Hom
       <CounterPill :count="live.totalDeathCount.value" />
     </div>
   </Transition>
-  <BackToTop />
+  <!-- On phones the pill already leads back to the top of the start page: one floating control is enough there -->
+  <BackToTop v-if="!showMobilePill" />
   <ConsentBanner />
 </template>
 
@@ -66,16 +67,20 @@ const showMobilePill = computed(() => live.isMobile.value && route.name === 'Hom
   color: var(--brand-green);
   text-decoration: none;
 }
-/* Left of the back-to-top button, never under it */
+/* Centred at the bottom edge; only the pill itself takes taps, not the strip around it */
 .mobile-pill {
   position: fixed;
   left: 14px;
-  right: 72px;
-  bottom: 14px;
+  right: 14px;
+  bottom: calc(14px + env(safe-area-inset-bottom));
   display: flex;
+  justify-content: center;
   z-index: 95;
+  pointer-events: none;
 }
 .mobile-pill .counter-pill {
+  pointer-events: auto;
+  min-height: 44px;
   background: var(--brand-green);
   border-color: rgba(246, 241, 231, 0.25);
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);

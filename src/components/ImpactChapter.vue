@@ -21,15 +21,21 @@ const { timer } = useLiveState()
  * of Germany, per day. Land animals carry the card; the estimated fish from
  * the German catch stand beside it as their own line. Imports excluded.
  */
+interface ImpactPeriod {
+  label: string
+  days: number
+}
+
+// Labels keep number and unit together (U+00A0), they also end up in the chapter title
 const impactTimeline = [
-  { label: '1 Tag', days: 1 },
-  { label: '1 Woche', days: 7 },
-  { label: '1 Monat', days: 30 },
-  { label: '6 Monate', days: 182 },
-  { label: '1 Jahr', days: 365 },
-  { label: '10 Jahre', days: 3650 },
-  { label: '50 Jahre', days: 18250 },
-]
+  { label: '1\u00A0Tag', days: 1 },
+  { label: '1\u00A0Woche', days: 7 },
+  { label: '1\u00A0Monat', days: 30 },
+  { label: '6\u00A0Monate', days: 182 },
+  { label: '1\u00A0Jahr', days: 365 },
+  { label: '10\u00A0Jahre', days: 3650 },
+  { label: '50\u00A0Jahre', days: 18250 },
+] as const satisfies readonly ImpactPeriod[]
 
 const DAILY_LIVES = LAND_ANIMALS_PER_PERSON_YEAR / 365.25
 const DAILY_FISH = FISH_PER_PERSON_YEAR / 365.25
@@ -38,8 +44,7 @@ const DAILY_CO2_KG = 4.57
 const DAILY_LAND_M2 = 6.91
 const DAYS_PER_LIFE = Math.ceil(1 / DAILY_LIVES)
 
-const activeImpact = ref(4) // Default: 1 Jahr
-const activeItem = computed(() => impactTimeline[activeImpact.value]!)
+const activeItem = ref<ImpactPeriod>(impactTimeline[4]) // Default: 1 Jahr
 const activeImpactData = computed(() => impactFor(activeItem.value.days))
 
 const { veganSince, isSet: hasPersonalDate, daysSinceVegan, formattedDuration, clear: clearPersonalDate } = usePersonalTracker()
@@ -77,16 +82,16 @@ interface Milestone {
   days: number
 }
 const milestones: readonly Milestone[] = [
-  { label: '1 Monat', days: 30 },
-  { label: '1 Jahr', days: 365 },
-  { label: '10 Landtiere', days: 10 / DAILY_LIVES },
-  { label: '100.000 Liter Wasser', days: 100_000 / DAILY_WATER_L },
-  { label: '1 Tonne CO₂', days: 1000 / DAILY_CO2_KG },
-  { label: '5 Jahre', days: 5 * 365 },
-  { label: '50 Landtiere', days: 50 / DAILY_LIVES },
-  { label: '10 Jahre', days: 10 * 365 },
-  { label: '100 Landtiere', days: 100 / DAILY_LIVES },
-  { label: '1 Million Liter Wasser', days: 1_000_000 / DAILY_WATER_L },
+  { label: '1\u00A0Monat', days: 30 },
+  { label: '1\u00A0Jahr', days: 365 },
+  { label: '10\u00A0Landtiere', days: 10 / DAILY_LIVES },
+  { label: '100.000\u00A0Liter Wasser', days: 100_000 / DAILY_WATER_L },
+  { label: '1\u00A0Tonne CO₂', days: 1000 / DAILY_CO2_KG },
+  { label: '5\u00A0Jahre', days: 5 * 365 },
+  { label: '50\u00A0Landtiere', days: 50 / DAILY_LIVES },
+  { label: '10\u00A0Jahre', days: 10 * 365 },
+  { label: '100\u00A0Landtiere', days: 100 / DAILY_LIVES },
+  { label: '1\u00A0Million Liter Wasser', days: 1_000_000 / DAILY_WATER_L },
 ]
 const personalMilestones = computed(() => {
   const days = daysSinceVegan.value
@@ -149,9 +154,9 @@ function impactFor(days: number): Record<MetricKey, Metric> & { fish: { value: s
 
 function lifeComparisons(lives: number): string[] {
   const r: string[] = []
-  if (lives >= 10) r.push(`Eine Schulklasse mit 25 Kindern rettet so ${formatNumber(lives * 25)} Tiere`)
-  if (lives >= 1) r.push(`${formatNumber(lives)} fühlende Wesen mit eigenem Charakter`)
-  if (lives < 1) r.push(`Nach ${DAYS_PER_LIFE} Tagen ist es ein ganzes Tierleben`)
+  if (lives >= 10) r.push(`Eine Schulklasse mit 25\u00A0Kindern rettet so ${formatNumber(lives * 25)}\u00A0Tiere`)
+  if (lives >= 1) r.push(`${formatNumber(lives)}\u00A0fühlende Wesen mit eigenem Charakter`)
+  if (lives < 1) r.push(`Nach ${DAYS_PER_LIFE}\u00A0Tagen ist es ein ganzes Tierleben`)
   r.push('Jedes einzelne wollte leben')
   return r.slice(0, 2)
 }
@@ -159,7 +164,7 @@ function lifeComparisons(lives: number): string[] {
 /** "1 Badewanne", "900 Badewannen": the rounded figure decides the form */
 function counted(value: number, singular: string, plural: string): string {
   const text = formatNumber(value)
-  return `${text} ${text === '1' ? singular : plural}`
+  return `${text}\u00A0${text === '1' ? singular : plural}`
 }
 
 function waterComparisons(liters: number): string[] {
@@ -168,7 +173,7 @@ function waterComparisons(liters: number): string[] {
   const pools = liters / 50_000 // Gartenpool 8 x 4 m
   if (pools >= 1) r.push(`${counted(pools, 'Gartenpool', 'Gartenpools')} voll Wasser`)
   if (bathtubs >= 1) r.push(`${counted(bathtubs, 'volle Badewanne', 'volle Badewannen')}`)
-  if (liters >= 1000) r.push(`${formatNumber(liters / 1000)} Tonnen Wasser, genug für ein kleines Dorf`)
+  if (liters >= 1000) r.push(`${formatNumber(liters / 1000)}\u00A0Tonnen Wasser, genug für ein kleines Dorf`)
   return r.slice(0, 2)
 }
 
@@ -180,7 +185,7 @@ function co2Comparisons(kg: number): string[] {
   const flights = kg / 618
   const carKm = kg / 0.23 // UBA TREMOD 2024: Pkw inkl. Vorkette, ca. 230 g CO2e pro Fahrzeug-km
   if (flights >= 1) r.push(`${formatNumber(flights)}× nach Mallorca und zurück fliegen`)
-  if (carKm >= 1) r.push(`${formatNumber(carKm)} km Autofahren`)
+  if (carKm >= 1) r.push(`${formatNumber(carKm)}\u00A0km Autofahren`)
   return r.slice(0, 2)
 }
 
@@ -198,10 +203,17 @@ function landComparisons(m2: number): string[] {
 /** Card order, labels and the daily rate behind each, shared by the period cards and the board */
 const metrics: readonly { key: MetricKey; icon: string; label: string; shortLabel: string; unit: string; perDay: string }[] = [
   { key: 'lives', icon: '🐾', label: 'Landtiere gerettet', shortLabel: 'Landtiere', unit: '', perDay: '' },
-  { key: 'water', icon: '💧', label: 'Wasser gespart', shortLabel: 'Wasser', unit: ' L', perDay: `${formatNumber(DAILY_WATER_L)} Liter am Tag` },
-  { key: 'co2', icon: '🌿', label: 'CO₂ vermieden', shortLabel: 'CO₂', unit: ' kg', perDay: `${formatNumber(DAILY_CO2_KG, 2)} Kilogramm am Tag` },
-  { key: 'land', icon: '🌾', label: 'Land geschont', shortLabel: 'Land', unit: ' m²', perDay: `${formatNumber(DAILY_LAND_M2, 2)} Quadratmeter am Tag` },
+  { key: 'water', icon: '💧', label: 'Wasser gespart', shortLabel: 'Wasser', unit: '\u00A0L', perDay: `${formatNumber(DAILY_WATER_L)}\u00A0Liter am Tag` },
+  { key: 'co2', icon: '🌿', label: 'CO₂ vermieden', shortLabel: 'CO₂', unit: '\u00A0kg', perDay: `${formatNumber(DAILY_CO2_KG, 2)}\u00A0Kilogramm am Tag` },
+  { key: 'land', icon: '🌾', label: 'Land geschont', shortLabel: 'Land', unit: '\u00A0m²', perDay: `${formatNumber(DAILY_LAND_M2, 2)}\u00A0Quadratmeter am Tag` },
 ]
+
+/** The longest figure of a set in characters, its unit counted at the half size it is set in. The cards size their figures from it (container query units), so every figure of a row has the same size and none leaves its card. */
+function figureChars(impact: Record<MetricKey, Metric>): number {
+  return Math.max(...metrics.map((metric) => impact[metric.key].value.length + metric.unit.length / 2))
+}
+const activeFigureChars = computed(() => figureChars(activeImpactData.value))
+const personalFigureChars = computed(() => figureChars(personalImpact.value))
 </script>
 
 <template>
@@ -218,31 +230,31 @@ const metrics: readonly { key: MetricKey; icon: string; label: string; shortLabe
         </div>
         <div class="impact-tabs" role="group" aria-label="Zeitraum">
           <button
-            v-for="(item, i) in impactTimeline"
+            v-for="item in impactTimeline"
             :key="item.label"
             type="button"
             class="impact-tab"
-            :class="{ 'impact-tab--active': activeImpact === i }"
-            :aria-pressed="activeImpact === i"
-            @click="activeImpact = i"
+            :class="{ 'impact-tab--active': activeItem.days === item.days }"
+            :aria-pressed="activeItem.days === item.days"
+            @click="activeItem = item"
           >
             {{ item.label }}
           </button>
         </div>
       </div>
 
-      <div class="impact-cards">
+      <div class="impact-cards" :style="{ '--figure-chars': activeFigureChars }">
         <div
-          v-for="(metric, index) in metrics"
+          v-for="metric in metrics"
           :key="metric.key"
-          v-reveal="{ y: 24, duration: 0.45, delay: index * 0.07, amount: 0.3 }"
+          v-reveal="{ y: 24, duration: 0.45 }"
           class="impact-card"
           :class="`impact-card--${metric.key}`"
         >
           <span class="impact-card-icon" aria-hidden="true">{{ metric.icon }}</span>
           <span class="impact-card-value">{{ activeImpactData[metric.key].value }}<span v-if="metric.unit" class="impact-card-unit">{{ metric.unit }}</span></span>
           <span class="impact-card-label">{{ metric.label }}</span>
-          <span v-if="metric.key === 'lives'" class="impact-card-extra">dazu ≈ {{ activeImpactData.fish.value }} Fische (geschätzt)</span>
+          <span v-if="metric.key === 'lives'" class="impact-card-extra">dazu ≈&nbsp;{{ activeImpactData.fish.value }}&nbsp;Fische (geschätzt)</span>
           <span v-else class="impact-card-extra">{{ metric.perDay }}</span>
           <ul class="impact-card-comparisons">
             <li v-for="c in activeImpactData[metric.key].comparisons" :key="c">{{ c }}</li>
@@ -252,7 +264,7 @@ const metrics: readonly { key: MetricKey; icon: string; label: string; shortLabe
 
       <!-- Personal tracker -->
       <div
-        v-reveal="{ y: 24, duration: 0.5, amount: 0.3 }"
+        v-reveal="{ y: 24, duration: 0.5 }"
         class="personal"
       >
         <div v-if="!hasPersonalDate" class="personal-intro">
@@ -271,7 +283,7 @@ const metrics: readonly { key: MetricKey; icon: string; label: string; shortLabe
                 Du lebst seit <strong>{{ formattedDuration }}</strong> vegan.
               </p>
               <p class="personal-since">
-                <template v-if="personalSinceLabel">Seit dem {{ personalSinceLabel }} · </template>{{ formatNumber(daysSinceVegan) }} {{ daysSinceVegan === 1 ? 'Tag' : 'Tage' }} ·
+                <template v-if="personalSinceLabel">Seit dem {{ personalSinceLabel }} · </template>{{ formatNumber(daysSinceVegan) }}&nbsp;{{ daysSinceVegan === 1 ? 'Tag' : 'Tage' }} ·
                 <button type="button" class="personal-reset" @click="openTrackerModal">ändern</button>
               </p>
             </div>
@@ -282,19 +294,19 @@ const metrics: readonly { key: MetricKey; icon: string; label: string; shortLabe
                 <circle class="personal-ring-fill" cx="66" cy="66" r="58" :stroke-dasharray="RING_LENGTH" :stroke-dashoffset="personalRing.dashOffset" />
               </svg>
               <span class="personal-ring-text">
-                <strong>{{ personalRing.percent }} %</strong>
-                <span>bis {{ personalRing.nextYear }} {{ personalRing.nextYear === 1 ? 'Jahr' : 'Jahre' }}</span>
+                <strong>{{ personalRing.percent }}&nbsp;%</strong>
+                <span>bis {{ personalRing.nextYear }}&nbsp;{{ personalRing.nextYear === 1 ? 'Jahr' : 'Jahre' }}</span>
               </span>
             </div>
           </div>
 
-          <div class="personal-stats">
+          <div class="personal-stats" :style="{ '--figure-chars': personalFigureChars }">
             <div v-for="metric in metrics" :key="metric.key" class="personal-stat">
               <span class="personal-stat-icon" aria-hidden="true">{{ metric.icon }}</span>
               <span class="personal-impact-value" :class="`personal-impact-value--${metric.key}`">{{ personalImpact[metric.key].value }}<span v-if="metric.unit" class="personal-impact-unit">{{ metric.unit }}</span></span>
               <span class="personal-stat-label">{{ metric.shortLabel }}</span>
-              <span v-if="metric.key === 'lives'" class="personal-stat-extra">dazu ≈ {{ personalImpact.fish.value }} Fische (geschätzt)</span>
-              <span v-else class="personal-stat-extra">≈ {{ personalImpact[metric.key].comparisons[0] }}</span>
+              <span v-if="metric.key === 'lives'" class="personal-stat-extra">dazu ≈&nbsp;{{ personalImpact.fish.value }}&nbsp;Fische (geschätzt)</span>
+              <span v-else class="personal-stat-extra">≈&nbsp;{{ personalImpact[metric.key].comparisons[0] }}</span>
             </div>
           </div>
 
@@ -420,8 +432,10 @@ const metrics: readonly { key: MetricKey; icon: string; label: string; shortLabe
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
 }
-.impact-tab:hover {
-  background: rgba(20, 54, 31, 0.08);
+@media (hover: hover) {
+  .impact-tab:hover {
+    background: rgba(20, 54, 31, 0.08);
+  }
 }
 .impact-tab--active,
 .impact-tab--active:hover {
@@ -447,11 +461,14 @@ const metrics: readonly { key: MetricKey; icon: string; label: string; shortLabe
   background: #fff;
   border: 1.5px solid rgba(20, 54, 31, 0.08);
   border-radius: 24px;
+  container-type: inline-size;
   transition: transform 0.3s, box-shadow 0.3s;
 }
-.impact-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 18px 40px rgba(20, 54, 31, 0.1);
+@media (hover: hover) {
+  .impact-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 18px 40px rgba(20, 54, 31, 0.1);
+  }
 }
 .impact-card-icon {
   font-size: 1.6rem;
@@ -459,7 +476,8 @@ const metrics: readonly { key: MetricKey; icon: string; label: string; shortLabe
 }
 .impact-card-value {
   font-family: var(--font-display);
-  font-size: clamp(1.6rem, 2.4vw, 2.4rem);
+  /* --figure-chars: the longest figure of the row; a digit of this face is 0.74em wide, separators and the half-size unit less */
+  font-size: min(clamp(1.6rem, 2.4vw, 2.4rem), calc(100cqi / (var(--figure-chars, 6) * 0.74)));
   font-weight: 800;
   letter-spacing: -0.04em;
   line-height: 1;
@@ -567,13 +585,16 @@ const metrics: readonly { key: MetricKey; icon: string; label: string; shortLabe
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+  min-height: 44px;
   cursor: pointer;
   transition: transform 0.15s, box-shadow 0.15s;
 }
-.personal-open-btn:hover,
-.vt-modal-btn--save:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 22px rgba(255, 106, 61, 0.35);
+@media (hover: hover) {
+  .personal-open-btn:hover,
+  .vt-modal-btn--save:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 22px rgba(255, 106, 61, 0.35);
+  }
 }
 .personal-open-btn:focus-visible {
   outline: 2px solid var(--brand-cream);
@@ -608,7 +629,9 @@ const metrics: readonly { key: MetricKey; icon: string; label: string; shortLabe
   font-variant-numeric: tabular-nums;
 }
 .personal-reset {
-  padding: 0;
+  /* The padding makes the inline link a full finger wide, the negative margin keeps the line as it was */
+  padding: 0.7rem 0.4rem;
+  margin: -0.7rem -0.4rem;
   border: none;
   background: transparent;
   color: var(--brand-cream);
@@ -617,8 +640,10 @@ const metrics: readonly { key: MetricKey; icon: string; label: string; shortLabe
   text-underline-offset: 3px;
   cursor: pointer;
 }
-.personal-reset:hover {
-  color: #ffb37a;
+@media (hover: hover) {
+  .personal-reset:hover {
+    color: #ffb37a;
+  }
 }
 .personal-ring {
   position: relative;
@@ -677,13 +702,14 @@ const metrics: readonly { key: MetricKey; icon: string; label: string; shortLabe
   gap: 0.35rem;
   padding: 1.75rem 2rem;
   background: var(--brand-green);
+  container-type: inline-size;
 }
 .personal-stat-icon {
   font-size: 1.35rem;
 }
 .personal-impact-value {
   font-family: var(--font-display);
-  font-size: clamp(1.5rem, 2.4vw, 2.1rem);
+  font-size: min(clamp(1.5rem, 2.4vw, 2.1rem), calc(100cqi / (var(--figure-chars, 6) * 0.74)));
   font-weight: 800;
   letter-spacing: -0.04em;
   line-height: 1;
@@ -725,8 +751,9 @@ const metrics: readonly { key: MetricKey; icon: string; label: string; shortLabe
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  height: 34px;
-  padding: 0 0.8rem;
+  min-height: 34px;
+  padding: 0.35rem 0.8rem;
+  line-height: 1.3;
   border-radius: 999px;
   font-size: 0.82rem;
   font-weight: 700;
@@ -772,7 +799,6 @@ const metrics: readonly { key: MetricKey; icon: string; label: string; shortLabe
   cursor: pointer;
   transition: background 0.15s;
 }
-.personal-share-btn:hover,
 .personal-share-btn:focus-visible {
   background: rgba(246, 241, 231, 0.16);
   color: var(--brand-cream);
@@ -780,6 +806,13 @@ const metrics: readonly { key: MetricKey; icon: string; label: string; shortLabe
 }
 .personal-share-btn--copy {
   border-color: var(--brand-accent);
+}
+@media (hover: hover) {
+  .personal-share-btn:hover {
+    background: rgba(246, 241, 231, 0.16);
+    color: var(--brand-cream);
+    text-decoration: none;
+  }
 }
 
 /* Modal: native <dialog>, the UA centers it in the top layer */
@@ -791,6 +824,10 @@ const metrics: readonly { key: MetricKey; icon: string; label: string; shortLabe
   border-radius: 24px;
   max-width: 400px;
   width: calc(100% - 2rem);
+  /* Small screens and an open keyboard: the dialog scrolls inside instead of leaving the screen */
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.3);
   text-align: center;
 }
@@ -818,8 +855,8 @@ const metrics: readonly { key: MetricKey; icon: string; label: string; shortLabe
   position: absolute;
   top: 0.75rem;
   right: 1rem;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -832,9 +869,11 @@ const metrics: readonly { key: MetricKey; icon: string; label: string; shortLabe
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
 }
-.vt-modal-close:hover {
-  background: rgba(20, 54, 31, 0.08);
-  color: var(--brand-green);
+@media (hover: hover) {
+  .vt-modal-close:hover {
+    background: rgba(20, 54, 31, 0.08);
+    color: var(--brand-green);
+  }
 }
 .vt-modal-emoji {
   font-size: 3rem;
@@ -878,6 +917,7 @@ const metrics: readonly { key: MetricKey; icon: string; label: string; shortLabe
   margin-top: 1.5rem;
 }
 .vt-modal-btn {
+  min-height: 44px;
   font: inherit;
   cursor: pointer;
 }
@@ -896,8 +936,10 @@ const metrics: readonly { key: MetricKey; icon: string; label: string; shortLabe
   letter-spacing: 0.12em;
   text-transform: uppercase;
 }
-.vt-modal-btn--reset:hover {
-  background: rgba(231, 76, 60, 0.08);
+@media (hover: hover) {
+  .vt-modal-btn--reset:hover {
+    background: rgba(231, 76, 60, 0.08);
+  }
 }
 
 @media (max-width: 991px) {
@@ -907,14 +949,16 @@ const metrics: readonly { key: MetricKey; icon: string; label: string; shortLabe
   }
 }
 @media (max-width: 767px) {
+  /* Seven periods on two full rows: four on the first, three that share the second */
   .impact-tabs {
     width: 100%;
-    justify-content: center;
-    border-radius: 18px;
+    border-radius: 24px;
   }
   .impact-tab {
-    padding: 7px 11px;
-    font-size: 0.74rem;
+    flex: 1 1 22%;
+    min-height: 44px;
+    padding: 0 0.5rem;
+    font-size: 0.8rem;
   }
   .impact-card {
     padding: 1.1rem 1.1rem 1rem;
@@ -941,6 +985,15 @@ const metrics: readonly { key: MetricKey; icon: string; label: string; shortLabe
   }
   .personal-share {
     padding: 1rem 1.5rem 1.75rem;
+  }
+  .personal-share-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+  .personal-share-btn {
+    justify-content: center;
+    min-height: 44px;
   }
   .vt-modal {
     border-radius: 18px;

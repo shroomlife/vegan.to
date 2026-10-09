@@ -29,14 +29,14 @@ const rows = topicGroups.map((group) => ({
       <span class="chapter">Wie es dazu kam</span>
       <h2 class="chapter-title">Das war nicht immer so.</h2>
       <p class="chapter-lead">
-        {{ firstPoint.year }} wurden weltweit {{ formatNumber(firstPoint.billions, 2) }} Milliarden Landtiere geschlachtet,
-        {{ lastPoint.year }} waren es {{ formatNumber(lastPoint.billions, 1) }} Milliarden. Dazwischen liegen Vereine, Gesetze,
+        {{ firstPoint.year }} wurden weltweit {{ formatNumber(firstPoint.billions, 2) }}&nbsp;Milliarden Landtiere geschlachtet,
+        {{ lastPoint.year }} waren es {{ formatNumber(lastPoint.billions, 1) }}&nbsp;Milliarden. Dazwischen liegen Vereine, Gesetze,
         Verbote und Urteile, die den Tieren Schritt für Schritt Schutz gaben. Die Zeitreise erzählt, wie beides zusammenpasst.
         Elf weitere Seiten erklären die Zahlen dahinter.
       </p>
 
       <RouterLink
-        v-reveal="{ y: 32, duration: 0.6, amount: 0.25 }"
+        v-reveal="{ y: 32, duration: 0.6 }"
         :to="timeline.path"
         class="timeline-feature"
       >
@@ -53,12 +53,12 @@ const rows = topicGroups.map((group) => ({
           <span class="timeline-feature-numbers" aria-label="Weltweit geschlachtete Landtiere pro Jahr">
             <span class="timeline-feature-number">
               <span class="timeline-feature-year">{{ firstPoint.year }}</span>
-              <span class="timeline-feature-value">{{ formatNumber(firstPoint.billions, 2) }} Mrd.</span>
+              <span class="timeline-feature-value">{{ formatNumber(firstPoint.billions, 2) }}&nbsp;Mrd.</span>
             </span>
             <span class="timeline-feature-arrow" aria-hidden="true"></span>
             <span class="timeline-feature-number">
               <span class="timeline-feature-year">{{ lastPoint.year }}</span>
-              <span class="timeline-feature-value">{{ formatNumber(lastPoint.billions, 1) }} Mrd.</span>
+              <span class="timeline-feature-value">{{ formatNumber(lastPoint.billions, 1) }}&nbsp;Mrd.</span>
             </span>
           </span>
           <span class="timeline-feature-note">Landtiere, die weltweit in einem Jahr geschlachtet werden. Mit Quellen zu jeder Station.</span>
@@ -72,9 +72,9 @@ const rows = topicGroups.map((group) => ({
           <p class="topic-row-lead">{{ row.lead }}</p>
         </div>
         <ul class="topic-grid" :style="{ '--columns': row.topics.length }">
-          <li v-for="(topic, index) in row.topics" :key="topic.path">
+          <li v-for="topic in row.topics" :key="topic.path">
             <RouterLink
-              v-reveal="{ y: 24, duration: 0.45, delay: index * 0.07, amount: 0.3 }"
+              v-reveal="{ y: 24, duration: 0.45 }"
               :to="topic.path"
               class="topic-card"
             >
@@ -115,12 +115,31 @@ const rows = topicGroups.map((group) => ({
 .timeline-feature:focus-visible {
   color: var(--brand-cream);
   text-decoration: none;
-  transform: translateY(-3px);
-  box-shadow: 0 24px 60px rgba(14, 33, 20, 0.35);
 }
 .timeline-feature:focus-visible {
+  transform: translateY(-3px);
+  box-shadow: 0 24px 60px rgba(14, 33, 20, 0.35);
   outline: 3px solid var(--brand-accent);
   outline-offset: 3px;
+}
+/* The lift only where a pointer hovers; on touch it would stick after the tap */
+@media (hover: hover) {
+  .timeline-feature:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 24px 60px rgba(14, 33, 20, 0.35);
+  }
+  .timeline-feature:hover .timeline-feature-picture :deep(img) {
+    transform: scale(1.08);
+  }
+  .timeline-feature:hover .timeline-feature-cta {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(255, 106, 61, 0.4);
+  }
+  .topic-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--row-colour);
+    box-shadow: 0 16px 40px rgba(20, 54, 31, 0.1);
+  }
 }
 .timeline-feature-picture,
 .timeline-feature-picture :deep(img) {
@@ -134,9 +153,6 @@ const rows = topicGroups.map((group) => ({
   object-position: 68% 50%;
   transform: scale(1.02);
   transition: transform 6s ease-out;
-}
-.timeline-feature:hover .timeline-feature-picture :deep(img) {
-  transform: scale(1.08);
 }
 .timeline-feature-shade {
   position: absolute;
@@ -191,6 +207,7 @@ const rows = topicGroups.map((group) => ({
 }
 .timeline-feature-value {
   font-family: var(--font-display);
+  white-space: nowrap;
   font-weight: 700;
   font-size: clamp(1.4rem, 2.6vw, 2rem);
   letter-spacing: -0.03em;
@@ -226,10 +243,6 @@ const rows = topicGroups.map((group) => ({
   letter-spacing: 0.1em;
   text-transform: uppercase;
   transition: transform 0.15s, box-shadow 0.15s;
-}
-.timeline-feature:hover .timeline-feature-cta {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 24px rgba(255, 106, 61, 0.4);
 }
 
 /* The three rows: title and lead on the left, cards on the right */
@@ -313,11 +326,13 @@ const rows = topicGroups.map((group) => ({
 }
 .topic-card:hover,
 .topic-card:focus-visible {
+  color: var(--brand-green);
+  text-decoration: none;
+}
+.topic-card:focus-visible {
   transform: translateY(-3px);
   border-color: var(--row-colour);
   box-shadow: 0 16px 40px rgba(20, 54, 31, 0.1);
-  color: var(--brand-green);
-  text-decoration: none;
 }
 .topic-card-figure {
   font-family: var(--font-display);
@@ -404,8 +419,50 @@ const rows = topicGroups.map((group) => ({
   .timeline-feature-cta {
     margin-top: 0.5rem;
   }
+  /* Both figures and the rail share one line; the rail gives way first */
+  .timeline-feature-numbers {
+    align-self: stretch;
+    gap: 0.75rem;
+  }
+  .timeline-feature-value {
+    font-size: clamp(1.15rem, 5.6vw, 1.4rem);
+  }
+  .timeline-feature-arrow {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 24px;
+    max-width: 72px;
+  }
   .topic-grid {
     grid-template-columns: 1fr;
+    gap: 0.6rem;
+  }
+  /* A compact row per topic: the icon on the left, figure and words on the right */
+  .topic-card {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: 0.9rem;
+    align-content: start;
+    padding: 1rem 1.1rem;
+    border-radius: 18px;
+  }
+  .topic-card-icon {
+    grid-row: 1 / span 4;
+    width: 44px;
+    height: 44px;
+    margin-bottom: 0;
+  }
+  .topic-card-figure {
+    font-size: 1.3rem;
+  }
+  .topic-card-label {
+    margin-top: 0.55rem;
+    padding-top: 0;
+    border-top: none;
+  }
+  .topic-card-teaser {
+    margin-top: 0.2rem;
+    font-size: 0.86rem;
   }
 }
 </style>

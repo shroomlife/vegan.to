@@ -21,13 +21,13 @@ const cattleBars = thirdCountryExports.map((entry) => ({ label: String(entry.yea
 const pigBars = thirdCountryExports.map((entry) => ({ label: String(entry.year), value: entry.pigs }))
 
 const rules = [
-  ['Grundregel für Rinder, Schweine, Schafe, Ziegen und Pferde', '8 Stunden'],
-  ['Kälber, Lämmer, Zicklein, Fohlen und Ferkel, die noch Milch bekommen', '9 Stunden, 1 Stunde Pause, weitere 9 Stunden'],
-  ['Schweine', '24 Stunden, mit ständigem Zugang zu Wasser'],
-  ['Pferde', '24 Stunden, alle 8 Stunden tränken'],
-  ['Rinder, Schafe und Ziegen', '14 Stunden, 1 Stunde Pause, weitere 14 Stunden'],
-  ['Verlängerung', 'im Interesse der Tiere um 2 Stunden'],
-  ['Danach','abladen, füttern, tränken und mindestens 24 Stunden Ruhe'],
+  ['Grundregel für Rinder, Schweine, Schafe, Ziegen und Pferde', '8\u00A0Stunden'],
+  ['Kälber, Lämmer, Zicklein, Fohlen und Ferkel, die noch Milch bekommen', '9\u00A0Stunden, 1\u00A0Stunde Pause, weitere 9\u00A0Stunden'],
+  ['Schweine', '24\u00A0Stunden, mit ständigem Zugang zu Wasser'],
+  ['Pferde', '24\u00A0Stunden, alle 8\u00A0Stunden tränken'],
+  ['Rinder, Schafe und Ziegen', '14\u00A0Stunden, 1\u00A0Stunde Pause, weitere 14\u00A0Stunden'],
+  ['Verlängerung', 'im Interesse der Tiere um 2\u00A0Stunden'],
+  ['Danach','abladen, füttern, tränken und mindestens 24\u00A0Stunden Ruhe'],
 ]
 
 const brightSpots = [
@@ -67,7 +67,7 @@ const answers = [
 <template>
   <ContentPage
     kicker="Tiertransporte · EU-Recht und Bundestag"
-    title="Bis zu 28 Stunden Fahrt."
+    title="Bis zu 28&nbsp;Stunden Fahrt."
     lead="So lange dürfen Rinder nach EU-Recht fahren, mit nur einer Stunde Pause nach 14 Stunden und 24 Stunden Ruhe danach; Schweine dürfen bis zu 24 Stunden am Stück unterwegs sein. Die gute Nachricht: Lebende Tiere in Länder außerhalb der EU, sogenannte Drittstaaten, exportiert Deutschland immer weniger."
     :crumbs="[{ label: 'vegan.to', to: '/' }, { label: topic.label }]"
   >

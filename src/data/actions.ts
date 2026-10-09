@@ -82,8 +82,8 @@ export interface EntryStep {
 export const entrySteps: readonly EntryStep[] = [
   { label: 'Eine Mahlzeit heute', hint: 'Ein Gericht, das du schon kennst, einmal ohne Tier' },
   { label: 'Ein Tag pro Woche', hint: 'Fester Tag, feste Gewohnheit, kein Druck an den anderen' },
-  { label: '22 Tage mit Begleitung', hint: 'Challenge 22, kostenlos, mit Mentor*innen', url: 'https://www.challenge22.com/' },
-  { label: 'Veganuary mit Community', hint: '31 Tage, Rezepte und Leute, die gerade dasselbe ausprobieren', url: 'https://veganuary.com/de/' },
+  { label: '22\u00A0Tage mit Begleitung', hint: 'Challenge\u00A022, kostenlos, mit Mentor*innen', url: 'https://www.challenge22.com/' },
+  { label: 'Veganuary mit Community', hint: '31\u00A0Tage, Rezepte und Leute, die gerade dasselbe ausprobieren', url: 'https://veganuary.com/de/' },
 ]
 
 export interface ActionLink {
@@ -105,8 +105,8 @@ export const actionCategories: readonly ActionCategory[] = [
     title: 'Einfach anfangen',
     description: 'Ein perfekter Plan ist nicht nötig. Eine Challenge gibt Struktur, und du bist nicht allein damit.',
     links: [
-      { name: 'Veganuary', url: 'https://veganuary.com/de/', description: '31 Tage vegan, mit Rezepten und Leuten, die gerade dasselbe ausprobieren' },
-      { name: 'Challenge 22', url: 'https://www.challenge22.com/', description: '22 Tage mit persönlicher Begleitung, kostenlos' },
+      { name: 'Veganuary', url: 'https://veganuary.com/de/', description: '31\u00A0Tage vegan, mit Rezepten und Leuten, die gerade dasselbe ausprobieren' },
+      { name: 'Challenge 22', url: 'https://www.challenge22.com/', description: '22\u00A0Tage mit persönlicher Begleitung, kostenlos' },
       { name: 'ProVeg', url: 'https://proveg.org/de/', description: 'Deutschlands größte Organisation für pflanzliche Ernährung' },
     ],
   },
@@ -166,7 +166,7 @@ export const actionCategories: readonly ActionCategory[] = [
       {
         name: 'Zucker&Jagdwurst',
         url: 'https://www.zuckerjagdwurst.com/de',
-        description: 'Veganer Foodblog aus Berlin, Rezepte filterbar nach Zeit, viele unter 20 Minuten',
+        description: 'Veganer Foodblog aus Berlin, Rezepte filterbar nach Zeit, viele unter 20\u00A0Minuten',
       },
       {
         name: 'Verbraucherzentrale',

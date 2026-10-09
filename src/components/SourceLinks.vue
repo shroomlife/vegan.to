@@ -46,28 +46,29 @@ const notes = computed(() => {
 </template>
 
 <style scoped>
-/* The numbers: small pills at the end of the text, no line of their own */
+/* The numbers: small pills at the end of the text, no line of their own. Plain inline boxes on purpose: an inline-block or inline-flex box is a break opportunity of its own, so the pills could wrap onto a line without the last word. Inline, they stick to the word they follow (the templates write them without a space). */
 .source-notes {
-  display: inline-flex;
-  gap: 3px;
   margin-left: 4px;
   font-size: 0;
   line-height: 0;
   vertical-align: 4px;
 }
 .source-note {
-  display: inline-block;
-  padding: 2px 7px;
+  /* 24px tall with the padding: the minimum touch target (WCAG 2.5.8) */
+  padding: 5px 8px;
   border-radius: 999px;
   background: rgba(255, 106, 61, 0.14);
   font-family: 'Lato', sans-serif;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
-  line-height: 1.3;
+  line-height: 1.2;
   color: var(--brand-accent-text);
   text-decoration: none;
   font-variant-numeric: tabular-nums;
   transition: background-color 0.2s, color 0.2s;
+}
+.source-note + .source-note {
+  margin-left: 4px;
 }
 .source-note:hover,
 .source-note:focus-visible {

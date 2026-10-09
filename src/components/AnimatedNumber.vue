@@ -1,25 +1,19 @@
 <script setup lang="ts">
-import { computed, useTemplateRef } from 'vue'
-import { useElementVisibility, useTransition, TransitionPresets } from '@vueuse/core'
+import { useTemplateRef } from 'vue'
+import { useElementVisibility } from '@vueuse/core'
 import { formatNumber } from '@/utils/formatNumber'
+import { useEasedNumber } from '@/composables/useEasedNumber'
 
 const props = defineProps<{
   value: number
   duration?: number
 }>()
 
-const source = computed(() => props.value)
 const el = useTemplateRef<HTMLElement>('el')
-/* Off screen the number simply follows its source; nobody sees the easing and every tick stays cheap */
 const visible = useElementVisibility(el)
-
-const animated = useTransition(source, {
-  duration: props.duration ?? 369,
-  transition: TransitionPresets.easeOutCubic,
-  disabled: computed(() => !visible.value),
-})
+const shown = useEasedNumber(() => props.value, visible, props.duration)
 </script>
 
 <template>
-  <span ref="el">{{ formatNumber(animated) }}</span>
+  <span ref="el">{{ formatNumber(shown) }}</span>
 </template>

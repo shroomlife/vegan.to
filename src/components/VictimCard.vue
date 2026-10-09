@@ -25,7 +25,7 @@ const livedPercent = computed(() => {
 const rowNote = computed(() => {
   const parts: string[] = []
   if (!props.victim.age) parts.push('Alter unbekannt')
-  if (props.victim.lifespanYears) parts.push(`bis zu ${props.victim.lifespanYears} Jahre möglich`)
+  if (props.victim.lifespanYears) parts.push(`bis zu ${props.victim.lifespanYears}\u00A0Jahre möglich`)
   return parts.join(' · ')
 })
 </script>
@@ -50,7 +50,7 @@ const rowNote = computed(() => {
       <span v-if="variant === 'row'">{{ rowNote }}</span>
       <template v-else>
         <span v-if="victim.age" class="victim-card-lived">{{ victim.age }} gelebt</span>
-        <span v-if="victim.lifespanYears">bis zu {{ victim.lifespanYears }} Jahre möglich</span>
+        <span v-if="victim.lifespanYears">bis zu {{ victim.lifespanYears }}&nbsp;Jahre möglich</span>
       </template>
     </div>
   </div>

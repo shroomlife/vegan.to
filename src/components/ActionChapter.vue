@@ -15,7 +15,7 @@ import ClipVideo from '@/components/ClipVideo.vue'
           Deine nächste Mahlzeit zählt mit.
         </h2>
         <div
-          v-reveal="{ y: 16, duration: 0.5, delay: 0.1 }"
+          v-reveal="{ y: 16, duration: 0.5 }"
           class="action-intro"
         >
           <p>
@@ -29,14 +29,14 @@ import ClipVideo from '@/components/ClipVideo.vue'
           </p>
         </div>
       </div>
-      <figure v-reveal="{ y: 24, duration: 0.6, amount: 0.3 }" class="action-figure">
+      <figure v-reveal="{ y: 24, duration: 0.6 }" class="action-figure">
         <ClipVideo folder="start" name="mahlzeit" :widths="[1168, 720]" label="Zwei Hände halten ein gelbes Küken im Abendlicht, KI-generiert" note="KI-generiert" class="action-clip" />
         <figcaption>Es liegt in deiner Hand. Jede Mahlzeit.</figcaption>
       </figure>
 
       <!-- The main hand-off: Veganstart, one block, one button -->
       <a
-        v-reveal="{ y: 24, duration: 0.5, amount: 0.3 }"
+        v-reveal="{ y: 24, duration: 0.5 }"
         :href="handOffUrl('mach-mit')"
         target="_blank"
         rel="noopener"
@@ -91,9 +91,9 @@ import ClipVideo from '@/components/ClipVideo.vue'
 
       <div class="action-grid">
         <article
-          v-for="(category, index) in actionCategories"
+          v-for="category in actionCategories"
           :key="category.title"
-          v-reveal="{ y: 24, duration: 0.45, delay: index * 0.07, amount: 0.2 }"
+          v-reveal="{ y: 24, duration: 0.45 }"
           class="action-category"
         >
           <h3 class="action-category-title">
@@ -186,12 +186,12 @@ import ClipVideo from '@/components/ClipVideo.vue'
 }
 .hand-off:hover,
 .hand-off:focus-visible {
-  transform: translateY(-3px);
-  box-shadow: 0 40px 80px rgba(20, 54, 31, 0.3);
   color: var(--brand-cream);
   text-decoration: none;
 }
 .hand-off:focus-visible {
+  transform: translateY(-3px);
+  box-shadow: 0 40px 80px rgba(20, 54, 31, 0.3);
   outline: 2px solid var(--brand-accent);
   outline-offset: 4px;
 }
@@ -236,8 +236,15 @@ import ClipVideo from '@/components/ClipVideo.vue'
   box-shadow: 0 16px 40px rgba(255, 106, 61, 0.35);
   transition: transform 0.15s;
 }
-.hand-off:hover .cta-button {
-  transform: translateY(-2px);
+/* Lifts only where a pointer hovers; on touch they would stick after the tap */
+@media (hover: hover) {
+  .hand-off:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 40px 80px rgba(20, 54, 31, 0.3);
+  }
+  .hand-off:hover .cta-button {
+    transform: translateY(-2px);
+  }
 }
 /* The three questions, one small line under the block */
 .why-how {
@@ -292,6 +299,7 @@ import ClipVideo from '@/components/ClipVideo.vue'
   padding: 0;
 }
 .entry-step {
+  position: relative;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   grid-template-rows: auto auto;
@@ -324,6 +332,12 @@ a.entry-step-label:hover,
 a.entry-step-label:focus-visible {
   color: var(--brand-accent-text);
   text-decoration: underline;
+}
+/* A linked step is a link from edge to edge, not only on its label */
+a.entry-step-label::after {
+  content: '';
+  position: absolute;
+  inset: 0;
 }
 .entry-step-hint {
   font-size: 0.8rem;
@@ -370,11 +384,17 @@ a.entry-step-label:focus-visible {
   text-decoration: none;
   transition: background 0.15s;
 }
-.action-link:hover,
 .action-link:focus-visible {
   background: var(--brand-mint);
   color: var(--brand-ink);
   text-decoration: none;
+}
+@media (hover: hover) {
+  .action-link:hover {
+    background: var(--brand-mint);
+    color: var(--brand-ink);
+    text-decoration: none;
+  }
 }
 .action-link-name {
   display: block;
@@ -409,14 +429,44 @@ a.entry-step-label:focus-visible {
   }
 }
 @media (max-width: 767px) {
-  .why-how,
   .action-grid,
-  .entry-steps,
-  .motivation {
+  .entry-steps {
     grid-template-columns: 1fr;
   }
+  /* The clip a little taller, so the caption does not cover the hands */
+  .action-clip {
+    aspect-ratio: 16 / 10;
+  }
+  .action-figure figcaption {
+    right: 1.25rem;
+    font-size: 1rem;
+    text-wrap: balance;
+  }
+  /* The small links get a finger-sized target; inline padding leaves the line as it is */
+  .why-how {
+    line-height: 1.9;
+  }
+  .why-how-link {
+    padding: 0.6rem 0;
+  }
+  /* Three figures as three short rows: the figure on the left, its words beside it */
   .motivation {
-    gap: 1.25rem;
+    grid-template-columns: 1fr;
+    gap: 0.9rem;
+    margin: 2rem 0;
+  }
+  .motivation-fact {
+    display: grid;
+    grid-template-columns: 5.5rem minmax(0, 1fr);
+    align-items: center;
+    gap: 0.9rem;
+    text-align: left;
+  }
+  .motivation-number {
+    margin-bottom: 0;
+    font-size: 2rem;
+    text-align: right;
+    white-space: nowrap;
   }
   .hand-off {
     grid-template-columns: 1fr;

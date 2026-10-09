@@ -49,7 +49,7 @@ const partnerLinks = [
           </div>
         </div>
 
-        <nav class="site-footer-col" aria-label="Seite">
+        <nav class="site-footer-col site-footer-col--list" aria-label="Seite">
           <h2 class="site-footer-title">Seite</h2>
           <RouterLink v-for="link in siteLinks" :key="link.to" :to="link.to" custom v-slot="{ href, navigate, isExactActive }">
             <a
@@ -60,14 +60,14 @@ const partnerLinks = [
           </RouterLink>
         </nav>
 
-        <nav class="site-footer-col" aria-label="Tierarten">
+        <nav class="site-footer-col site-footer-col--list" aria-label="Tierarten">
           <h2 class="site-footer-title">Tierarten</h2>
           <RouterLink v-for="link in speciesLinks" :key="link.to" :to="link.to" custom v-slot="{ href, navigate, isExactActive }">
             <a :href="href" :aria-current="isExactActive ? 'page' : undefined" @click="navigate($event); onNavClick(link.to)">{{ link.label }}</a>
           </RouterLink>
         </nav>
 
-        <nav class="site-footer-col" aria-label="Hintergründe">
+        <nav class="site-footer-col site-footer-col--list" aria-label="Hintergründe">
           <h2 class="site-footer-title">Hintergründe</h2>
           <RouterLink v-for="link in topicPages" :key="link.path" :to="link.path" custom v-slot="{ href, navigate, isExactActive }">
             <a :href="href" :aria-current="isExactActive ? 'page' : undefined" @click="navigate($event); onNavClick(link.path)">{{ link.label }}</a>
@@ -225,13 +225,40 @@ const partnerLinks = [
 }
 @media (max-width: 767px) {
   .site-footer {
-    padding: 40px 18px 24px;
+    /* Room at the bottom for the counter pill and the back-to-top button floating over the corners */
+    padding: 40px 18px calc(80px + env(safe-area-inset-bottom));
   }
   .site-footer-inner {
     gap: 32px;
   }
   .site-footer-grid {
-    gap: 24px 16px;
+    gap: 28px 16px;
+  }
+  /* Taller rows instead of gaps: every link a 44 px touch target */
+  .site-footer-col {
+    gap: 0;
+  }
+  .site-footer-title {
+    margin-bottom: 4px;
+  }
+  .site-footer-col a,
+  .site-footer-consent {
+    padding-block: 10px;
+    line-height: 1.6;
+  }
+  .site-footer-version {
+    padding-top: 10px;
+  }
+  /* The long lists take the full width and split into two columns, so no column runs far below its neighbour */
+  .site-footer-col--list {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: 16px;
+    align-items: start;
+  }
+  .site-footer-col--list .site-footer-title {
+    grid-column: 1 / -1;
   }
   .site-footer-wordmark {
     font-size: 30px;

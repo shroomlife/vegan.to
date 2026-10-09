@@ -112,7 +112,7 @@ const brightSpots = [
 <template>
   <ContentPage
     :kicker="`Weltweit · FAO ${WORLD_YEAR}`"
-    :title="`Rund ${formatNumber(total / 1e9, 1)} Milliarden Landtiere im Jahr.`"
+    :title="`Rund ${formatNumber(total / 1e9, 1)}\u00A0Milliarden Landtiere im Jahr.`"
     :lead="`So viele Landtiere wurden ${WORLD_YEAR} weltweit für Fleisch geschlachtet, laut der Welternährungsorganisation FAO. Das sind rund ${formatNumber(perSecond)} in jeder Sekunde. Fische sind darin nicht enthalten. Zu ihnen steht mehr weiter unten.`"
     :crumbs="[{ label: 'vegan.to', to: '/' }, { label: topic.label }]"
   >
@@ -146,7 +146,7 @@ const brightSpots = [
       :sources="['faoQcl']"
     />
 
-    <h2>Zwanzig Jahre: plus {{ formatNumber(((total - total2004) / total2004) * 100) }} Prozent</h2>
+    <h2>Zwanzig Jahre: plus {{ formatNumber(((total - total2004) / total2004) * 100) }}&nbsp;Prozent</h2>
     <p>
       2004 wurden weltweit {{ formatCompact(total2004) }} Landtiere geschlachtet, {{ WORLD_YEAR }} waren es
       {{ formatCompact(total) }}. {{ formatNumber(chickenShareOfGrowth) }} Prozent dieses Zuwachses entfallen auf Hühner: Bei ihnen stieg die Zahl um
@@ -157,6 +157,7 @@ const brightSpots = [
       caption="Weltweit geschlachtete Tiere, die neun häufigsten Arten"
       :head="['Art', '2004', '2014', String(WORLD_YEAR), 'seit 2004']"
       :rows="trendRows"
+      layout="stack"
       :sources="['faoQcl']"
     />
 
@@ -169,7 +170,7 @@ const brightSpots = [
     <FigureGrid
       :items="[
         {
-          value: '1,1 bis 2,2 Billionen',
+          value: '1,1 bis 2,2\u00A0Billionen',
           label: 'wild gefangene Fische pro Jahr',
           note: `Mittel der Jahre ${worldFish.wild.period}. Das sind ${formatNumber(wildPerSecond.min)} bis ${formatNumber(wildPerSecond.max)} pro Sekunde. Ohne illegalen Fang, Rückwürfe und Geisternetze.`,
           sources: ['moodBrookeWild'],
@@ -242,7 +243,7 @@ const brightSpots = [
   line-height: 1.1;
   color: var(--brand-death-text);
   font-variant-numeric: tabular-nums;
-  overflow-wrap: anywhere;
+  white-space: nowrap;
 }
 .world-live-card--accent .world-live-value {
   color: var(--brand-accent);

@@ -163,7 +163,7 @@ const answers = [
   line-height: 1.55;
 }
 .compare-rule--de dt {
-  color: var(--brand-accent);
+  color: var(--brand-accent-text);
 }
 @media (max-width: 767px) {
   .compare-rule {

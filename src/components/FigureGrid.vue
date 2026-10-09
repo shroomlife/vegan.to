@@ -27,13 +27,15 @@ defineProps<{
 </template>
 
 <style scoped>
+/* Two cards side by side even on a 360px phone */
 .figure-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
   gap: 0.9rem;
   margin: 0 0 1.75rem;
 }
 .figure-grid-item {
+  container-type: inline-size;
   display: flex;
   flex-direction: column;
   padding: 1.15rem 1.25rem;
@@ -50,16 +52,17 @@ defineProps<{
   line-height: 1.4;
   color: var(--brand-green);
 }
+/* A figure breaks only between words ("10,9 bis 12,5 %" may break after "bis"), never inside a number. The cap of 13.5cqi keeps an eleven-character number such as "156.300.900" inside its card at any card width. */
 .figure-grid-value {
   order: 1;
   margin: 0;
   font-family: var(--font-display);
-  font-size: clamp(1.3rem, 2.6vw, 1.7rem);
+  font-size: min(clamp(1.3rem, 2.6vw, 1.7rem), 13.5cqi);
   letter-spacing: -0.03em;
   line-height: 1.1;
   color: var(--brand-death-text);
   font-variant-numeric: tabular-nums;
-  overflow-wrap: anywhere;
+  overflow-wrap: normal;
 }
 .figure-grid-note {
   order: 3;
@@ -71,5 +74,21 @@ defineProps<{
 .figure-grid-sources {
   order: 4;
   margin: 0.6rem 0 0;
+}
+@media (max-width: 767px) {
+  .figure-grid {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr));
+    gap: 0.6rem;
+  }
+  .figure-grid-item {
+    padding: 0.95rem 1rem;
+    border-radius: 16px;
+  }
+  .figure-grid-value {
+    font-size: min(clamp(1.05rem, 4.6vw, 1.35rem), 13.5cqi);
+  }
+  .figure-grid-label {
+    font-size: 0.78rem;
+  }
 }
 </style>

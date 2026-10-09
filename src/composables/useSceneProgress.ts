@@ -1,5 +1,6 @@
 import { onMounted, onUnmounted, reactive, readonly, ref } from 'vue'
 import { usePreferredReducedMotion } from '@vueuse/core'
+import { ENTER_LINE } from '@/utils/scroll'
 
 /**
  * How an element's progress is read from its place in the viewport.
@@ -9,8 +10,8 @@ import { usePreferredReducedMotion } from '@vueuse/core'
  *   in view when the page opens starts at once) and reaches 1 when the track's
  *   bottom edge meets the bottom of the viewport, the moment the stage unpins.
  *   An element no taller than the viewport falls back to `enter`.
- * - `enter`: an element that settles in: 0 once its top edge is 15 % up from
- *   the bottom of the viewport, 1 after at most half a viewport of scrolling.
+ * - `enter`: an element that settles in: 0 once its top edge crosses ENTER_LINE
+ *   (15 % up from the bottom of the viewport), 1 after at most half a viewport of scrolling.
  * - `pass`: the whole pass, for parallax: 0 as the top edge enters at the
  *   bottom, 1 as the bottom edge leaves at the top.
  */
@@ -44,7 +45,7 @@ export function useSceneProgress() {
     }
     const span = rect.height - viewport
     if (mode === 'enter' || span <= 0) {
-      return (viewport * 0.85 - rect.top) / Math.min(rect.height, viewport * 0.55)
+      return (viewport * ENTER_LINE - rect.top) / Math.min(rect.height, viewport * 0.55)
     }
     // How far above the viewport top the track may be before it counts as started: half a
     // viewport, or less for a track that sits that close to the top of the document

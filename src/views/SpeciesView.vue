@@ -55,6 +55,15 @@ const rhythm = computed(() => {
   return `eins alle ${formatNumber(seconds / 3600, 1)} Stunden`
 })
 
+/** Characters of the widest figure a live card reaches, today's at midnight and the year's on 31 December. The card sizes its type to fit them, so a figure never wraps and does not jump in size while it counts up. */
+const liveChars = computed(() => {
+  const prefix = raw.value?.estimate ? '≈ ' : ''
+  return {
+    day: `${prefix}${formatNumber(live.value?.perDay ?? 0)}`.length,
+    year: `${prefix}${formatNumber(raw.value?.deaths.year ?? 0)}`.length,
+  }
+})
+
 const trend = computed(() => (profile.value ? slaughterTrendBySpecies[profile.value.single] : undefined))
 /** Undefined for fish and for any series too short to draw */
 const trendFacts = computed(() => (trend.value ? trendSummary(trend.value) : undefined))
@@ -219,11 +228,11 @@ useJsonLd('species-breadcrumb', {
         </p>
 
         <div class="species-live">
-          <div class="species-live-card">
+          <div class="species-live-card" :style="{ '--figure-chars': liveChars.day }">
             <span class="species-live-value"><template v-if="raw.estimate">≈ </template><AnimatedNumber :value="live.currentDay" /></span>
             <span class="species-live-label">heute, seit Mitternacht</span>
           </div>
-          <div class="species-live-card">
+          <div class="species-live-card species-live-card--year" :style="{ '--figure-chars': liveChars.year }">
             <span class="species-live-value"><template v-if="raw.estimate">≈ </template><AnimatedNumber :value="live.currentYear" /></span>
             <span class="species-live-label">dieses Jahr</span>
           </div>
@@ -309,9 +318,9 @@ useJsonLd('species-breadcrumb', {
           <tbody>
             <tr v-for="child in live.children" :key="child.name">
               <th scope="row">{{ child.name }}</th>
-              <td>{{ child.currentDayFormatted }}</td>
-              <td>{{ child.perDayFormatted }}</td>
-              <td>{{ child.currentYearFormatted }}</td>
+              <td data-label="heute">{{ child.currentDayFormatted }}</td>
+              <td data-label="pro Tag">{{ child.perDayFormatted }}</td>
+              <td data-label="dieses Jahr">{{ child.currentYearFormatted }}</td>
             </tr>
           </tbody>
         </table>
@@ -336,7 +345,7 @@ useJsonLd('species-breadcrumb', {
           </div>
           <p v-if="lifespanYears" class="species-bar-note">
             <span class="species-bar-lived">gelebt</span>
-            <span>möglich: {{ lifespanYears }} Jahre</span>
+            <span>möglich: {{ lifespanYears }}&nbsp;Jahre</span>
           </p>
           <SourceLinks :ids="profile.lifeSources" />
         </div>
@@ -430,12 +439,17 @@ useJsonLd('species-breadcrumb', {
 }
 .species-crumbs {
   display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1.75rem;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 0.5rem;
+  margin-bottom: 1.25rem;
   font-size: 0.8rem;
   color: var(--brand-faint);
 }
+/* Inline-block with some padding so each crumb is a tap target of about 32px */
 .species-crumbs a {
+  display: inline-block;
+  padding-block: 0.35rem;
   color: inherit;
 }
 .species-title {
@@ -450,6 +464,17 @@ useJsonLd('species-breadcrumb', {
 .species-lead {
   margin-bottom: 1.75rem;
 }
+.chapter-lead a {
+  color: var(--brand-green);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  text-decoration-thickness: 1.5px;
+}
+.chapter-lead a:hover,
+.chapter-lead a:focus-visible {
+  color: var(--brand-accent-text);
+}
 .species-live {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -457,6 +482,7 @@ useJsonLd('species-breadcrumb', {
   margin-bottom: 1rem;
 }
 .species-live-card {
+  container-type: inline-size;
   padding: 1.1rem 1.25rem;
   border-radius: 18px;
   border: 1.5px solid rgba(20, 54, 31, 0.08);
@@ -467,15 +493,17 @@ useJsonLd('species-breadcrumb', {
   border-color: var(--brand-green);
   color: var(--brand-cream);
 }
+/* The type size is the smaller of the design size and what lets the widest figure of the card fit its width; a display digit is about 0.68em wide */
 .species-live-value {
+  --live-size: clamp(1.2rem, 2.4vw, 1.7rem);
   display: block;
   font-family: var(--font-display);
-  font-size: clamp(1.2rem, 2.4vw, 1.7rem);
+  font-size: min(var(--live-size), 100cqi / (var(--figure-chars, 8) * 0.68));
   letter-spacing: -0.03em;
   line-height: 1.1;
   color: var(--brand-death-text);
   font-variant-numeric: tabular-nums;
-  overflow-wrap: anywhere;
+  white-space: nowrap;
 }
 .species-live-card--accent .species-live-value {
   color: var(--brand-accent);
@@ -534,6 +562,9 @@ useJsonLd('species-breadcrumb', {
 .species-table th:first-child,
 .species-table td:first-child {
   text-align: left;
+}
+.species-table td {
+  white-space: nowrap;
 }
 .species-table thead th {
   border-top: none;
@@ -611,7 +642,7 @@ useJsonLd('species-breadcrumb', {
 }
 .species-trend-chart {
   --gap-chart-height: 300px;
-  --gap-chart-height-mobile: 190px;
+  --gap-chart-height-mobile: 130px;
   margin-bottom: 1.6rem;
 }
 /* The gap is the point of the section, so it gets the largest type on the page
@@ -621,7 +652,6 @@ useJsonLd('species-breadcrumb', {
   flex-direction: column;
   gap: 0.15rem;
   margin: 0 0 1.75rem;
-  max-width: 34ch;
 }
 .species-trend-figure {
   font-family: var(--font-display);
@@ -631,6 +661,11 @@ useJsonLd('species-breadcrumb', {
   line-height: 1;
   color: var(--brand-accent-text);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.species-trend-unit,
+.species-trend-but {
+  max-width: 34ch;
 }
 .species-trend-unit {
   font-size: 1.05rem;
@@ -668,6 +703,7 @@ useJsonLd('species-breadcrumb', {
   line-height: 1.05;
   color: var(--brand-green);
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 .species-trend-down {
   color: var(--brand-fall);
@@ -679,15 +715,18 @@ useJsonLd('species-breadcrumb', {
   color: var(--brand-muted);
   margin: 0 0 0.6rem;
 }
+/* Two per row on a phone; the type shrinks with the viewport so the longest peak, eleven digits for chickens, still fits a half-width card at 360px */
 @media (max-width: 767px) {
   .species-trend-stats {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.6rem;
   }
   .species-trend-stat {
+    padding: 0.9rem 1rem;
     border-radius: 16px;
   }
   .species-trend-stat dd {
-    font-size: 1.35rem;
+    font-size: clamp(1rem, 4.4vw, 1.2rem);
   }
 }
 .species-condition {
@@ -785,31 +824,113 @@ useJsonLd('species-breadcrumb', {
   text-decoration: none;
 }
 
+/* Beside a 420px portrait a tablet leaves the copy about 250px, too narrow for a ten-digit title and three live cards: the portrait goes on top */
+@media (max-width: 991px) {
+  .species-hero-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2rem;
+  }
+  .species-hero-portrait {
+    order: -1;
+    justify-self: start;
+  }
+}
 @media (max-width: 767px) {
   .species-hero {
     padding: 2rem 0 2.5rem;
   }
   .species-hero-grid {
-    grid-template-columns: 1fr;
     gap: 1.5rem;
   }
   .species-hero-portrait {
-    order: -1;
     max-width: 100%;
     justify-self: stretch;
   }
   .species-section {
     padding: 2.5rem 0;
   }
-  .species-live,
   .species-two,
   .species-conditions {
     grid-template-columns: 1fr;
+  }
+  /* Today and since-you-are-here side by side, the year below at full width: it is the longest figure, ten digits for fish */
+  .species-live {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.6rem;
+  }
+  .species-live-card {
+    padding: 0.9rem 1rem;
+    border-radius: 16px;
+  }
+  .species-live-card--year {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+  .species-live-value {
+    --live-size: clamp(1rem, 4.4vw, 1.25rem);
+  }
+  .species-live-card--year .species-live-value {
+    --live-size: clamp(1.25rem, 6vw, 1.6rem);
   }
   .species-table th,
   .species-table td {
     padding: 0.7rem 0.6rem;
     font-size: 0.85rem;
+  }
+}
+/* Four columns do not fit a phone. Each subgroup becomes a block: its name on top, the three figures in a row below, each with its column name. The header row stays in the accessibility tree, only hidden from sight. */
+@media (max-width: 599px) {
+  .species-table,
+  .species-table tbody {
+    display: block;
+  }
+  .species-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .species-table tbody {
+    display: grid;
+    grid-template-columns: repeat(3, auto);
+    justify-content: space-between;
+  }
+  .species-table tbody tr {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(3, auto);
+    grid-template-columns: subgrid;
+    gap: 0.35rem 1rem;
+    padding: 0.85rem 1rem;
+    border-top: 1px solid #f1f3f5;
+  }
+  .species-table tbody tr:first-child {
+    border-top: none;
+  }
+  .species-table tbody th,
+  .species-table tbody td {
+    padding: 0;
+    border-top: none;
+    text-align: left;
+  }
+  .species-table tbody th {
+    grid-column: 1 / -1;
+    font-weight: 700;
+  }
+  .species-table td {
+    font-size: 0.9rem;
+  }
+  .species-table td::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 0.1rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--brand-faint);
   }
 }
 </style>

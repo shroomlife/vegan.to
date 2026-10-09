@@ -75,6 +75,40 @@ const others = computed(() => topicPages.filter((topic) => topic.name !== props.
   line-height: 1.45;
   color: var(--brand-muted);
 }
+/* On a phone eleven cards would fill several screens: one card, one row per page, the teaser cut to a single line */
+@media (max-width: 767px) {
+  .related-topics-list {
+    display: block;
+    border-radius: 16px;
+    border: 1.5px solid rgba(20, 54, 31, 0.08);
+    background: #fff;
+    overflow: hidden;
+  }
+  .related-topics-list li + li {
+    border-top: 1px solid rgba(20, 54, 31, 0.08);
+  }
+  .related-topics-card {
+    gap: 0.1rem;
+    padding: 0.8rem 1rem;
+    border: none;
+    border-radius: 0;
+  }
+  .related-topics-card:hover,
+  .related-topics-card:focus-visible {
+    background: var(--brand-mint);
+    transform: none;
+  }
+  .related-topics-card:focus-visible {
+    outline-offset: -3px;
+  }
+  .related-topics-teaser {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+    overflow: hidden;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .related-topics-card {
     transition: none;

@@ -1,17 +1,23 @@
 <script setup lang="ts">
 import { formatNumber } from '@/utils/formatNumber'
+import { useAnchorNavigation } from '@/composables/useAnchorNavigation'
 
 defineProps<{
   count: number
 }>()
+
+// The pill only shows on the start page, where a plain RouterLink to "/" would ignore the tap
+const { onNavClick } = useAnchorNavigation()
 </script>
 
 <template>
-  <!-- The counter follows the visitor once the hero has scrolled away -->
-  <RouterLink to="/" class="counter-pill" aria-label="Zum Zähler">
-    <span class="counter-pill-dot" aria-hidden="true"></span>
-    <span class="counter-pill-number">{{ formatNumber(count) }}</span>
-    <span class="counter-pill-label">seit du hier bist</span>
+  <!-- The counter follows the visitor once the hero has scrolled away; a tap brings the big counter back. A fixed name: the figure changes every second and would be announced again and again. No comment inside the slot: RouterLink renders its only child as the root, a comment next to it would turn that into a fragment in dev builds -->
+  <RouterLink to="/" custom v-slot="{ href, navigate }">
+    <a :href="href" class="counter-pill" aria-label="seit du hier bist, zurück zum Zähler" @click="navigate($event); onNavClick('/')">
+      <span class="counter-pill-dot" aria-hidden="true"></span>
+      <span class="counter-pill-number">{{ formatNumber(count) }}</span>
+      <span class="counter-pill-label">seit du hier bist</span>
+    </a>
   </RouterLink>
 </template>
 
