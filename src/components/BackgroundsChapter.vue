@@ -24,7 +24,7 @@ const rows = topicGroups.map((group) => ({
 </script>
 
 <template>
-  <section id="hintergruende" class="backgrounds chapter-section">
+  <section id="hintergruende" class="backgrounds chapter-section render-when-near">
     <div class="container">
       <span class="chapter">Wie es dazu kam</span>
       <h2 class="chapter-title">Das war nicht immer so.</h2>

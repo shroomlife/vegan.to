@@ -66,19 +66,19 @@ html {
 .chapter--on-dark { color: #7fe0a5; }
 
 /* Shared rhythm for every chapter of the start page: air above and below, one title scale */
-/*
- * A chapter below the fold is neither laid out nor painted until it comes
- * near; the estimate keeps the scrollbar honest until the real size is known.
- * While an anchor position is measured (scroll.ts) every chapter renders, so
- * the target lands where it belongs.
- */
 .chapter-section {
   padding: 5.5rem 0;
+}
+/*
+ * A section with this class is neither laid out nor painted until it comes near; the estimate keeps the scrollbar honest until the real size is known. While an anchor position is measured (scroll.ts) every such section renders, so the target lands where it belongs.
+ *
+ * Only for sections whose content never changes on its own. Chrome crashes the tab when assistive technology is on and text changes inside a skipped section (CHECK in AXBlockFlowData::ComputeNeighborOnLine, crbug.com/552018997), so live numbers stay out; e2e/render-deferral.spec.ts guards it.
+ */
+.render-when-near {
   content-visibility: auto;
   contain-intrinsic-size: auto 900px;
 }
-.is-measuring .chapter-section,
-.is-measuring .animals-section {
+.is-measuring .render-when-near {
   content-visibility: visible;
 }
 .chapter-title {

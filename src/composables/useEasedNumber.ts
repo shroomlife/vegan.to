@@ -1,21 +1,23 @@
 import { onScopeDispose, readonly, shallowRef, toValue, watch, type MaybeRefOrGetter, type Ref } from 'vue'
+import { usePreferredReducedMotion } from '@vueuse/core'
 
 const easeOutCubic = (t: number) => 1 - (1 - t) ** 3
 
 /**
- * A number that eases to every new value of its source while it is on screen, and simply takes the value while it is not: nobody sees the easing off screen, and every tick stays cheap.
+ * A number that eases to every new value of its source while it is on screen, and simply takes the value while it is not: nobody sees the easing off screen, and every tick stays cheap. A visitor who asks for reduced motion gets every value directly too.
  *
  * Every change starts from the figure shown right now. VueUse's useTransition with `disabled` keeps its own value from the moment it was disabled and only catches up on the next change, so a number that came back into view showed 0 or an old figure for a moment.
  */
 export function useEasedNumber(source: MaybeRefOrGetter<number>, visible: Ref<boolean>, duration = 369): Readonly<Ref<number>> {
   const shown = shallowRef(toValue(source))
+  const reducedMotion = usePreferredReducedMotion()
   let frame = 0
 
   watch(
     () => toValue(source),
     (to) => {
       cancelAnimationFrame(frame)
-      if (!visible.value) {
+      if (!visible.value || reducedMotion.value === 'reduce') {
         shown.value = to
         return
       }

@@ -4,7 +4,7 @@ import ClipVideo from '@/components/ClipVideo.vue'
 </script>
 
 <template>
-  <section id="mitmachen" class="action chapter-section">
+  <section id="mitmachen" class="action chapter-section render-when-near">
     <div class="container">
       <span class="chapter">Mach mit</span>
       <div class="action-head">

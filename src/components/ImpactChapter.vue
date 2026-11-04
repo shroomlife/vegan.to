@@ -217,7 +217,7 @@ const personalFigureChars = computed(() => figureChars(personalImpact.value))
 </script>
 
 <template>
-  <section id="impact" class="impact chapter-section">
+  <section id="impact" class="impact chapter-section render-when-near">
     <div class="container">
       <span class="chapter">Was du bewirkst</span>
       <div class="impact-head">

@@ -393,7 +393,7 @@ const shareText = () =>
   </section>
 
   <!-- Vegan Growth: two figures, the share as a thin bar, the curve -->
-  <section class="growth-section chapter-section">
+  <section class="growth-section chapter-section render-when-near">
     <div class="growth-inner">
       <span class="chapter chapter--center">Die anderen</span>
       <h2
@@ -910,8 +910,6 @@ const shareText = () =>
   position: relative;
   z-index: 2;
   padding: 5.5rem 0 6rem;
-  content-visibility: auto;
-  contain-intrinsic-size: auto 1600px;
   background:
     radial-gradient(1.4px 1.4px at 6% 12%, rgba(255, 179, 122, 0.55), transparent 60%),
     radial-gradient(1.2px 1.2px at 21% 6%, rgba(255, 179, 122, 0.7), transparent 60%),
