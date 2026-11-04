@@ -107,7 +107,7 @@ export const topicPages: readonly TopicPage[] = [
     label: 'Schlachtzahlen',
     teaser: 'Schlachtzahlen nach Monat und Bundesland, mit allen Schlachtungsarten',
     title: 'Schlachtzahlen Deutschland 2025 und 2026: nach Monat und Bundesland | vegan.to',
-    description: 'Die amtlichen Schlachtzahlen für Deutschland: 2025 insgesamt, Monat für Monat bis Juli 2026 und nach Bundesland. Wo die meisten Schweine, Rinder und das meiste Geflügel geschlachtet werden.',
+    description: 'Die amtlichen Schlachtzahlen für Deutschland: 2025 insgesamt, Monat für Monat bis August 2026 und nach Bundesland. Wo die meisten Schweine, Rinder und das meiste Geflügel geschlachtet werden.',
   },
   {
     path: '/kueken-und-legehennen',

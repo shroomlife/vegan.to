@@ -8,7 +8,7 @@
  * - Fahrzeiten: Verordnung (EG) Nr. 1/2005, Anhang I Kapitel V;
  *   TierSchTrV § 10.
  * - EU-Reform: Kommissionsvorschlag COM(2023) 770, Stand laut Legislative
- *   Train des Europäischen Parlaments vom 20.09.2026.
+ *   Train des Europäischen Parlaments vom 25.10.2026.
  */
 export interface ExportYear {
   year: number

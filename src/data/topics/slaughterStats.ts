@@ -1,12 +1,12 @@
 /**
  * Schlachtzahlen nach Herkunft, Monat und Bundesland.
- * Abgerufen am 05.10.2026, GENESIS-Stand 21.09.2026.
+ * Abgerufen am 05.10.2026, GENESIS-Stand 21.09.2026; 41331-0002 abgerufen am 04.11.2026, Stand 07.10.2026.
  *
  * - 41331-0001: Deutschland, Jahre, nach Schlachtungsart (gewerblich inländischer
  *   Herkunft, gewerblich ausländischer Herkunft, Hausschlachtung), Anzahl und
  *   Schlachtmenge in Tonnen. 2025 endgültig ("e").
  * - 41331-0002: Deutschland, Monate. 2025 endgültig, 2026 vorläufig ("p"),
- *   August bis Dezember 2026 noch nicht veröffentlicht.
+ *   September bis Dezember 2026 noch nicht veröffentlicht.
  * - 41331-0003: Bundesländer, Jahre. Gewerbliche Schlachtungen inländischer Herkunft.
  * - 41322-0001: Geflügelschlachtereien, Jahre, Anzahl und Schlachtmenge in kg.
  * - 41322-0002: Geflügelschlachtereien, Monate (bis Dezember 2025).
@@ -76,12 +76,12 @@ export interface MonthlySeries {
   geese2025: readonly (number | undefined)[]
 }
 
-/** 41331-0002, gewerblich inländischer Herkunft; 2026 vorläufig bis Juli */
+/** 41331-0002, gewerblich inländischer Herkunft; 2026 vorläufig bis August */
 export const monthly: MonthlySeries = {
   pigs2025: [3_816_492, 3_545_955, 3_814_296, 3_574_301, 3_520_101, 3_427_406, 3_716_934, 3_596_693, 3_816_859, 3_880_028, 3_759_598, 3_547_496],
-  pigs2026: [3_855_843, 3_556_195, 3_877_751, 3_524_966, 3_382_152, 3_666_016, 3_656_068],
+  pigs2026: [3_855_872, 3_556_303, 3_877_852, 3_525_102, 3_382_357, 3_667_629, 3_657_491, 3_519_841],
   cattle2025: [257_748, 221_101, 238_424, 225_833, 215_084, 196_534, 233_401, 197_461, 243_915, 268_073, 247_172, 228_045],
-  cattle2026: [239_410, 211_296, 257_209, 222_075, 206_892, 212_570, 219_352],
+  cattle2026: [239_412, 211_340, 257_296, 222_110, 206_939, 212_742, 219_437, 214_179],
   lambs2025: [36_016, 33_944, 35_814, 55_888, 41_669, 67_167, 45_517, 43_960, 49_770, 53_357, 51_899, 63_041],
   /** 41322-0002, alle Geflügelarten */
   poultry2025: [60_169_646, 52_639_624, 57_657_677, 59_283_239, 59_167_015, 57_192_099, 62_173_170, 57_327_008, 61_225_178, 58_814_018, 56_384_364, 55_265_041],

@@ -117,8 +117,9 @@ const answers = [
     <p>
       Die EU-Kommission hat im Dezember 2023 neue Regeln vorgeschlagen: Fahrten zur Schlachtung höchstens neun Stunden, andere
       Fahrten höchstens 21 Stunden mit einer Pause nach zehn Stunden. Kälber sollen erst ab einem Alter von fünf Wochen
-      transportiert werden dürfen, wie es die Europäische Behörde für Lebensmittelsicherheit empfiehlt. Im September 2026 war
-      der Vorschlag noch nicht beschlossen.
+      transportiert werden dürfen, wie es die Europäische Behörde für Lebensmittelsicherheit empfiehlt. Ende Oktober 2026 war
+      der Vorschlag noch nicht beschlossen. Die irische Ratspräsidentschaft legte den Mitgliedstaaten Ende September und Anfang
+      Oktober 2026 einen neuen Kompromisstext vor.
     </p>
     <SourceLinks :ids="['epTransportReform', 'btDrs21_7484']" />
 
