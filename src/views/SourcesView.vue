@@ -120,8 +120,9 @@ useJsonLd('page-breadcrumb', {
           </ol>
           <p id="datenstand" class="sources-status">
             Datenstand: Destatis Jahresdaten 2025. Schlachtzahlen und Zeitreihen mit GENESIS-Stand 21. August 2026,
-            Tierbestand, Brütereien und Schlachtzahlen nach Monat und Bundesland mit GENESIS-Stand 21. September 2026.
-            Alle Quellen zwischen dem 12. September und dem 5. Oktober 2026 geprüft.
+            Tierbestand, Brütereien und Schlachtzahlen nach Bundesland mit GENESIS-Stand 21. September 2026, Schlachtzahlen
+            nach Monat mit GENESIS-Stand 7. Oktober 2026. Alle Quellen zwischen dem 12. September und dem 5. Oktober 2026
+            geprüft, eine Stichprobe am 4. November 2026 erneut.
           </p>
           <p class="sources-status">
             Daten des Statistischen Bundesamts (Destatis), GENESIS-Online, werden unter der

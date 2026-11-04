@@ -41,20 +41,20 @@ export interface Source {
 export const sources = {
   destatisSlaughter: {
     label: 'Destatis, GENESIS 41331-0001: Gewerbliche Schlachtungen 1993 bis 2025',
-    url: 'https://www-genesis.destatis.de/datenbank/online/table/41331-0001',
+    url: 'https://genesis.destatis.de/datenbank/online/table/41331-0001',
     usedFor: 'Rinder, Schweine, Schafe, Ziegen, Pferde (inländische Herkunft), Jahreswert und Zeitreihe; Schlachtungen nach Herkunft, Hausschlachtungen und Schlachtmenge 2025',
     category: 'Schlachtzahlen',
   },
   destatisPoultry: {
     label: 'Destatis, GENESIS 41322-0001: Geflügelschlachtereien 2010 bis 2025',
-    url: 'https://www-genesis.destatis.de/datenbank/online/table/41322-0001',
+    url: 'https://genesis.destatis.de/datenbank/online/table/41322-0001',
     usedFor: 'Hühner, Truthühner, Enten, Gänse, Jahreswert und Zeitreihe',
     category: 'Schlachtzahlen',
   },
   destatisSlaughterMonthly: {
     label: 'Destatis, GENESIS 41331-0002: Geschlachtete Tiere nach Monaten',
     url: 'https://genesis.destatis.de/datenbank/online/table/41331-0002',
-    usedFor: 'Schweine, Rinder und Lämmer Monat für Monat, 2025 endgültig, Januar bis Juli 2026 vorläufig',
+    usedFor: 'Schweine, Rinder und Lämmer Monat für Monat, 2025 endgültig, Januar bis August 2026 vorläufig',
     category: 'Schlachtzahlen',
   },
   destatisSlaughterStates: {
@@ -240,14 +240,14 @@ export const sources = {
     category: 'Wer sie sind',
   },
   smithHorses: {
-    label: 'Smith et al. 2016, Biology Letters, via University of Sussex',
-    url: 'https://blogs.sussex.ac.uk/psychology/2016/04/04/horses-read-human-facial-expressions-of-emotion-sussex-research/',
+    label: 'Smith et al. 2016, Biology Letters: Functionally relevant responses to human facial expressions of emotion in the domestic horse',
+    url: 'https://doi.org/10.1098/rsbl.2015.0907',
     usedFor: 'Pferde: reagieren auf wütende Menschengesichter mit Linksblick und Puls',
     category: 'Wer sie sind',
   },
   klfGeese: {
-    label: 'Konrad-Lorenz-Forschungsstelle, Universität Wien: Graugänse',
-    url: 'https://klf.univie.ac.at/de/forschung/modellarten/graugaense/',
+    label: 'Konrad-Lorenz-Forschungsstelle, Universität Wien: Graugänse (Archiv, Stand Juni 2026)',
+    url: 'https://web.archive.org/web/20260610143418/https://klf.univie.ac.at/de/forschung/modellarten/graugaense/',
     usedFor: 'Gänse: lebenslang zusammenbleibende Paare',
     category: 'Wer sie sind',
   },
@@ -507,7 +507,7 @@ export const sources = {
   },
   bregChicks: {
     label: 'Bundesregierung: Verbot des Kükentötens reformiert',
-    url: 'https://www.bundesregierung.de/breg-de/aktuelles/toetung-von-huehnerembryonen-2187950',
+    url: 'https://www.bundesregierung.de/breg-de/service/archiv-bundesregierung/toetung-von-huehnerembryonen-2187950',
     usedFor: 'Seit 1. Januar 2024 gilt der 13. statt des 7. Bebrütungstags, begründet mit dem Schmerzempfinden der Embryonen',
     category: 'Küken und Legehennen',
   },
@@ -552,7 +552,7 @@ export const sources = {
   epTransportReform: {
     label: 'Europäisches Parlament, Legislative Train: Revision of EU legislation on animal welfare (Transport, COM(2023) 770)',
     url: 'https://www.europarl.europa.eu/legislative-train/theme-a-european-green-deal/file-revision-of-eu-legislation-on-animal-welfare',
-    usedFor: 'Vorschlag vom 7. Dezember 2023: Schlachttiere höchstens 9 Stunden, andere Tiere 21 Stunden; Stand September 2026: noch nicht beschlossen',
+    usedFor: 'Vorschlag vom 7. Dezember 2023: Schlachttiere höchstens 9 Stunden, andere Tiere 21 Stunden; Stand 25. Oktober 2026: noch nicht beschlossen, neuer Kompromisstext der irischen Ratspräsidentschaft',
     category: 'Gesetze und Bundestag',
   },
   tierErzHaVerbG4: {
@@ -625,6 +625,12 @@ export const sources = {
     label: 'Defra, 22. Dezember 2025: Animal Welfare Strategy for England',
     url: 'https://defrafarming.blog.gov.uk/2025/12/22/animal-welfare-strategy-for-england-published',
     usedFor: 'England will die CO2-Betäubung von Schweinen angehen und von Abferkelkäfigen wegkommen',
+    category: 'Tierschutz im Vergleich',
+  },
+  defraCo2Consultation: {
+    label: 'Defra, 26. Oktober 2026: Consultation on phasing out carbon dioxide stunning of pigs',
+    url: 'https://www.gov.uk/government/consultations/phasing-out-carbon-dioxide-stunning-of-pigs',
+    usedFor: 'Konsultation zu einem Verbot der CO2-Betäubung von Schweinen, Frist 21. Dezember 2026',
     category: 'Tierschutz im Vergleich',
   },
   atTSchG: {
@@ -730,8 +736,8 @@ export const sources = {
     category: 'Tierschutz im Vergleich',
   },
   frChicks: {
-    label: 'Frankreich, Landwirtschaftsministerium: Ende des Tötens männlicher Küken',
-    url: 'https://agriculture.gouv.fr/la-france-sera-le-premier-pays-au-monde-avec-lallemagne-mettre-fin-lelimination-des-poussins-males',
+    label: 'Frankreich, Landwirtschaftsministerium: Ende des Tötens männlicher Küken (Archiv, Stand August 2025)',
+    url: 'https://web.archive.org/web/20250808011352/https://agriculture.gouv.fr/la-france-sera-le-premier-pays-au-monde-avec-lallemagne-mettre-fin-lelimination-des-poussins-males',
     usedFor: 'Verbot des Schredderns und Vergasens männlicher Küken seit 2023, mit Ausnahmen',
     category: 'Tierschutz im Vergleich',
   },
@@ -921,6 +927,12 @@ export const sources = {
     label: 'Europäische Kommission, Pressemitteilung vom 30. Juni 2021 zur Bürgerinitiative „End the Cage Age“',
     url: 'https://ec.europa.eu/commission/presscorner/detail/de/ip_21_3297',
     usedFor: 'Zusage, bis 2023 einen Vorschlag für ein Käfigverbot vorzulegen',
+    category: 'Zeitreise',
+  },
+  ecLivestockStrategy: {
+    label: 'Europäische Kommission, COM(2026) 576 vom 7. Juli 2026: EU strategy on livestock, Anhang',
+    url: 'https://webgate.ec.europa.eu/circabc-ewpp/d/d/workspace/SpacesStore/bd79fa14-6271-42af-b1c6-d03587bda867/download',
+    usedFor: 'Bis Ende 2026 ein Vorschlag, Käfige für Legehennen und Masthühner auslaufen zu lassen und das systematische Töten männlicher Küken zu beenden',
     category: 'Zeitreise',
   },
   bregChicksBan: {

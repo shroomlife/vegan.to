@@ -216,9 +216,9 @@ export const turnStations: readonly Station[] = [
   {
     year: '2021',
     title: 'Die EU verspricht den Käfigausstieg',
-    text: 'Die EU-Kommission sagt zu, bis 2023 einen Vorschlag für ein Käfigverbot vorzulegen. Beschlossen ist bis heute nichts.',
+    text: 'Die EU-Kommission sagt zu, bis 2023 einen Vorschlag für ein Käfigverbot vorzulegen. Im Juli 2026 kündigt sie in ihrer Nutztierstrategie einen Vorschlag bis Ende 2026 an. Beschlossen ist bis heute nichts.',
     kind: 'promise',
-    sources: ['ecEndCageAge'],
+    sources: ['ecEndCageAge', 'ecLivestockStrategy'],
   },
   {
     year: '2021',

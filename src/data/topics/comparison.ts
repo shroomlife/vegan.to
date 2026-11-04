@@ -34,10 +34,10 @@ export const comparisons: readonly Comparison[] = [
       { country: 'Österreich', rule: 'Das Schreddern lebender Küken ist verboten. Getötet werden dürfen Küken aber weiterhin, wenn sie als Futter dienen.' },
       { country: 'Schweiz', rule: 'Verboten ist nur das Schreddern. Andere Arten der Tötung sind erlaubt.' },
       { country: 'Italien', rule: 'Ein Verbot ab 31. Dezember 2026 ist beschlossen, mit Ausnahmen für Fehler bei der Geschlechtsbestimmung.' },
-      { country: 'Übrige EU', rule: 'Kein Verbot gefunden.' },
+      { country: 'Übrige EU', rule: 'Kein Verbot. Die EU-Kommission will bis Ende 2026 vorschlagen, das systematische Töten männlicher Küken zu beenden.' },
     ],
     summary: 'Deutschland verbietet das Töten männlicher Küken ohne Ausnahme für bestimmte Rassen. Frankreich lässt eine Ausnahme für einige Legelinien zu, Österreich und die Schweiz verbieten nur das Schreddern.',
-    sources: ['tierSchG4c', 'frChicks', 'frChicksAN', 'atTSchG', 'chTSchV', 'itChicks'],
+    sources: ['tierSchG4c', 'frChicks', 'frChicksAN', 'atTSchG', 'chTSchV', 'itChicks', 'ecLivestockStrategy'],
   },
   {
     topic: 'Besatzdichte bei Masthühnern',
@@ -204,10 +204,10 @@ export const comparisons: readonly Comparison[] = [
     verdict: 'unclear',
     germany: 'Erlaubt und weit verbreitet.',
     others: [
-      { country: 'England', rule: 'Hat im Dezember 2025 angekündigt, die Betäubung von Schweinen mit CO2 anzugehen. Ein Verbot gibt es noch nicht.' },
+      { country: 'England', rule: 'Hat im Dezember 2025 angekündigt, die Betäubung von Schweinen mit CO2 anzugehen. Seit 26. Oktober 2026 läuft eine Konsultation zu einem Verbot, Frist 21. Dezember 2026. Ein Verbot gibt es noch nicht.' },
       { country: 'Übrige untersuchte Länder', rule: 'Kein Verbot und kein fester Ausstiegsplan gefunden.' },
     ],
-    summary: 'Die EFSA nennt hoch konzentriertes CO2 stark belastend für Schweine. Kein Land hat die Methode bisher verboten. England hat im Dezember 2025 angekündigt, das Problem anzugehen.',
-    sources: ['efsaPigs2020', 'agrarheuteCo2', 'defraStrategy2025'],
+    summary: 'Die EFSA nennt hoch konzentriertes CO2 stark belastend für Schweine. Kein Land hat die Methode bisher verboten. England hat im Dezember 2025 angekündigt, das Problem anzugehen, und befragt seit Oktober 2026 die Öffentlichkeit zu einem Verbot.',
+    sources: ['efsaPigs2020', 'agrarheuteCo2', 'defraStrategy2025', 'defraCo2Consultation'],
   },
 ]
