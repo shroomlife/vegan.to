@@ -19,7 +19,7 @@ function speciesPath(plural: string): string | undefined {
 </script>
 
 <template>
-  <section id="wer-sie-sind" class="species-facts chapter-section">
+  <section id="wer-sie-sind" class="species-facts chapter-section render-when-near">
     <div class="container">
       <div class="species-facts-head">
         <div>

@@ -14,7 +14,7 @@ useJsonLd('faq-jsonld', {
 </script>
 
 <template>
-  <section id="fragen" class="faq chapter-section">
+  <section id="fragen" class="faq chapter-section render-when-near">
     <div class="container">
       <span class="chapter chapter--center">Die Fragen davor</span>
       <h2 class="chapter-title text-center">Was Menschen fragen, bevor sie etwas ändern</h2>

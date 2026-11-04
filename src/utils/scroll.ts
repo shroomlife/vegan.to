@@ -27,10 +27,7 @@ export function scrollToTop(): void {
  * Document position of the element a hash points at, with the header offset
  * taken off; undefined when there is no such element.
  *
- * Sections below the fold use content-visibility and only carry an estimated
- * size until they are rendered. Measuring through them would land anywhere,
- * so every section is rendered for this one read (custom.css, .is-measuring);
- * from then on each remembers its real size.
+ * Static sections below the fold use content-visibility (custom.css, .render-when-near) and only carry an estimated size until they are rendered. Measuring through them would land anywhere, so every such section is rendered for this one read (.is-measuring); from then on each remembers its real size.
  */
 export function hashPosition(hash: string): number | undefined {
   const target = document.getElementById(hash.replace(/^#/, ''))

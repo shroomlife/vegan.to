@@ -5,7 +5,7 @@ import SceneImage from '@/components/SceneImage.vue'
 </script>
 
 <template>
-  <section id="wie-sie-lebten" class="life-facts chapter-section">
+  <section id="wie-sie-lebten" class="life-facts chapter-section render-when-near">
     <div class="container">
       <span class="chapter">Wie sie lebten</span>
       <h2 class="chapter-title">Das steht so im Gesetz.</h2>

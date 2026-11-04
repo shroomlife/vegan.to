@@ -37,7 +37,7 @@ watch(
 </script>
 
 <template>
-  <section v-if="items.length > 0" id="quellen" class="source-list chapter-section" aria-labelledby="source-list-title">
+  <section v-if="items.length > 0" id="quellen" class="source-list chapter-section render-when-near" aria-labelledby="source-list-title">
     <div class="container">
       <span class="chapter">Quellen</span>
       <h2 id="source-list-title" class="chapter-title">Alle Quellen dieser Seite</h2>
